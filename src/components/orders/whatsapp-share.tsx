@@ -102,7 +102,7 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
       const dataUrl = canvas.toDataURL('image/png');
       const blob = await (await fetch(dataUrl)).blob();
 
-      if (isShareSupported) {
+      if (isShareSupported && blob) {
         await navigator.share({
           files: [
             new File([blob], `order-${order.id}.png`, {
@@ -112,7 +112,7 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
           title: `ملخص الطلب: ${order.orderName}`,
           text: `تفاصيل طلب رقم ${order.id}`,
         });
-      } else {
+      } else if (!isShareSupported) {
         toast({
           variant: 'destructive',
           title: 'المشاركة غير مدعومة',
@@ -121,6 +121,10 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
       }
     } catch (error) {
       console.error('Error sharing order:', error);
+      // Avoid showing a toast for user-cancelled share action
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
       toast({
         variant: 'destructive',
         title: 'حدث خطأ',
