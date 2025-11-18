@@ -41,10 +41,8 @@ export function OrdersTable({
     if (isAdmin) {
       return `/admin/orders/${orderId}`;
     }
-    if (showViewAction) {
-      return `/?view_order=${orderId}`;
-    }
-    return `/dashboard/orders/${orderId}`;
+    // For users, the dashboard is now on its own page.
+    return `/dashboard?view_order=${orderId}`;
   };
 
   return (
@@ -82,7 +80,7 @@ export function OrdersTable({
                   </TableCell>
                   {(isAdmin || showViewAction) && (
                     <TableCell className="text-left">
-                      <Link href={getViewLink(order.id)}>
+                      <Link href={getViewLink(order.id)} scroll={false}>
                         <Button variant="ghost" size="icon">
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">عرض الطلب</span>
