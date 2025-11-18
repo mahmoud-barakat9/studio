@@ -167,6 +167,16 @@ export function OrdersTable({
     return `/dashboard?view_order=${orderId}`;
   };
 
+  if (orders.length === 0) {
+    return (
+        <Card>
+            <CardContent className="p-6 text-center text-muted-foreground">
+                لا توجد طلبات لعرضها في هذا القسم.
+            </CardContent>
+        </Card>
+    )
+  }
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -177,9 +187,10 @@ export function OrdersTable({
                   <TableHead>رقم الطلب</TableHead>
                   <TableHead>اسم الطلب</TableHead>
                   {isAdmin && <TableHead>العميل</TableHead>}
+                  <TableHead>النوع واللون</TableHead>
                   <TableHead>التاريخ</TableHead>
                   <TableHead>الحالة</TableHead>
-                  <TableHead className="text-left">التكلفة الإجمالية</TableHead>
+                  <TableHead className="text-left">التكلفة</TableHead>
                   <TableHead className="text-left">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -192,6 +203,12 @@ export function OrdersTable({
                       <TableCell className="font-medium">{order.id}</TableCell>
                       <TableCell>{order.orderName}</TableCell>
                       {isAdmin && <TableCell>{getUserName(order.userId)}</TableCell>}
+                      <TableCell>
+                          <div className="flex flex-col">
+                            <span>{order.mainAbjourType}</span>
+                            <span className="text-xs text-muted-foreground">{order.mainColor}</span>
+                          </div>
+                      </TableCell>
                       <TableCell>{order.date}</TableCell>
                       <TableCell>
                         <Badge variant={statusStyle.variant}>

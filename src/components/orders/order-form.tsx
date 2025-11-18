@@ -6,6 +6,7 @@ import * as z from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { PlusCircle, Trash2, Wand2, Loader2 } from 'lucide-react';
+import { PlusCircle, Trash2, Wand2, Loader2, Info } from 'lucide-react';
 import {
   calculateAbjourDimensions,
   generateOrderName,
@@ -40,11 +41,11 @@ import { useFormState } from 'react-dom';
 import React, { useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/definitions';
+import { abjourTypesData } from '@/lib/abjour-data';
 
 const openingSchema = z.object({
   serial: z.string().min(1, 'الرقم التسلسلي مطلوب.'),
   abjourType: z.string().min(1, 'النوع مطلوب.'),
-  color: z.string().min(1, 'اللون مطلوب.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
   codeLength: z.coerce.number().min(0.1, 'الطول مطلوب.'),
@@ -55,6 +56,8 @@ const openingSchema = z.object({
 
 const baseOrderSchema = z.object({
   orderName: z.string().min(1, 'اسم الطلب مطلوب.'),
+  mainAbjourType: z.string({ required_error: "نوع الأباجور الرئيسي مطلوب."}).min(1, "نوع الأباجور الرئيسي مطلوب."),
+  mainColor: z.string({ required_error: "اللون الرئيسي مطلوب."}).min(1, "اللون الرئيسي مطلوب."),
   openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
 });
 
@@ -85,8 +88,7 @@ const adminOrderSchema = baseOrderSchema.extend({
 
 type OrderFormValues = z.infer<typeof userOrderSchema & typeof adminOrderSchema>;
 
-const abjourTypes = ['قياسي', 'ضيق', 'عريض'];
-const colors = ['أبيض', 'بيج', 'رمادي', 'أسود', 'خشبي', 'فضي'];
+const openingAbjourTypes = ['قياسي', 'ضيق', 'عريض'];
 
 export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?: boolean, users?: User[] }) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
@@ -97,6 +99,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
       customerName: 'فاطمة الزهراء',
       customerPhone: '555-5678',
       orderName: '',
+      mainAbjourType: '',
+      mainColor: '',
       openings: [],
       userId: '',
       newUserName: '',
@@ -119,13 +123,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
   const watchUserId = form.watch('userId');
   const watchedOpenings = form.watch('openings');
+  const watchMainAbjourType = form.watch('mainAbjourType');
+
+  const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
+  const availableColors = selectedAbjourTypeData?.colors || [];
 
   const totalArea = watchedOpenings.reduce(
-    (acc, op) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+    (acc, op) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0) / 100,
     0
   );
-  const totalCost = totalArea * 120;
-
+  const totalCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
 
   useEffect(() => {
     if (nameState?.data?.orderName) {
@@ -140,18 +147,34 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     }
   }, [nameState, form, toast]);
 
+  useEffect(() => {
+    // Reset color if it's not available for the new type
+    const currentColor = form.getValues('mainColor');
+    if (selectedAbjourTypeData && !selectedAbjourTypeData.colors.includes(currentColor)) {
+        form.setValue('mainColor', '');
+    }
+  }, [watchMainAbjourType, selectedAbjourTypeData, form]);
+
   const handleSuggestName = () => {
+    const mainAbjourType = form.getValues('mainAbjourType');
+    const mainColor = form.getValues('mainColor');
     const firstOpening = form.getValues('openings.0');
-    if (!firstOpening) {
+
+    if (!mainAbjourType || !mainColor || !firstOpening) {
       toast({
         variant: 'destructive',
         title: 'خطأ',
-        description: 'الرجاء إضافة فتحة واحدة على الأقل لإنشاء اسم.',
+        description: 'الرجاء اختيار نوع الأباجور واللون وإضافة فتحة واحدة على الأقل لإنشاء اسم.',
       });
       return;
     }
     startNameTransition(() => {
-      generateNameAction(firstOpening);
+      generateNameAction({
+          abjourType: mainAbjourType,
+          color: mainColor,
+          codeLength: firstOpening.codeLength,
+          numberOfCodes: firstOpening.numberOfCodes,
+      });
     });
   };
 
@@ -187,7 +210,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
-        const result = await createOrderAction(data, isAdmin);
+        const payload = {
+          ...data,
+          bladeWidth: selectedAbjourTypeData?.bladeWidth,
+          pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
+        };
+        const result = await createOrderAction(payload, isAdmin);
         if (result?.success) {
             toast({
                 title: 'تم إرسال الطلب بنجاح!',
@@ -203,6 +231,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
+            {/* Customer/User Info Card */}
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -318,6 +347,87 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
+            {/* Main Abjour Type Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>النوع الرئيسي للطلب</CardTitle>
+                <CardDescription>اختر نوع ولون الأباجور الذي سيتم استخدامه في هذا الطلب.</CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="mainAbjourType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>نوع الأباجور</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر نوع الأباجور" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {abjourTypesData.map(type => (
+                              <SelectItem key={type.name} value={type.name}>
+                                {type.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="mainColor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>اللون الرئيسي</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!watchMainAbjourType}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر اللون" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {availableColors.map(color => (
+                              <SelectItem key={color} value={color}>
+                                {color}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {selectedAbjourTypeData && (
+                  <div className='grid md:grid-cols-2 gap-4 pt-2'>
+                      <FormItem>
+                          <FormLabel>عرض الشفرة</FormLabel>
+                          <Input readOnly value={`${selectedAbjourTypeData.bladeWidth} سم`} />
+                           <FormDescription className='flex items-center gap-1'>
+                             <Info className='w-3 h-3' />
+                             هذه القيمة ثابتة لهذا النوع
+                           </FormDescription>
+                      </FormItem>
+                       <FormItem>
+                          <FormLabel>سعر المتر المربع</FormLabel>
+                          <Input readOnly value={`$${selectedAbjourTypeData.pricePerSquareMeter.toFixed(2)}`} />
+                          <FormDescription className='flex items-center gap-1'>
+                             <Info className='w-3 h-3' />
+                             يتم استخدامه لحساب التكلفة الإجمالية
+                           </FormDescription>
+                      </FormItem>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Openings Card */}
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -336,7 +446,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       append({
                         serial: `A${fields.length + 1}`,
                         abjourType: 'قياسي',
-                        color: 'أبيض',
                         codeLength: 0,
                         numberOfCodes: 0,
                         hasEndCap: false,
@@ -345,10 +454,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         height: undefined
                       })
                     }
+                    disabled={!watchMainAbjourType || !form.watch('mainColor')}
                   >
                     <PlusCircle className="w-4 h-4 ml-2" /> إضافة فتحة
                   </Button>
                 </div>
+                 {!watchMainAbjourType || !form.watch('mainColor') ? (
+                    <FormDescription className="text-destructive pt-2">
+                      يجب اختيار نوع الأباجور واللون الرئيسيين أولاً قبل إضافة الفتحات.
+                    </FormDescription>
+                 ): null}
               </CardHeader>
               <CardContent className="space-y-6">
                 {fields.map((field, index) => (
@@ -365,7 +480,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name={`openings.${index}.serial`}
@@ -384,51 +499,25 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         name={`openings.${index}.abjourType`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>نوع الأباجور</FormLabel>
+                            <FormLabel>نوع التركيب</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue />
+                                  <SelectValue placeholder="قياسي، ضيق..."/>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {abjourTypes.map((t) => (
+                                {openingAbjourTypes.map((t) => (
                                   <SelectItem key={t} value={t}>
                                     {t}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`openings.${index}.color`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>اللون</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {colors.map((c) => (
-                                  <SelectItem key={c} value={c}>
-                                    {c}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                             <FormDescription>نوع التركيب وليس نوع الأباجور</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -446,7 +535,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             name={`openings.${index}.codeLength`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>طول الكود</FormLabel>
+                                <FormLabel>طول الكود (م)</FormLabel>
                                 <FormControl>
                                   <Input type="number" step="0.01" {...field} />
                                 </FormControl>
@@ -538,7 +627,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 ))}
                 {form.formState.errors.openings && (
                     <p className="text-sm font-medium text-destructive">
-                      {form.formState.errors.openings.message}
+                      {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
                     </p>
                   )}
               </CardContent>
@@ -591,9 +680,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">التكلفة التقديرية</span>
-                    <span className="font-medium">${totalCost.toFixed(2)}</span>
+                  <div className="flex justify-between font-semibold text-base">
+                    <span className="text-muted-foreground">التكلفة الإجمالية</span>
+                    <span className="font-bold">${totalCost.toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>

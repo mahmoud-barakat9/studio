@@ -14,8 +14,8 @@ import {z} from 'genkit';
 const GenerateOrderNameInputSchema = z.object({
   abjourType: z.string().describe('The type of abjour.'),
   color: z.string().describe('The color of the abjour.'),
-  codeLength: z.number().describe('The length of the abjour code.'),
-  numberOfCodes: z.number().describe('The number of abjour codes.'),
+  codeLength: z.number().describe('The length of the abjour code of the first opening.'),
+  numberOfCodes: z.number().describe('The number of abjour codes of the first opening.'),
 });
 export type GenerateOrderNameInput = z.infer<typeof GenerateOrderNameInputSchema>;
 
@@ -36,10 +36,10 @@ const prompt = ai.definePrompt({
 
 Abjour Type: {{{abjourType}}}
 Color: {{{color}}}
-Code Length: {{{codeLength}}}
-Number of Codes: {{{numberOfCodes}}}
+First Opening Code Length: {{{codeLength}}}
+First Opening Number of Codes: {{{numberOfCodes}}}
 
-Generate a concise and appealing name that captures the essence of the order.`, // Fixed typo here
+Generate a concise and appealing name that captures the essence of the order. The name should be in Arabic.`,
 });
 
 const generateOrderNameFlow = ai.defineFlow(

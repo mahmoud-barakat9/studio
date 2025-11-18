@@ -1,11 +1,10 @@
 export type Opening = {
   serial: string;
   abjourType: "قياسي" | "ضيق" | "عريض" | string;
-  color: string;
-  codeLength: number;
-  numberOfCodes: number;
   width?: number;
   height?: number;
+  codeLength: number;
+  numberOfCodes: number;
   hasEndCap: boolean;
   hasAccessories: boolean;
 };
@@ -16,6 +15,10 @@ export type Order = {
   orderName: string;
   customerName: string;
   customerPhone: string;
+  mainAbjourType: string;
+  mainColor: string;
+  bladeWidth: number;
+  pricePerSquareMeter: number;
   status: "Pending" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
   date: string;
   totalArea: number;
@@ -30,4 +33,12 @@ export type User = {
   email: string;
   phone?: string;
   role: "admin" | "user";
+};
+
+
+export type AbjourTypeData = {
+  name: string;
+  bladeWidth: number; // in cm
+  pricePerSquareMeter: number;
+  colors: string[];
 };

@@ -112,8 +112,7 @@ export default async function AdminOrderDetailPage({
                     <TableHeader>
                       <TableRow>
                         <TableHead>الرقم التسلسلي</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead>اللون</TableHead>
+                        <TableHead>نوع التركيب</TableHead>
                         <TableHead>طول الكود</TableHead>
                         <TableHead>عدد الأكواد</TableHead>
                         <TableHead>إضافات</TableHead>
@@ -124,7 +123,6 @@ export default async function AdminOrderDetailPage({
                         <TableRow key={opening.serial}>
                           <TableCell>{opening.serial}</TableCell>
                           <TableCell>{opening.abjourType}</TableCell>
-                          <TableCell>{opening.color}</TableCell>
                           <TableCell>{opening.codeLength}م</TableCell>
                           <TableCell>{opening.numberOfCodes}</TableCell>
                           <TableCell>
@@ -157,6 +155,14 @@ export default async function AdminOrderDetailPage({
                                 'secondary'
                             }>{order.status}</Badge>
                         </span>
+                    </div>
+                     <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">نوع الأباجور</span>
+                        <span>{order.mainAbjourType}</span>
+                    </div>
+                     <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">اللون</span>
+                        <span>{order.mainColor}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">التاريخ</span>

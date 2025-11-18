@@ -52,10 +52,10 @@ export async function addUserAndGetId(userData: Omit<User, 'id'>): Promise<strin
 
 export async function addOrder(orderData: any) {
     const totalArea = orderData.openings.reduce(
-      (acc: number, op: any) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+      (acc: number, op: any) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0) / 100,
       0
     );
-    const totalCost = totalArea * 120;
+    const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
 
     const selectedUser = users.find(u => u.id === orderData.userId);
 
@@ -65,6 +65,10 @@ export async function addOrder(orderData: any) {
         orderName: orderData.orderName,
         customerName: selectedUser?.name || orderData.customerName,
         customerPhone: selectedUser?.phone || orderData.customerPhone || '555-5678',
+        mainAbjourType: orderData.mainAbjourType,
+        mainColor: orderData.mainColor,
+        bladeWidth: orderData.bladeWidth,
+        pricePerSquareMeter: orderData.pricePerSquareMeter,
         status: orderData.status,
         date: new Date().toISOString().split('T')[0],
         totalArea,
@@ -110,10 +114,10 @@ export async function updateOrder(orderId: string, orderData: Partial<Order>): P
     }
 
     const totalArea = (orderData.openings || orders[orderIndex].openings).reduce(
-      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0) / 100,
       0
     );
-    const totalCost = totalArea * 120;
+    const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
 
     const updatedOrder = {
         ...orders[orderIndex],

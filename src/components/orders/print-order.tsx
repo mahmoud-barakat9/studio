@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import ReactToPrint from 'react-to-print';
+import ReactToPrint, { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import type { Order, User, Opening } from '@/lib/definitions';
@@ -16,8 +16,6 @@ const OrderPrintLayout = React.forwardRef<
   HTMLDivElement,
   { order: Order; customerName: string }
 >(({ order, customerName }, ref) => {
-  const totalArea = order.openings.reduce((acc, op) => acc + op.codeLength * op.numberOfCodes * 0.05, 0);
-
   return (
     <div ref={ref} className="bg-white p-8 text-black font-sans text-right" dir="rtl">
         <header className="flex justify-between items-center border-b-2 border-gray-200 pb-4 mb-8">
@@ -45,6 +43,11 @@ const OrderPrintLayout = React.forwardRef<
                     <div className="text-gray-800">{customerName}</div>
                     <div className="font-bold">تاريخ الطلب:</div>
                     <div className="text-gray-800">{order.date}</div>
+                    <div className="font-bold">نوع الأباجور:</div>
+                    <div className="text-gray-800">{order.mainAbjourType} ({order.mainColor})</div>
+                    <div className="font-bold">عرض الشفرة:</div>
+                    <div className="text-gray-800">{order.bladeWidth} سم</div>
+
                 </div>
             </section>
 
@@ -54,8 +57,7 @@ const OrderPrintLayout = React.forwardRef<
                     <thead className="bg-gray-200 font-bold">
                     <tr>
                         <th className="border p-2">رقم القطعة</th>
-                        <th className="border p-2">اسم القطعة</th>
-                        <th className="border p-2">اللون</th>
+                        <th className="border p-2">نوع التركيب</th>
                         <th className="border p-2">طول الشفرة (م)</th>
                         <th className="border p-2">عدد الشفرات</th>
                         <th className="border p-2">مع نهاية</th>
@@ -65,12 +67,11 @@ const OrderPrintLayout = React.forwardRef<
                     </thead>
                     <tbody>
                     {order.openings.map((opening: Opening) => {
-                        const area = (opening.codeLength * opening.numberOfCodes * 0.05).toFixed(2);
+                        const area = (opening.codeLength * opening.numberOfCodes * order.bladeWidth / 100).toFixed(2);
                         return (
                         <tr key={opening.serial} className="even:bg-gray-50">
                             <td className="border p-2">{opening.serial}</td>
                             <td className="border p-2">{opening.abjourType}</td>
-                            <td className="border p-2">{opening.color}</td>
                             <td className="border p-2">{opening.codeLength}</td>
                             <td className="border p-2">{opening.numberOfCodes}</td>
                             <td className="border p-2">{opening.hasEndCap ? 'نعم' : 'لا'}</td>
@@ -82,8 +83,8 @@ const OrderPrintLayout = React.forwardRef<
                     </tbody>
                     <tfoot className="bg-gray-100 font-bold">
                         <tr>
-                            <td colSpan={7} className="border p-2 text-left">المجموع</td>
-                            <td className="border p-2">{totalArea.toFixed(2)} م²</td>
+                            <td colSpan={6} className="border p-2 text-left">المجموع</td>
+                            <td className="border p-2">{order.totalArea.toFixed(2)} م²</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -99,7 +100,7 @@ const OrderPrintLayout = React.forwardRef<
 });
 OrderPrintLayout.displayName = 'OrderPrintLayout';
 
-const PrintTrigger = React.forwardRef<HTMLButtonElement>((props, ref) => {
+const PrintTrigger = React.forwardRef<HTMLButtonElement>((_props, ref) => {
     return (
       <Button ref={ref} variant="outline">
         <Printer className="ml-2 h-4 w-4" />
@@ -113,16 +114,20 @@ PrintTrigger.displayName = 'PrintTrigger';
 export function PrintOrder({ order, customer }: PrintOrderProps) {
   const componentRef = useRef<HTMLDivElement>(null);
   
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: `طلب-${order.id}-${order.orderName}`,
+    bodyClass: "bg-white",
+  });
+
   const customerName = customer?.name || order.customerName;
 
   return (
     <div>
-       <ReactToPrint
-        trigger={() => <PrintTrigger />}
-        content={() => componentRef.current}
-        documentTitle={`طلب-${order.id}-${order.orderName}`}
-        bodyClass="bg-white"
-      />
+        <Button variant="outline" onClick={handlePrint}>
+            <Printer className="ml-2 h-4 w-4" />
+            طباعة
+        </Button>
       <div className="hidden">
         <OrderPrintLayout order={order} customerName={customerName} ref={componentRef} />
       </div>
