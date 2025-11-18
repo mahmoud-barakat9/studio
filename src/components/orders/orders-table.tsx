@@ -10,8 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import type { Order } from "@/lib/definitions";
-import { users } from "@/lib/data";
+import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
@@ -25,9 +24,11 @@ const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
 
 export function OrdersTable({
   orders,
+  users = [],
   isAdmin = false,
 }: {
   orders: Order[];
+  users?: User[];
   isAdmin?: boolean;
 }) {
   const getUserName = (userId: string) => {

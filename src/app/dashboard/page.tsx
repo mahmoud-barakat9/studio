@@ -10,10 +10,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { orders } from "@/lib/data";
+import { getOrdersByUserId } from "@/lib/firebase-actions";
 
-export default function Dashboard() {
-  const userOrders = orders.filter(o => o.userId === "2"); // Mock user Fatima Zahra
+export default async function Dashboard() {
+  const userOrders = await getOrdersByUserId("2"); // Mock user Fatima Zahra
   return (
     <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="flex items-center justify-between">

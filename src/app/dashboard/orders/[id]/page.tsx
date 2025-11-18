@@ -15,16 +15,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrderTracker } from "@/components/orders/order-tracker";
-import { orders } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { notFound } from "next/navigation";
+import { getOrderById } from "@/lib/firebase-actions";
 
-export default function OrderDetailsPage({
+export default async function OrderDetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const order = orders.find((o) => o.id === params.id);
+  const order = await getOrderById(params.id);
 
   if (!order) {
     notFound();

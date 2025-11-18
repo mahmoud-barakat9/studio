@@ -1,0 +1,66 @@
+'use server';
+
+import { orders, users } from '@/lib/data';
+import type { Order, User } from '@/lib/definitions';
+import { revalidatePath } from 'next/cache';
+
+// This is a mock implementation. In a real app, you would use Firebase.
+
+export async function getOrders(): Promise<Order[]> {
+  // In a real app, this would fetch from Firestore
+  return Promise.resolve(orders);
+}
+
+export async function getOrderById(id: string): Promise<Order | undefined> {
+  // In a real app, this would fetch from Firestore
+  return Promise.resolve(orders.find((o) => o.id === id));
+}
+
+export async function getOrdersByUserId(userId: string): Promise<Order[]> {
+    // In a real app, this would fetch from Firestore
+    return Promise.resolve(orders.filter(order => order.userId === userId));
+}
+
+export async function getUsers(): Promise<User[]> {
+  // In a real app, this would fetch from Firestore
+  return Promise.resolve(users.filter(u => u.role === 'user'));
+}
+
+export async function addUserAndGetId(userData: Omit<User, 'id'>): Promise<string> {
+    const newId = `USER${users.length + 1}`;
+    const newUser: User = {
+        id: newId,
+        ...userData
+    };
+    users.push(newUser);
+    console.log("Added new user", newUser);
+    return Promise.resolve(newId);
+}
+
+export async function addOrder(orderData: any) {
+    const totalArea = orderData.openings.reduce(
+      (acc: number, op: any) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+      0
+    );
+    const totalCost = totalArea * 120;
+
+    const selectedUser = users.find(u => u.id === orderData.userId);
+
+    const newOrder: Order = {
+        id: `ORD${String(orders.length + 1).padStart(3, '0')}`,
+        userId: orderData.userId,
+        orderName: orderData.orderName,
+        customerName: selectedUser?.name || orderData.customerName,
+        customerPhone: orderData.customerPhone || 'N/A',
+        status: 'Order Placed',
+        date: new Date().toISOString().split('T')[0],
+        totalArea,
+        totalCost,
+        openings: orderData.openings,
+    };
+    orders.unshift(newOrder); // Add to the beginning of the array
+    console.log("Added new order", newOrder);
+    revalidatePath('/admin/orders');
+    revalidatePath('/dashboard/orders');
+    return Promise.resolve(newOrder);
+}

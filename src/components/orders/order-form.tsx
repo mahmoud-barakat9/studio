@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useFieldArray, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
   Form,
   FormControl,
@@ -10,7 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Card,
   CardContent,
@@ -18,79 +18,107 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import { PlusCircle, Trash2, Wand2, Loader2 } from "lucide-react";
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { PlusCircle, Trash2, Wand2, Loader2 } from 'lucide-react';
 import {
   calculateAbjourDimensions,
   generateOrderName,
   createOrder,
-} from "@/lib/actions";
-import { useFormState } from "react-dom";
-import React, { useEffect, useState, useTransition } from "react";
-import { useToast } from "@/hooks/use-toast";
+} from '@/lib/actions';
+import { useFormState } from 'react-dom';
+import React, { useEffect, useState, useTransition } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import type { User } from '@/lib/definitions';
 
 const openingSchema = z.object({
-  serial: z.string().min(1, "Serial is required."),
-  abjourType: z.string().min(1, "Type is required."),
-  color: z.string().min(1, "Color is required."),
+  serial: z.string().min(1, 'Serial is required.'),
+  abjourType: z.string().min(1, 'Type is required.'),
+  color: z.string().min(1, 'Color is required.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
-  codeLength: z.coerce.number().min(0.1, "Length is required."),
-  numberOfCodes: z.coerce.number().int().min(1, "Codes are required."),
+  codeLength: z.coerce.number().min(0.1, 'Length is required.'),
+  numberOfCodes: z.coerce.number().int().min(1, 'Codes are required.'),
   hasEndCap: z.boolean().default(false),
   hasAccessories: z.boolean().default(false),
 });
 
-const orderSchema = z.object({
-  customerName: z.string().min(1, "Customer name is required."),
-  customerPhone: z.string().min(1, "Phone number is required."),
-  orderName: z.string().min(1, "Order name is required."),
-  openings: z.array(openingSchema).min(1, "At least one opening is required."),
+const baseOrderSchema = z.object({
+  orderName: z.string().min(1, 'Order name is required.'),
+  openings: z.array(openingSchema).min(1, 'At least one opening is required.'),
 });
 
-type OrderFormValues = z.infer<typeof orderSchema>;
+const userOrderSchema = baseOrderSchema.extend({
+  customerName: z.string().min(1, 'Customer name is required.'),
+  customerPhone: z.string().min(1, 'Phone number is required.'),
+});
 
-const abjourTypes = ["Standard", "Narrow", "Wide"];
-const colors = ["White", "Beige", "Gray", "Black", "Wood Finish", "Silver"];
+const adminOrderSchema = baseOrderSchema.extend({
+    userId: z.string().optional(),
+    newUserName: z.string().optional(),
+    newUserEmail: z.string().email().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.userId === 'new') {
+        return !!data.newUserName && !!data.newUserEmail;
+      }
+      return !!data.userId;
+    },
+    {
+      message: 'A user must be selected or a new user created.',
+      path: ['userId'],
+    }
+  );
 
-export function OrderForm() {
+
+type OrderFormValues = z.infer<typeof userOrderSchema & typeof adminOrderSchema>;
+
+const abjourTypes = ['Standard', 'Narrow', 'Wide'];
+const colors = ['White', 'Beige', 'Gray', 'Black', 'Wood Finish', 'Silver'];
+
+export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?: boolean, users?: User[] }) {
+  const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
+  
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      customerName: "Fatima Zahra",
-      customerPhone: "555-5678",
-      orderName: "",
+      customerName: 'Fatima Zahra',
+      customerPhone: '555-5678',
+      orderName: '',
       openings: [],
+      userId: '',
+      newUserName: '',
+      newUserEmail: '',
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "openings",
+    name: 'openings',
   });
 
   const [totalArea, setTotalArea] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
   const { toast } = useToast();
-  
+
   const [nameState, generateNameAction] = useFormState(generateOrderName, null);
-  const [dimState, calculateDimsAction] = useFormState(calculateAbjourDimensions, null);
   const [isNamePending, startNameTransition] = useTransition();
   const [isDimPending, startDimTransition] = useTransition();
 
+  const watchUserId = form.watch('userId');
 
-  const openings = form.watch("openings");
+  const openings = form.watch('openings');
 
   useEffect(() => {
     const newTotalArea = openings.reduce(
@@ -104,19 +132,25 @@ export function OrderForm() {
 
   useEffect(() => {
     if (nameState?.data?.orderName) {
-      form.setValue("orderName", nameState.data.orderName);
-      toast({ title: "Suggested Name Generated!", description: "The order name has been filled in for you." });
+      form.setValue('orderName', nameState.data.orderName);
+      toast({
+        title: 'Suggested Name Generated!',
+        description: 'The order name has been filled in for you.',
+      });
     }
     if (nameState?.error) {
-       toast({ variant: "destructive", title: "Error", description: nameState.error });
+      toast({ variant: 'destructive', title: 'Error', description: nameState.error });
     }
   }, [nameState, form, toast]);
 
-
   const handleSuggestName = () => {
-    const firstOpening = form.getValues("openings.0");
+    const firstOpening = form.getValues('openings.0');
     if (!firstOpening) {
-      toast({ variant: "destructive", title: "Error", description: "Please add at least one opening to generate a name." });
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please add at least one opening to generate a name.',
+      });
       return;
     }
     startNameTransition(() => {
@@ -127,111 +161,359 @@ export function OrderForm() {
   const handleCalculateDims = (index: number) => {
     const opening = form.getValues(`openings.${index}`);
     if (!opening.width || !opening.abjourType) {
-       toast({ variant: "destructive", title: "Error", description: "Please provide both width and abjour type to calculate." });
-       return;
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please provide both width and abjour type to calculate.',
+      });
+      return;
     }
-    
+
     startDimTransition(async () => {
-        const result = await calculateAbjourDimensions(null, { width: opening.width!, abjourType: opening.abjourType });
-        if(result.data) {
-            form.setValue(`openings.${index}.codeLength`, result.data.codeLength);
-            form.setValue(`openings.${index}.numberOfCodes`, result.data.numberOfCodes);
-            toast({ title: "Dimensions Calculated!", description: "Code length and number of codes have been updated." });
-        }
-        if(result.error) {
-            toast({ variant: "destructive", title: "Error", description: result.error });
-        }
+      const result = await calculateAbjourDimensions(null, {
+        width: opening.width!,
+        abjourType: opening.abjourType,
+      });
+      if (result.data) {
+        form.setValue(`openings.${index}.codeLength`, result.data.codeLength);
+        form.setValue(`openings.${index}.numberOfCodes`, result.data.numberOfCodes);
+        toast({
+          title: 'Dimensions Calculated!',
+          description: 'Code length and number of codes have been updated.',
+        });
+      }
+      if (result.error) {
+        toast({ variant: 'destructive', title: 'Error', description: result.error });
+      }
     });
-  }
+  };
+
+  const onSubmit = (data: OrderFormValues) => {
+    createOrder(data, isAdmin);
+  };
 
   return (
     <Form {...form}>
-      <form action={() => form.handleSubmit(d => createOrder(d))()} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Customer Details</CardTitle>
+                <CardTitle>
+                  {isAdmin ? 'User Information' : 'Customer Details'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {isAdmin ? (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="userId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Select User</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select an existing user or create new" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="new">Create a new user</SelectItem>
+                              {allUsers.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {watchUserId === 'new' && (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="newUserName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>New User Name</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="e.g. John Doe" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="newUserEmail"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>New User Email</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="e.g. john@example.com" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="customerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Customer Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="customerPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Order Openings</CardTitle>
-                    <Button type="button" size="sm" variant="outline" onClick={() => append({ serial: `A${fields.length + 1}`, abjourType: 'Standard', color: 'White', codeLength: 0, numberOfCodes: 0, hasEndCap: false, hasAccessories: false })}>
-                        <PlusCircle className="w-4 h-4 mr-2" /> Add Opening
-                    </Button>
+                  <CardTitle>Order Openings</CardTitle>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      append({
+                        serial: `A${fields.length + 1}`,
+                        abjourType: 'Standard',
+                        color: 'White',
+                        codeLength: 0,
+                        numberOfCodes: 0,
+                        hasEndCap: false,
+                        hasAccessories: false,
+                      })
+                    }
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" /> Add Opening
+                  </Button>
                 </div>
-                <CardDescription>Add one or more openings for this order.</CardDescription>
+                <CardDescription>
+                  Add one or more openings for this order.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="p-4 border rounded-lg relative space-y-4">
-                     <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
-                        <Trash2 className="w-4 h-4" />
-                     </Button>
-                     <div className="grid md:grid-cols-3 gap-4">
-                        <FormField control={form.control} name={`openings.${index}.serial`} render={({ field }) => (<FormItem><FormLabel>Serial</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`openings.${index}.abjourType`} render={({ field }) => (<FormItem><FormLabel>Abjour Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{abjourTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`openings.${index}.color`} render={({ field }) => (<FormItem><FormLabel>Color</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{colors.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                     </div>
-                     <Separator />
-                     <div className="grid md:grid-cols-2 gap-4 items-end">
-                        <div>
-                            <p className="text-sm font-medium mb-2">Enter Dimensions Manually or...</p>
-                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name={`openings.${index}.codeLength`} render={({ field }) => (<FormItem><FormLabel>Code Length</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name={`openings.${index}.numberOfCodes`} render={({ field }) => (<FormItem><FormLabel>Number of Codes</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
+                  <div
+                    key={field.id}
+                    className="p-4 border rounded-lg relative space-y-4"
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`openings.${index}.serial`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Serial</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`openings.${index}.abjourType`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Abjour Type</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {abjourTypes.map((t) => (
+                                  <SelectItem key={t} value={t}>
+                                    {t}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`openings.${index}.color`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {colors.map((c) => (
+                                  <SelectItem key={c} value={c}>
+                                    {c}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="grid md:grid-cols-2 gap-4 items-end">
+                      <div>
+                        <p className="text-sm font-medium mb-2">
+                          Enter Dimensions Manually or...
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`openings.${index}.codeLength`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Code Length</FormLabel>
+                                <FormControl>
+                                  <Input type="number" step="0.01" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`openings.${index}.numberOfCodes`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Number of Codes</FormLabel>
+                                <FormControl>
+                                  <Input type="number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
-                        <div className="space-y-4">
-                            <p className="text-sm font-medium">...Calculate Automatically with AI</p>
-                            <div className="grid grid-cols-2 gap-4 items-end">
-                                <FormField control={form.control} name={`openings.${index}.width`} render={({ field }) => (<FormItem><FormLabel>Opening Width (cm)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                <Button type="button" onClick={() => handleCalculateDims(index)} disabled={isDimPending}>
-                                    {isDimPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                                    Calculate
-                                </Button>
-                            </div>
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-sm font-medium">
+                          ...Calculate Automatically with AI
+                        </p>
+                        <div className="grid grid-cols-2 gap-4 items-end">
+                          <FormField
+                            control={form.control}
+                            name={`openings.${index}.width`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Opening Width (cm)</FormLabel>
+                                <FormControl>
+                                  <Input type="number" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => handleCalculateDims(index)}
+                            disabled={isDimPending}
+                          >
+                            {isDimPending ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Wand2 className="mr-2 h-4 w-4" />
+                            )}
+                            Calculate
+                          </Button>
                         </div>
-                     </div>
-                     <Separator />
-                     <div className="flex items-center space-x-4">
-                        <FormField control={form.control} name={`openings.${index}.hasEndCap`} render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Add End Cap</FormLabel></FormItem>)} />
-                        <FormField control={form.control} name={`openings.${index}.hasAccessories`} render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Add Accessories</FormLabel></FormItem>)} />
-                     </div>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center space-x-4">
+                      <FormField
+                        control={form.control}
+                        name={`openings.${index}.hasEndCap`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel>Add End Cap</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`openings.${index}.hasAccessories`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel>Add Accessories</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                 ))}
-                 {form.formState.errors.openings && !form.formState.errors.openings.root && <p className="text-sm font-medium text-destructive">{form.formState.errors.openings.message}</p>}
+                {form.formState.errors.openings &&
+                  !form.formState.errors.openings.root && (
+                    <p className="text-sm font-medium text-destructive">
+                      {form.formState.errors.openings.message}
+                    </p>
+                  )}
               </CardContent>
             </Card>
           </div>
@@ -243,41 +525,60 @@ export function OrderForm() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <FormField
+                  <FormField
                     control={form.control}
                     name="orderName"
                     render={({ field }) => (
-                        <FormItem>
+                      <FormItem>
                         <FormLabel>Order Name</FormLabel>
                         <FormControl>
-                            <div className="flex items-center gap-2">
-                            <Input {...field} placeholder="e.g., 'Villa Living Room'" />
-                            <Button type="button" size="icon" variant="outline" onClick={handleSuggestName} disabled={isNamePending}>
-                               {isNamePending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                                <span className="sr-only">Suggest Name</span>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              {...field}
+                              placeholder="e.g., 'Villa Living Room'"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={handleSuggestName}
+                              disabled={isNamePending}
+                            >
+                              {isNamePending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Wand2 className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">Suggest Name</span>
                             </Button>
-                            </div>
+                          </div>
                         </FormControl>
                         <FormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
+                  />
                 </div>
                 <Separator />
                 <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Area</span>
-                        <span className="font-medium">{totalArea.toFixed(2)} m²</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Estimated Cost</span>
-                        <span className="font-medium">${totalCost.toFixed(2)}</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Area</span>
+                    <span className="font-medium">{totalArea.toFixed(2)} m²</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Estimated Cost</span>
+                    <span className="font-medium">${totalCost.toFixed(2)}</span>
+                  </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Place Order
                 </Button>
               </CardFooter>

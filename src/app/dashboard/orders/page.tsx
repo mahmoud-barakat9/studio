@@ -1,11 +1,12 @@
 import { OrdersTable } from "@/components/orders/orders-table";
 import { Button } from "@/components/ui/button";
-import { orders } from "@/lib/data";
+import { getOrdersByUserId } from "@/lib/firebase-actions";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function UserOrdersPage() {
-  const userOrders = orders.filter(o => o.userId === '1' || o.userId === '2' || o.userId === '3');
+export default async function UserOrdersPage() {
+  // Mocking user '2' (Fatima Zahra) for now
+  const userOrders = await getOrdersByUserId('2');
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
