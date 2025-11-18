@@ -155,7 +155,36 @@ export function MainHeader() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 w-full mt-4">
-               {!isLoggedIn && (
+               {isLoggedIn ? (
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" size="icon" className="rounded-full mx-auto">
+                        <Avatar>
+                            <AvatarImage src={isAdmin ? "https://i.pravatar.cc/150?u=admin" : "https://i.pravatar.cc/150?u=user"} />
+                            <AvatarFallback>{isAdmin ? 'A' : 'U'}</AvatarFallback>
+                        </Avatar>
+                        <span className="sr-only">فتح قائمة المستخدم</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>
+                            {isAdmin ? 'حساب المسؤول' : 'حسابي'}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {isAdmin ? (
+                             <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
+                        ): (
+                            <>
+                                <DropdownMenuItem asChild><Link href="/#dashboard">لوحة التحكم</Link></DropdownMenuItem>
+                            </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                        <Link href="/login">تسجيل الخروج</Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+               ) : (
                 <>
                     <Link href="/login" passHref>
                         <Button variant="outline" className="w-full" onClick={handleLinkClick}>تسجيل الدخول</Button>
