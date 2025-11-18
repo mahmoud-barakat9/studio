@@ -1,10 +1,17 @@
 'use client';
 
-// This file is deprecated and no longer used.
-// The user dashboard is now directly integrated into the main page (src/app/page.tsx)
-// when the user is logged in, using the <Dashboard /> component from src/components/dashboard/dashboard.tsx.
-// This change provides a more seamless experience.
+import { Dashboard } from "@/components/dashboard/dashboard";
+import { MainFooter } from "@/components/layout/main-footer";
+import { MainHeader } from "@/components/layout/main-header";
 
 export default function DashboardPage() {
-    return null;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <MainHeader />
+      <main className="flex-1">
+        <Dashboard />
+      </main>
+      <MainFooter />
+    </div>
+  );
 }
