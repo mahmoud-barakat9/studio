@@ -37,8 +37,8 @@ export function MainFooter() {
               <h4 className="font-semibold text-foreground mb-2">روابط سريعة</h4>
               <nav className="flex flex-col gap-1">
                 <Link href="/login" className="hover:text-primary">تسجيل الدخول</Link>
-                <Link href="/dashboard" className="hover:text-primary">لوحة التحكم</Link>
-                <Link href="/dashboard/orders/new" className="hover:text-primary">طلب جديد</Link>
+                <Link href="/#dashboard" className="hover:text-primary">لوحة التحكم</Link>
+                <Link href="/?create_order=true" className="hover:text-primary">طلب جديد</Link>
               </nav>
             </div>
             <div>
