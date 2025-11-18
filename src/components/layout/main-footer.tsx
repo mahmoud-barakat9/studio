@@ -4,7 +4,7 @@ import { BrandLogo } from "@/components/icons";
 export function MainFooter() {
   return (
     <footer className="bg-muted text-muted-foreground">
-      <div className="container py-8">
+      <div className="container py-8 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-2">
             <Link href="/" className="flex items-center gap-2 mb-2">
