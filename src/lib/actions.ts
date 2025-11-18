@@ -8,6 +8,7 @@ import {
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
 import { addOrder, addUserAndGetId } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -28,8 +29,12 @@ export async function login(prevState: any, formData: FormData) {
   const { email } = validatedFields.data;
 
   if (email === 'admin@abjour.com') {
+    cookies().set('session', 'admin-session', { httpOnly: true });
+    cookies().set('role', 'admin', { httpOnly: true });
     redirect('/admin/dashboard');
   } else if (email === 'user@abjour.com') {
+    cookies().set('session', 'user-session', { httpOnly: true });
+    cookies().set('role', 'user', { httpOnly: true });
     redirect('/dashboard');
   } else {
     return {

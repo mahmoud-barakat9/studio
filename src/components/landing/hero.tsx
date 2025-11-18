@@ -28,7 +28,7 @@ export function Hero() {
           نظام متكامل وسهل لإدارة طلبات الأباجور، من التصميم إلى التسليم. احصل على دقة في الأبعاد، وسرعة في التنفيذ، وتجربة فريدة لعملائك.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/dashboard/orders/new" passHref>
+          <Link href="/#create-order" passHref>
             <Button size="lg" className="w-full sm:w-auto">
               ابدأ طلبك الآن <ArrowLeft className="mr-2 h-5 w-5" />
             </Button>
