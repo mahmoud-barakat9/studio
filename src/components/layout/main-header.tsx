@@ -12,15 +12,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 
 const guestLinks = [
-  { href: "/", label: "الرئيسية" },
-  { href: "/#features", label: "المميزات" },
-  { href: "/#contact", label: "تواصل معنا" },
+  { href: "/welcome", label: "الرئيسية" },
+  { href: "/welcome#features", label: "المميزات" },
+  { href: "/welcome#contact", label: "تواصل معنا" },
 ];
 
 const userLinks = [
-    { href: "/", label: "الرئيسية" },
-    { href: "/#features", label: "المميزات" },
-    { href: "/#contact", label: "تواصل معنا" },
+    { href: "/", label: "لوحة التحكم" },
 ]
 
 
@@ -67,7 +65,7 @@ export function MainHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={isLoggedIn && !isAdmin ? "/" : "/welcome"} className="flex items-center gap-2">
           <BrandLogo />
           <span className="font-bold text-lg">طلب أباجور</span>
         </Link>
@@ -84,17 +82,6 @@ export function MainHeader() {
               {link.label}
             </Link>
           ))}
-           {isLoggedIn && !isAdmin && (
-             <Link
-              href="/#dashboard"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                (pathname + (typeof window !== 'undefined' ? window.location.hash : '')) === "/#dashboard" ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              طلباتي
-            </Link>
-          )}
         </nav>
         <div className="hidden md:flex items-center gap-2">
             {isLoggedIn ? (
@@ -116,9 +103,7 @@ export function MainHeader() {
                         {isAdmin ? (
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <>
-                                <DropdownMenuItem asChild><Link href="/#dashboard">لوحة التحكم</Link></DropdownMenuItem>
-                            </>
+                            <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
@@ -164,18 +149,6 @@ export function MainHeader() {
                 {link.label}
               </Link>
             ))}
-             {isLoggedIn && !isAdmin && (
-              <Link
-                href="/#dashboard"
-                onClick={handleLinkClick}
-                className={cn(
-                  "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                  (pathname + (typeof window !== 'undefined' ? window.location.hash: '')) === "/#dashboard" ? "text-primary" : "text-foreground"
-                )}
-              >
-                طلباتي
-              </Link>
-            )}
             <div className="flex flex-col gap-2 w-full mt-4 items-center">
                {isLoggedIn ? (
                  <DropdownMenu>
@@ -196,9 +169,7 @@ export function MainHeader() {
                         {isAdmin ? (
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <>
-                                <DropdownMenuItem asChild><Link href="/#dashboard">لوحة التحكم</Link></DropdownMenuItem>
-                            </>
+                            <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>

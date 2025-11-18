@@ -1,29 +1,33 @@
 
 'use client';
 
-import { Hero } from "@/components/landing/hero";
-import { Features } from "@/components/landing/features";
-import { Contact } from "@/components/landing/contact";
 import { MainFooter } from "@/components/layout/main-footer";
 import { MainHeader } from "@/components/layout/main-header";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
-    // Check for cookie on the client side
-    const session = document.cookie.includes('session');
-    setIsLoggedIn(session);
-  }, [searchParams]); // Re-run effect if URL params change
+    const session = document.cookie.includes('session=user-session');
+    const isAdminSession = document.cookie.includes('session=admin-session');
+    if (isAdminSession) {
+      router.replace('/admin/dashboard');
+    } else if (!session) {
+      router.replace('/welcome');
+    }
+  }, [router]);
 
   if (!isClient) {
-    // Render a placeholder or nothing on the server to avoid mismatch
+    return null; // Render nothing on the server to avoid hydration mismatch
+  }
+  
+  // Only render for logged-in users, handled by useEffect redirect
+  if (!document.cookie.includes('session=user-session')) {
     return null;
   }
 
@@ -31,15 +35,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <MainHeader />
       <main className="flex-1">
-        {isLoggedIn ? (
-          <Dashboard />
-        ) : (
-          <>
-            <Hero />
-            <Features />
-            <Contact />
-          </>
-        )}
+        <Dashboard />
       </main>
       <MainFooter />
     </div>

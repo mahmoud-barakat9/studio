@@ -35,7 +35,7 @@ export async function login(prevState: any, formData: FormData) {
   } else if (email === 'user@abjour.com') {
     cookies().set('session', 'user-session', { httpOnly: true });
     cookies().set('role', 'user', { httpOnly: true });
-    redirect('/#dashboard');
+    redirect('/');
   } else {
     return {
       message: 'Invalid email or password.',

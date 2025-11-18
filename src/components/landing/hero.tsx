@@ -33,7 +33,7 @@ export function Hero() {
               ابدأ طلبك الآن <ArrowLeft className="mr-2 h-5 w-5" />
             </Button>
           </Link>
-          <Link href="#features" passHref>
+          <Link href="/welcome#features" passHref>
             <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-primary">
               اكتشف المميزات
             </Button>

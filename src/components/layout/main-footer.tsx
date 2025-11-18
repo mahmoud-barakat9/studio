@@ -6,17 +6,23 @@ import { useState, useEffect } from "react";
 
 export function MainFooter() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
+    setIsLoggedIn(document.cookie.includes('session'));
   }, []);
+
+  const homeUrl = isLoggedIn ? '/' : '/welcome';
+  const dashboardUrl = isLoggedIn ? '/' : '/login';
+  const newOrderUrl = isLoggedIn ? '/?create_order=true' : '/login';
 
   return (
     <footer className="bg-muted text-muted-foreground">
       <div className="container py-8 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-2">
-            <Link href="/" className="flex items-center gap-2 mb-2">
+            <Link href={homeUrl} className="flex items-center gap-2 mb-2">
               <BrandLogo />
               <span className="font-bold text-lg text-foreground">طلب أباجور</span>
             </Link>
@@ -37,8 +43,8 @@ export function MainFooter() {
               <h4 className="font-semibold text-foreground mb-2">روابط سريعة</h4>
               <nav className="flex flex-col gap-1">
                 <Link href="/login" className="hover:text-primary">تسجيل الدخول</Link>
-                <Link href="/#dashboard" className="hover:text-primary">لوحة التحكم</Link>
-                <Link href="/?create_order=true" className="hover:text-primary">طلب جديد</Link>
+                <Link href={dashboardUrl} className="hover:text-primary">لوحة التحكم</Link>
+                <Link href={newOrderUrl} className="hover:text-primary">طلب جديد</Link>
               </nav>
             </div>
             <div>
