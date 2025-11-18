@@ -16,7 +16,7 @@ export type Order = {
   orderName: string;
   customerName: string;
   customerPhone: string;
-  status: "Pending Approval" | "Order Placed" | "In Production" | "Shipped" | "Completed" | "Rejected";
+  status: "Pending" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
   date: string;
   totalArea: number;
   totalCost: number;

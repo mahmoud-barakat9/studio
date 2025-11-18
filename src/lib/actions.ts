@@ -94,7 +94,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   const orderData = {
     ...formData,
     userId,
-    status: asAdmin ? 'Order Placed' : 'Pending Approval',
+    status: asAdmin ? 'FactoryOrdered' : 'Pending',
     date: new Date().toISOString().split('T')[0],
   };
 
@@ -136,10 +136,10 @@ export async function approveOrder(orderId: string) {
   const order = await getOrderById(orderId);
   if (!order) throw new Error('Order not found');
 
-  await updateOrderStatus(orderId, 'In Production');
+  await updateOrderStatus(orderId, 'FactoryOrdered');
   revalidatePath('/admin/orders');
 
-  const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وهو الآن قيد الإنتاج.`);
+  const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وتم إرساله إلى المعمل.`);
   const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
   redirect(whatsappUrl);
 }

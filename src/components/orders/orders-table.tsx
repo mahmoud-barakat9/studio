@@ -28,11 +28,12 @@ import {
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
-  "Pending Approval": { variant: "outline", text: "بانتظار الموافقة" },
-  "Order Placed": { variant: "secondary", text: "تم تقديم الطلب" },
-  "In Production": { variant: "default", text: "قيد الإنتاج" },
-  Shipped: { variant: "outline", text: "تم الشحن" },
-  Completed: { variant: "default", text: "مكتمل" },
+  Pending: { variant: "outline", text: "تم الاستلام" },
+  FactoryOrdered: { variant: "secondary", text: "تم الطلب من المعمل" },
+  Processing: { variant: "default", text: "قيد التجهيز" },
+  FactoryShipped: { variant: "outline", text: "تم الشحن من المعمل" },
+  ReadyForDelivery: { variant: "default", text: "جاهز للتسليم" },
+  Delivered: { variant: "default", text: "تم التوصيل" },
   Rejected: { variant: "destructive", text: "مرفوض" },
 };
 
@@ -67,7 +68,7 @@ function DeleteOrderAlert({ orderId }: { orderId: string }) {
 function AdminOrderActions({ order }: { order: Order }) {
   return (
     <div className="flex gap-2">
-      {order.status === "Pending Approval" && (
+      {order.status === "Pending" && (
         <>
            <form action={() => approveOrder(order.id)}>
             <Button size="icon" variant="outline" className="h-8 w-8 border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600">
@@ -135,7 +136,7 @@ export function OrdersTable({
           <TableBody>
             {orders.map((order) => {
               const statusStyle =
-                statusStyles[order.status] || statusStyles["Order Placed"];
+                statusStyles[order.status] || statusStyles["Pending"];
               return (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>

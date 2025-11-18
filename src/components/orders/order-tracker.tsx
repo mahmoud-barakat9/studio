@@ -1,45 +1,26 @@
 "use client";
 
 import {
-  ClipboardList,
-  CheckCircle2,
+  FileQuestion,
+  Factory,
+  Cog,
   Truck,
   PackageCheck,
-  FileQuestion,
+  CheckCircle2,
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const statuses = [
-  {
-    name: "Pending Approval",
-    label: "بانتظار الموافقة",
-    icon: FileQuestion,
-  },
-  {
-    name: "In Production",
-    label: "قيد الإنتاج",
-    icon: PackageCheck,
-  },
-  {
-    name: "Shipped",
-    label: "تم الشحن",
-    icon: Truck,
-  },
-  {
-    name: "Completed",
-    label: "مكتمل",
-    icon: CheckCircle2,
-  },
+const mainStatuses = [
+  { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
+  { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
+  { name: "Processing", label: "قيد التجهيز", icon: Cog },
+  { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: Truck },
+  { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: PackageCheck },
+  { name: "Delivered", label: "تم التوصيل", icon: CheckCircle2 },
 ] as const;
 
-type OrderStatus = (typeof statuses)[number]["name"] | "Rejected" | "Order Placed";
-
-const allStatuses = [...statuses,
-  { name: "Rejected", label: "مرفوض", icon: XCircle },
-  { name: "Order Placed", label: "تم تقديم الطلب", icon: ClipboardList }
-];
-
+type OrderStatus = (typeof mainStatuses)[number]["name"] | "Rejected";
 
 export function OrderTracker({
   currentStatus,
@@ -48,10 +29,10 @@ export function OrderTracker({
 }) {
     const activeStatuses = currentStatus === "Rejected" ?
     [
-        { name: "Pending Approval", label: "بانتظار الموافقة", icon: FileQuestion },
+        { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
         { name: "Rejected", label: "مرفوض", icon: XCircle }
     ]
-    : statuses;
+    : mainStatuses;
     
   const currentIndex = activeStatuses.findIndex(
     (status) => status.name === currentStatus
@@ -59,12 +40,11 @@ export function OrderTracker({
 
   return (
     <div className="flex w-full overflow-x-auto p-4">
-      <div className="flex items-center w-full min-w-[400px]">
+      <div className="flex items-center w-full min-w-[600px]">
         {activeStatuses.map((status, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
           const isFuture = index > currentIndex;
-
           const isRejected = status.name === 'Rejected' && isCurrent;
 
           return (
@@ -101,7 +81,7 @@ export function OrderTracker({
                     className={cn(
                       "h-full transition-all duration-500",
                       isCompleted && !isRejected ? "w-full bg-primary" : "w-0",
-                       isCompleted && activeStatuses[index+1].name === 'Rejected' ? "w-full bg-destructive" : ""
+                      isCompleted && activeStatuses[index+1].name === 'Rejected' ? "w-full bg-destructive" : ""
                     )}
                   />
                 </div>

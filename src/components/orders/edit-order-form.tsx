@@ -62,16 +62,18 @@ type OrderFormValues = z.infer<typeof orderSchema>;
 
 const abjourTypes = ['قياسي', 'ضيق', 'عريض'];
 const colors = ['أبيض', 'بيج', 'رمادي', 'أسود', 'خشبي', 'فضي'];
-const statuses: Order['status'][] = ["Pending Approval", "Order Placed", "In Production", "Shipped", "Completed", "Rejected"];
+const statuses: Order['status'][] = ["Pending", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"];
 
 const statusTranslations: Record<Order['status'], string> = {
-  "Pending Approval": "بانتظار الموافقة",
-  "Order Placed": "تم تقديم الطلب",
-  "In Production": "قيد الإنتاج",
-  "Shipped": "تم الشحن",
-  "Completed": "مكتمل",
+  "Pending": "تم الاستلام",
+  "FactoryOrdered": "تم الطلب من المعمل",
+  "Processing": "قيد التجهيز",
+  "FactoryShipped": "تم الشحن من المعمل",
+  "ReadyForDelivery": "جاهز للتسليم",
+  "Delivered": "تم التوصيل",
   "Rejected": "مرفوض",
 };
+
 
 export function EditOrderForm({ order, users }: { order: Order, users: User[] }) {
   const form = useForm<OrderFormValues>({

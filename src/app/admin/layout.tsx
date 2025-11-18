@@ -13,7 +13,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const allOrders = await getOrders();
-  const pendingOrdersCount = allOrders.filter(order => order.status === 'Pending Approval').length;
+  const pendingOrdersCount = allOrders.filter(order => order.status === 'Pending').length;
 
   return (
     <SidebarProvider>
