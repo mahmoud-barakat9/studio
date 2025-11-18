@@ -46,10 +46,11 @@ export default async function Dashboard({
       </div>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="create-order">إنشاء طلب جديد</TabsTrigger>
           <TabsTrigger value="all-orders">كل طلباتي</TabsTrigger>
+          <TabsTrigger value="track-order" disabled={!viewOrderId}>تتبع الطلب</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <Card>
@@ -62,12 +63,12 @@ export default async function Dashboard({
             <CardContent>
               <OrdersTable orders={userOrders.slice(0, 3)} showViewAction={true} />
               <div className="flex items-center justify-start pt-4">
-                {/* This button will now just switch tabs */}
-                <TabsTrigger value="all-orders" asChild>
-                   <Button variant="outline" size="sm">
+                {/* This is not a trigger, just a regular button that looks like a trigger */}
+                 <Button asChild variant="outline" size="sm">
+                    <Link href="#all-orders-tab" onClick={() => document.querySelector<HTMLButtonElement>('button[data-radix-collection-item][value="all-orders"]')?.click()}>
                         عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
-                    </Button>
-                </TabsTrigger>
+                    </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -75,7 +76,7 @@ export default async function Dashboard({
         <TabsContent value="create-order">
            <OrderForm />
         </TabsContent>
-        <TabsContent value="all-orders">
+        <TabsContent value="all-orders" id="all-orders-tab">
              <Card>
                 <CardHeader>
                     <CardTitle>كل طلباتك</CardTitle>
@@ -104,9 +105,11 @@ export default async function Dashboard({
                     </CardHeader>
                     <CardContent>
                        <p>الرجاء تحديد طلب لعرض تفاصيله.</p>
-                       <TabsTrigger value="all-orders" asChild>
-                           <Button variant="link" className="p-0 mt-2">العودة إلى كل الطلبات</Button>
-                       </TabsTrigger>
+                       <Button asChild variant="link" className="p-0 mt-2">
+                            <Link href="#all-orders-tab" onClick={() => document.querySelector<HTMLButtonElement>('button[data-radix-collection-item][value="all-orders"]')?.click()}>
+                                العودة إلى كل الطلبات
+                            </Link>
+                       </Button>
                     </CardContent>
                 </Card>
             )}
