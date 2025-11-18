@@ -19,7 +19,7 @@ import { OrderTracker } from "@/components/orders/order-tracker";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Share2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { WhatsappShare } from "@/components/orders/whatsapp-share";
 
 export default async function AdminOrderDetailPage({
@@ -143,15 +143,15 @@ export default async function AdminOrderDetailPage({
                  <CardContent className="grid gap-4">
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">الاسم</span>
-                        <span>{customer?.name ?? order.customerName}</span>
+                        <span className="text-right break-all">{customer?.name ?? order.customerName}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">البريد الإلكتروني</span>
-                        <span>{customer?.email}</span>
+                        <span className="text-right break-all">{customer?.email}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">رقم الهاتف</span>
-                        <span>{order.customerPhone}</span>
+                        <span className="text-right break-all">{order.customerPhone}</span>
                     </div>
                 </CardContent>
             </Card>
