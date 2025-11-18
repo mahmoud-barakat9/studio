@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder } from "@/lib/actions";
@@ -24,6 +24,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -37,14 +44,16 @@ const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
   Rejected: { variant: "destructive", text: "مرفوض" },
 };
 
-function DeleteOrderAlert({ orderId }: { orderId: string }) {
+function DeleteOrderAlert({ orderId, asChild = false, children }: { orderId: string, asChild?: boolean, children?: React.ReactNode }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only">حذف الطلب</span>
-        </Button>
+      <AlertDialogTrigger asChild={asChild}>
+        {asChild ? children : 
+          <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">حذف الطلب</span>
+          </Button>
+        }
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -67,48 +76,71 @@ function DeleteOrderAlert({ orderId }: { orderId: string }) {
 
 function AdminOrderActions({ order }: { order: Order }) {
   return (
-    <div className="flex gap-2">
-      {order.isArchived ? (
-         <form action={restoreOrder.bind(null, order.id)}>
-            <Button size="icon" variant="outline" className="h-8 w-8">
-              <ArchiveRestore className="h-4 w-4" />
-              <span className="sr-only">استعادة الطلب</span>
-            </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">فتح القائمة</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {order.isArchived ? (
+          <form action={restoreOrder.bind(null, order.id)} className="w-full">
+            <DropdownMenuItem asChild>
+               <button type="submit" className="w-full">
+                <ArchiveRestore className="ml-2 h-4 w-4" />
+                استعادة
+              </button>
+            </DropdownMenuItem>
           </form>
-      ) : (
-         <>
-          {order.status === "Pending" && (
-            <>
-              <form action={approveOrder.bind(null, order.id)}>
-                <Button size="icon" variant="outline" className="h-8 w-8 border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600">
-                  <Check className="h-4 w-4" />
-                  <span className="sr-only">الموافقة على الطلب</span>
-                </Button>
-              </form>
-              <form action={rejectOrder.bind(null, order.id)}>
-                <Button size="icon" variant="outline" className="h-8 w-8 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600">
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">رفض الطلب</span>
-                </Button>
-              </form>
-            </>
-          )}
-          <Link href={`/admin/orders/${order.id}/edit`}>
-            <Button size="icon" variant="outline" className="h-8 w-8">
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">تعديل الطلب</span>
-            </Button>
-          </Link>
-          <form action={archiveOrder.bind(null, order.id)}>
-            <Button size="icon" variant="outline" className="h-8 w-8">
-              <Archive className="h-4 w-4" />
-              <span className="sr-only">أرشفة الطلب</span>
-            </Button>
-          </form>
-        </>
-      )}
-        <DeleteOrderAlert orderId={order.id} />
-    </div>
+        ) : (
+          <>
+            {order.status === "Pending" && (
+              <>
+                <form action={approveOrder.bind(null, order.id)} className="w-full">
+                   <DropdownMenuItem asChild>
+                     <button type="submit" className="w-full text-green-600 focus:text-green-700">
+                        <Check className="ml-2 h-4 w-4" />
+                        موافقة
+                      </button>
+                  </DropdownMenuItem>
+                </form>
+                 <form action={rejectOrder.bind(null, order.id)} className="w-full">
+                   <DropdownMenuItem asChild>
+                      <button type="submit" className="w-full text-red-600 focus:text-red-700">
+                        <X className="ml-2 h-4 w-4" />
+                        رفض
+                      </button>
+                  </DropdownMenuItem>
+                </form>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/orders/${order.id}/edit`}>
+                <Pencil className="ml-2 h-4 w-4" />
+                تعديل
+              </Link>
+            </DropdownMenuItem>
+            <form action={archiveOrder.bind(null, order.id)} className="w-full">
+               <DropdownMenuItem asChild>
+                 <button type="submit" className="w-full">
+                    <Archive className="ml-2 h-4 w-4" />
+                    أرشفة
+                  </button>
+              </DropdownMenuItem>
+            </form>
+          </>
+        )}
+        <DropdownMenuSeparator />
+         <DeleteOrderAlert orderId={order.id} asChild>
+            <button className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-destructive focus:text-destructive">
+                <Trash2 className="ml-2 h-4 w-4" />
+                حذف
+            </button>
+        </DeleteOrderAlert>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -171,7 +203,6 @@ export function OrdersTable({
                       </TableCell>
                       <TableCell className="text-left">
                          <div className="flex items-center gap-2">
-                            {isAdmin && <AdminOrderActions order={order} />}
                             {(isAdmin || showViewAction) && (
                             <Link href={getViewLink(order.id)} scroll={false}>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -180,6 +211,7 @@ export function OrdersTable({
                                 </Button>
                             </Link>
                             )}
+                            {isAdmin && <AdminOrderActions order={order} />}
                           </div>
                       </TableCell>
                     </TableRow>
