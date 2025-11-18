@@ -27,7 +27,7 @@ const features = [
 export function Features() {
   return (
     <section id="features" className="py-20 bg-background">
-      <div className="container">
+      <div className="container flex flex-col items-center">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold">لماذا تختار نظام طلب أباجور؟</h2>
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">

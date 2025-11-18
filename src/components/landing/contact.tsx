@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 export function Contact() {
   return (
     <section id="contact" className="py-20 bg-muted/40">
-      <div className="container">
-        <Card className="max-w-2xl mx-auto">
+      <div className="container flex flex-col items-center">
+        <Card className="max-w-2xl mx-auto w-full">
             <CardHeader className="text-center">
                 <CardTitle className="text-3xl">تواصل معنا</CardTitle>
                 <CardDescription>هل لديك سؤال أو استفسار؟ املأ النموذج أدناه وسنعاود الاتصال بك.</CardDescription>
