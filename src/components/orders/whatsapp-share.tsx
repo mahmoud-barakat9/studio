@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,85 +11,157 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Share2, Send } from "lucide-react";
-import type { Order, User, Opening } from "@/lib/definitions";
+} from '@/components/ui/dialog';
+import { Share2, Loader2, Send } from 'lucide-react';
+import type { Order, User, Opening } from '@/lib/definitions';
+import { useToast } from '@/hooks/use-toast';
 
 interface WhatsappShareProps {
-    order: Order;
-    customer?: User | null;
+  order: Order;
+  customer?: User | null;
 }
 
-const generateOrderSummary = (order: Order, customerName: string) => {
-    let summary = `*ملخص طلب أباجور*\n\n`;
-    summary += `*اسم الطلب:* ${order.orderName}\n`;
-    summary += `*رقم الطلب:* ${order.id}\n`;
-    summary += `*العميل:* ${customerName}\n`;
-    summary += `*تاريخ الطلب:* ${order.date}\n`;
-    summary += `*التكلفة الإجمالية:* ${order.totalCost.toFixed(2)}$\n\n`;
-    summary += `*--- تفاصيل الفتحات ---*\n`;
+const OrderSummaryTable = React.forwardRef<
+  HTMLDivElement,
+  { order: Order; customerName: string }
+>(({ order, customerName }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className="bg-white p-4 text-black"
+      style={{ width: '500px' }}
+    >
+      <h2 className="text-xl font-bold text-center mb-2">ملخص الطلب</h2>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-4">
+        <div className="font-bold">اسم الطلب:</div>
+        <div>{order.orderName}</div>
+        <div className="font-bold">رقم الطلب:</div>
+        <div>{order.id}</div>
+        <div className="font-bold">العميل:</div>
+        <div>{customerName}</div>
+        <div className="font-bold">تاريخ الطلب:</div>
+        <div>{order.date}</div>
+        <div className="font-bold">التكلفة الإجمالية:</div>
+        <div>${order.totalCost.toFixed(2)}</div>
+      </div>
 
-    order.openings.forEach((opening: Opening, index: number) => {
-        summary += `\n*الفتحة ${index + 1}:*\n`;
-        summary += `  - الرقم التسلسلي: ${opening.serial}\n`;
-        summary += `  - النوع: ${opening.abjourType}\n`;
-        summary += `  - اللون: ${opening.color}\n`;
-        summary += `  - طول الكود: ${opening.codeLength}م\n`;
-        summary += `  - عدد الأكواد: ${opening.numberOfCodes}\n`;
-        if (opening.hasEndCap) summary += `  - مع غطاء طرفي\n`;
-        if (opening.hasAccessories) summary += `  - مع إكسسوارات\n`;
-    });
-
-    return encodeURIComponent(summary);
-};
+      <h3 className="text-lg font-bold text-center mt-4 mb-2">تفاصيل القطع</h3>
+      <table className="w-full border-collapse text-xs text-center">
+        <thead className="bg-gray-200">
+          <tr>
+            <th className="border p-1">رقم القطعة</th>
+            <th className="border p-1">اسم القطعة</th>
+            <th className="border p-1">طول الشفرة</th>
+            <th className="border p-1">عدد الشفرات</th>
+            <th className="border p-1">مع نهاية</th>
+            <th className="border p-1">المساحة (م²)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {order.openings.map((opening: Opening) => {
+            const area = (opening.codeLength * opening.numberOfCodes * 0.05).toFixed(2);
+            return (
+              <tr key={opening.serial}>
+                <td className="border p-1">{opening.serial}</td>
+                <td className="border p-1">{opening.abjourType}</td>
+                <td className="border p-1">{opening.codeLength}م</td>
+                <td className="border p-1">{opening.numberOfCodes}</td>
+                <td className="border p-1">{opening.hasEndCap ? 'نعم' : 'لا'}</td>
+                <td className="border p-1">{area}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+});
+OrderSummaryTable.displayName = 'OrderSummaryTable';
 
 export function WhatsappShare({ order, customer }: WhatsappShareProps) {
-  const [phoneNumber, setPhoneNumber] = useState(order.customerPhone || "");
   const [open, setOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+  const summaryRef = useRef<HTMLDivElement>(null);
 
-  const handleShare = () => {
-    if (!phoneNumber) return;
-    const message = generateOrderSummary(order, customer?.name || order.customerName);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-    window.open(whatsappUrl, "_blank");
-    setOpen(false);
+  const handleShare = async () => {
+    if (!summaryRef.current) return;
+
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(summaryRef.current, { scale: 2 });
+      const dataUrl = canvas.toDataURL('image/png');
+      const blob = await (await fetch(dataUrl)).blob();
+
+      if (navigator.share) {
+        await navigator.share({
+          files: [
+            new File([blob], `order-${order.id}.png`, {
+              type: 'image/png',
+            }),
+          ],
+          title: `ملخص الطلب: ${order.orderName}`,
+          text: `تفاصيل طلب رقم ${order.id}`,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'المشاركة غير مدعومة',
+          description: 'متصفحك لا يدعم خاصية المشاركة.',
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing order:', error);
+      toast({
+        variant: 'destructive',
+        title: 'حدث خطأ',
+        description: 'لم نتمكن من مشاركة الطلب. حاول مرة أخرى.',
+      });
+    } finally {
+      setIsGenerating(false);
+      setOpen(false);
+    }
   };
+
+  const customerName = customer?.name || order.customerName;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <Share2 className="ml-2 h-4 w-4" />
-          مشاركة عبر واتساب
+          مشاركة الطلب
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>مشاركة تفاصيل الطلب</DialogTitle>
+          <DialogTitle>مشاركة ملخص الطلب</DialogTitle>
           <DialogDescription>
-            أدخل رقم واتساب لإرسال ملخص الطلب.
+            سيتم إنشاء صورة احترافية تحتوي على تفاصيل الطلب لمشاركتها.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right col-span-1">
-              رقم الهاتف
-            </Label>
-            <Input
-              id="phone"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="col-span-3"
-              placeholder="مثال: 9665xxxxxxxx"
-            />
-          </div>
+        <div className="py-4 relative">
+            <div className="mx-auto w-fit border rounded-md overflow-hidden">
+             <OrderSummaryTable order={order} customerName={customerName} ref={summaryRef} />
+            </div>
+            {isGenerating && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            )}
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleShare}>
-            <Send className="ml-2 h-4 w-4" />
-            إرسال
+          <Button
+            type="button"
+            onClick={handleShare}
+            disabled={isGenerating || !navigator.share}
+          >
+            {isGenerating ? (
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="ml-2 h-4 w-4" />
+            )}
+            {isGenerating ? 'جارٍ إنشاء الصورة...' : 'مشاركة الآن'}
           </Button>
         </DialogFooter>
       </DialogContent>
