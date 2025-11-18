@@ -26,14 +26,27 @@ export function OrdersTable({
   orders,
   users = [],
   isAdmin = false,
+  showViewAction = false,
 }: {
   orders: Order[];
   users?: User[];
   isAdmin?: boolean;
+  showViewAction?: boolean;
 }) {
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.name || "غير معروف";
   };
+  
+  const getViewLink = (orderId: string) => {
+    if (isAdmin) {
+      return `/admin/orders/${orderId}`;
+    }
+    if (showViewAction) {
+      return `/dashboard?view_order=${orderId}`;
+    }
+    return `/dashboard/orders/${orderId}`;
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -46,7 +59,7 @@ export function OrdersTable({
               <TableHead>التاريخ</TableHead>
               <TableHead>الحالة</TableHead>
               <TableHead className="text-left">التكلفة الإجمالية</TableHead>
-              <TableHead className="text-left">الإجراءات</TableHead>
+              {(isAdmin || showViewAction) && <TableHead className="text-left">الإجراءات</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,14 +80,16 @@ export function OrdersTable({
                   <TableCell className="text-left">
                     ${order.totalCost.toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-left">
-                    <Link href={`/dashboard/orders/${order.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">عرض الطلب</span>
-                      </Button>
-                    </Link>
-                  </TableCell>
+                  {(isAdmin || showViewAction) && (
+                    <TableCell className="text-left">
+                      <Link href={getViewLink(order.id)}>
+                        <Button variant="ghost" size="icon">
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">عرض الطلب</span>
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}
