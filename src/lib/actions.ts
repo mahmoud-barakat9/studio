@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId } from '@/lib/firebase-actions';
+import { addOrder, addUserAndGetId } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 
 const loginSchema = z.object({
