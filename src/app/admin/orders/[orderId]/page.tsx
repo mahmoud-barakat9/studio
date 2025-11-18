@@ -19,9 +19,10 @@ import { OrderTracker } from "@/components/orders/order-tracker";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
 import { WhatsappShare } from "@/components/orders/whatsapp-share";
 import { PrintOrder } from "@/components/orders/print-order";
+import { approveOrder, rejectOrder } from "@/lib/actions";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -67,7 +68,24 @@ export default async function AdminOrderDetailPage({
         </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div/>
+          <div className="flex items-center gap-2">
+            {order.status === 'Pending' && (
+                <>
+                 <form action={approveOrder.bind(null, order.id)}>
+                    <Button>
+                        <Check className="ml-2 h-4 w-4" />
+                        موافقة وإرسال إشعار
+                    </Button>
+                 </form>
+                 <form action={rejectOrder.bind(null, order.id)}>
+                    <Button variant="destructive">
+                        <X className="ml-2 h-4 w-4" />
+                        رفض وإرسال إشعار
+                    </Button>
+                 </form>
+                </>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <PrintOrder order={order} customer={customer} />
             <WhatsappShare order={order} customer={customer} />
