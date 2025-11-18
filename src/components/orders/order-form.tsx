@@ -66,17 +66,17 @@ const userOrderSchema = baseOrderSchema.extend({
 const adminOrderSchema = baseOrderSchema.extend({
     userId: z.string().optional(),
     newUserName: z.string().optional(),
-    newUserEmail: z.string().email().optional(),
+    newUserEmail: z.string().email({ message: "البريد الإلكتروني غير صالح" }).optional().or(z.literal('')),
   })
   .refine(
     (data) => {
       if (data.userId === 'new') {
         return !!data.newUserName && !!data.newUserEmail;
       }
-      return !!data.userId;
+      return !!data.userId && data.userId !== 'new';
     },
     {
-      message: 'يجب اختيار مستخدم أو إنشاء مستخدم جديد.',
+      message: 'يجب اختيار مستخدم حالي أو إدخال تفاصيل مستخدم جديد.',
       path: ['userId'],
     }
   );
@@ -206,31 +206,33 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               <CardContent className="grid md:grid-cols-2 gap-4">
                 {isAdmin ? (
                   <>
-                    <FormField
-                      control={form.control}
-                      name="userId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>اختر مستخدمًا</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="اختر مستخدمًا حاليًا أو أنشئ جديدًا" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="new">إنشاء مستخدم جديد</SelectItem>
-                              {allUsers.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="md:col-span-2">
+                        <FormField
+                        control={form.control}
+                        name="userId"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>اختر مستخدمًا</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="اختر مستخدمًا حاليًا أو أنشئ جديدًا" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                <SelectItem value="new">إنشاء مستخدم جديد</SelectItem>
+                                {allUsers.map((user) => (
+                                    <SelectItem key={user.id} value={user.id}>
+                                    {user.name} ({user.email})
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
                     {watchUserId === 'new' && (
                       <>
                         <FormField
@@ -240,7 +242,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             <FormItem>
                               <FormLabel>اسم المستخدم الجديد</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="مثال: جون دو" />
+                                <Input {...field} placeholder="مثال: علي الأحمد" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -253,7 +255,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             <FormItem>
                               <FormLabel>البريد الإلكتروني للمستخدم الجديد</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="مثال: john@example.com" />
+                                <Input type="email" {...field} placeholder="ali@example.com" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -312,6 +314,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         numberOfCodes: 0,
                         hasEndCap: false,
                         hasAccessories: false,
+                        width: undefined,
+                        height: undefined
                       })
                     }
                   >
@@ -453,7 +457,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                               <FormItem>
                                 <FormLabel>عرض الفتحة (سم)</FormLabel>
                                 <FormControl>
-                                  <Input type="number" {...field} />
+                                  <Input type="number" {...field} value={field.value ?? ''} />
                                 </FormControl>
                               </FormItem>
                             )}
@@ -474,19 +478,19 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       </div>
                     </div>
                     <Separator />
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
                       <FormField
                         control={form.control}
                         name={`openings.${index}.hasEndCap`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormItem className="flex flex-row-reverse items-center gap-2 space-y-0">
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
                               />
                             </FormControl>
-                            <FormLabel>إضافة غطاء طرفي</FormLabel>
+                            <FormLabel className="!mt-0">إضافة غطاء طرفي</FormLabel>
                           </FormItem>
                         )}
                       />
@@ -494,22 +498,21 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         control={form.control}
                         name={`openings.${index}.hasAccessories`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                           <FormItem className="flex flex-row-reverse items-center gap-2 space-y-0">
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
                               />
                             </FormControl>
-                            <FormLabel>إضافة إكسسوارات</FormLabel>
+                            <FormLabel className="!mt-0">إضافة إكسسوارات</FormLabel>
                           </FormItem>
                         )}
                       />
                     </div>
                   </div>
                 ))}
-                {form.formState.errors.openings &&
-                  !form.formState.errors.openings.root && (
+                {form.formState.errors.openings && (
                     <p className="text-sm font-medium text-destructive">
                       {form.formState.errors.openings.message}
                     </p>

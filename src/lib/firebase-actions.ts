@@ -23,16 +23,17 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
 export async function getUsers(): Promise<User[]> {
   // In a real app, this would fetch from Firestore
-  return Promise.resolve(users.filter(u => u.role === 'user'));
+  return Promise.resolve(users.filter(u => u.role === 'user' && u.email !== 'user@abjour.com'));
 }
 
 export async function addUserAndGetId(userData: Omit<User, 'id'>): Promise<string> {
-    const newId = `USER${users.length + 1}`;
+    const newId = `U${users.length + 1}`;
     const newUser: User = {
         id: newId,
         ...userData
     };
     users.push(newUser);
+    revalidatePath('/admin/orders/new');
     console.log("Added new user", newUser);
     return Promise.resolve(newId);
 }
@@ -61,6 +62,6 @@ export async function addOrder(orderData: any) {
     orders.unshift(newOrder); // Add to the beginning of the array
     console.log("Added new order", newOrder);
     revalidatePath('/admin/orders');
-    revalidatePath('/dashboard/orders');
+    revalidatePath('/');
     return Promise.resolve(newOrder);
 }

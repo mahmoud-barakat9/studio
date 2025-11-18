@@ -79,6 +79,10 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   let userId = '2'; // Mock user Fatima Zahra
   if (asAdmin) {
     if (formData.userId === 'new') {
+      if (!formData.newUserName || !formData.newUserEmail) {
+        // This case should be prevented by frontend validation, but as a safeguard:
+        throw new Error("New user name and email are required.");
+      }
       userId = await addUserAndGetId({
         name: formData.newUserName,
         email: formData.newUserEmail,
@@ -103,6 +107,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     redirect('/admin/orders');
   } else {
     revalidatePath('/');
-    redirect('/');
+    redirect('/?tab=all-orders');
   }
 }
