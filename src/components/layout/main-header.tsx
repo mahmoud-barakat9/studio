@@ -120,7 +120,7 @@ export function MainHeader() {
                     <Link href="/login" passHref>
                         <Button variant="ghost">تسجيل الدخول</Button>
                     </Link>
-                    <Link href="#" passHref>
+                    <Link href="/register" passHref>
                         <Button>اشتراك</Button>
                     </Link>
                 </>
@@ -189,7 +189,7 @@ export function MainHeader() {
                     <Link href="/login" passHref>
                         <Button variant="outline" className="w-full" onClick={handleLinkClick}>تسجيل الدخول</Button>
                     </Link>
-                    <Link href="#" passHref>
+                    <Link href="/register" passHref>
                         <Button className="w-full" onClick={handleLinkClick}>اشتراك</Button>
                     </Link>
                 </>

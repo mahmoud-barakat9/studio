@@ -15,6 +15,36 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+const registerSchema = z.object({
+  name: z.string().min(3, "يجب أن يكون الاسم 3 أحرف على الأقل"),
+  email: z.string().email({ message: "بريد إلكتروني غير صالح" }),
+  password: z.string().min(6, "يجب أن تكون كلمة المرور 6 أحرف على الأقل"),
+});
+
+export async function register(prevState: any, formData: FormData) {
+  const validatedFields = registerSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+  
+  // In a real app, you would also check if the user already exists.
+  // For this mock, we'll just create a new user.
+  const newUserId = await addUserAndGetId({
+    name: validatedFields.data.name,
+    email: validatedFields.data.email,
+    role: 'user',
+  });
+  
+  cookies().set('session', 'user-session', { httpOnly: true });
+  cookies().set('userId', newUserId, { httpOnly: true });
+  redirect('/dashboard');
+}
+
 export async function login(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse(
     Object.fromEntries(formData.entries())
@@ -35,9 +65,10 @@ export async function login(prevState: any, formData: FormData) {
     cookies().set('session', 'user-session', { httpOnly: true });
     redirect('/dashboard?tab=overview');
   } else {
-    return {
-      message: 'Invalid email or password.',
-    };
+    // This part is a mock. In a real app you'd query your users DB.
+    // For now we'll treat any other valid email as a new user session.
+    cookies().set('session', 'user-session', { httpOnly: true });
+    redirect('/dashboard');
   }
 }
 

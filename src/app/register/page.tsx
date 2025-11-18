@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { BrandLogo } from "@/components/icons";
 import { MainHeader } from "@/components/layout/main-header";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const bgImage = PlaceHolderImages.find((img) => img.id === "login-background");
 
   return (
@@ -16,25 +15,25 @@ export default function LoginPage() {
         <div className="flex items-center justify-center py-12">
           <div className="mx-auto grid w-[350px] gap-6">
             <div className="grid gap-2 text-center">
-              <div className="flex justify-center items-center gap-4 mb-4">
-                <BrandLogo />
-                <h1 className="text-3xl font-bold">طلب أباجور</h1>
-              </div>
+                <div className="flex justify-center items-center gap-4 mb-4">
+                    <BrandLogo />
+                    <h1 className="text-3xl font-bold">إنشاء حساب جديد</h1>
+                </div>
               <p className="text-balance text-muted-foreground">
-                أدخل بريدك الإلكتروني أدناه لتسجيل الدخول إلى حسابك
+                أدخل معلوماتك أدناه لإنشاء حساب
               </p>
             </div>
-            <LoginForm />
+            <RegisterForm />
             <div className="mt-4 text-center text-sm">
-              ليس لديك حساب؟{" "}
-              <Link href="/register" className="underline">
-                اشتراك
+              لديك حساب بالفعل؟{" "}
+              <Link href="/login" className="underline">
+                تسجيل الدخول
               </Link>
             </div>
           </div>
         </div>
         <div className="hidden bg-muted lg:block">
-          {bgImage && (
+           {bgImage && (
             <Image
               src={bgImage.imageUrl}
               alt={bgImage.description}
