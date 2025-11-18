@@ -34,7 +34,7 @@ import { PlusCircle, Trash2, Wand2, Loader2 } from 'lucide-react';
 import {
   calculateAbjourDimensions,
   generateOrderName,
-  createOrder,
+  createOrder as createOrderAction,
 } from '@/lib/actions';
 import { useFormState } from 'react-dom';
 import React, { useEffect, useState, useTransition } from 'react';
@@ -108,27 +108,22 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     name: 'openings',
   });
 
-  const [totalArea, setTotalArea] = useState(0);
-  const [totalCost, setTotalCost] = useState(0);
   const { toast } = useToast();
 
   const [nameState, generateNameAction] = useFormState(generateOrderName, null);
   const [isNamePending, startNameTransition] = useTransition();
   const [isDimPending, startDimTransition] = useTransition();
+  const [isSubmitPending, startSubmitTransition] = useTransition();
 
   const watchUserId = form.watch('userId');
+  const watchedOpenings = form.watch('openings');
 
-  const openings = form.watch('openings');
+  const totalArea = watchedOpenings.reduce(
+    (acc, op) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+    0
+  );
+  const totalCost = totalArea * 120;
 
-  useEffect(() => {
-    const newTotalArea = openings.reduce(
-      (acc, op) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05, // Example calculation
-      0
-    );
-    const newTotalCost = newTotalArea * 120; // Example price
-    setTotalArea(newTotalArea);
-    setTotalCost(newTotalCost);
-  }, [openings]);
 
   useEffect(() => {
     if (nameState?.data?.orderName) {
@@ -189,7 +184,15 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   };
 
   const onSubmit = (data: OrderFormValues) => {
-    createOrder(data, isAdmin);
+     startSubmitTransition(async () => {
+        const result = await createOrderAction(data, isAdmin);
+        if (result?.success) {
+            toast({
+                title: 'تم إرسال الطلب بنجاح!',
+                description: `تم إنشاء طلبك "${data.orderName}".`,
+            });
+        }
+     });
   };
 
   return (
@@ -577,9 +580,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={form.formState.isSubmitting}
+                  disabled={isSubmitPending}
                 >
-                  {form.formState.isSubmitting && (
+                  {isSubmitPending && (
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
                   إرسال الطلب

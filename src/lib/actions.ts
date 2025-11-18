@@ -104,7 +104,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     revalidatePath('/admin/orders');
     redirect('/admin/orders');
   } else {
+    // We don't redirect here anymore, so the toast can be seen
     revalidatePath('/dashboard');
-    redirect('/dashboard?tab=all-orders');
   }
+  
+  return { success: true };
 }
