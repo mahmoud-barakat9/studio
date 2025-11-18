@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Cairo } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
+const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
 export const metadata: Metadata = {
   title: 'طلب أباجور',
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={cn('antialiased', inter.variable)}>
+      <body className={cn('antialiased', cairo.variable)}>
         {children}
         <Toaster />
       </body>
