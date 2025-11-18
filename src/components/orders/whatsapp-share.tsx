@@ -41,6 +41,8 @@ const OrderSummaryTable = React.forwardRef<
         <div>{customerName}</div>
         <div className="font-bold">تاريخ الطلب:</div>
         <div>{order.date}</div>
+        <div className="font-bold">عدد الفتحات:</div>
+        <div>{order.openings.length}</div>
         <div className="font-bold">التكلفة الإجمالية:</div>
         <div>${order.totalCost.toFixed(2)}</div>
       </div>
