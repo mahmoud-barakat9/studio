@@ -51,7 +51,7 @@ export function Dashboard() {
     }
     
     // Add a hash to navigate to the dashboard section
-    const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '') + '#dashboard';
+    const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '');
     router.replace(newUrl, {scroll: false});
   }
 
@@ -64,10 +64,11 @@ export function Dashboard() {
       }
     } else {
         if(activeTab === 'track-order' && !viewOrderId){
-            setActiveTab("overview");
+            // If we are on track tab without an order, switch to overview
+            handleTabChange("overview");
         }
     }
-  }, [viewOrderId, userOrders, activeTab]);
+  }, [viewOrderId, userOrders]);
 
   useEffect(() => {
     if (createOrder) {
@@ -77,11 +78,16 @@ export function Dashboard() {
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    setActiveTab('all-orders');
+    handleTabChange('all-orders');
+  }
+
+  const handleCreateOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    handleTabChange('create-order');
   }
 
   return (
-    <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40 scroll-mt-20">
+    <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -91,6 +97,11 @@ export function Dashboard() {
             هذا هو مركز التحكم الخاص بطلباتك.
           </p>
         </div>
+         <a href="#create-order" onClick={handleCreateOrderClick}>
+            <Button>
+                إنشاء طلب جديد
+            </Button>
+        </a>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -98,7 +109,7 @@ export function Dashboard() {
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="create-order">إنشاء طلب جديد</TabsTrigger>
           <TabsTrigger value="all-orders">كل طلباتي</TabsTrigger>
-          <TabsTrigger value="track-order" disabled={!viewOrderId}>تتبع الطلب</TabsTrigger>
+          <TabsTrigger value="track-order" disabled={!viewOrderId && activeTab !== 'track-order'}>تتبع الطلب</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <Card>
