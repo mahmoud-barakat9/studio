@@ -21,6 +21,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { WhatsappShare } from "@/components/orders/whatsapp-share";
+import { PrintOrder } from "@/components/orders/print-order";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -57,7 +58,10 @@ export default async function AdminOrderDetailPage({
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
-          <WhatsappShare order={order} customer={customer} />
+          <div className="flex items-center gap-2">
+            <PrintOrder order={order} customer={customer} />
+            <WhatsappShare order={order} customer={customer} />
+          </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
