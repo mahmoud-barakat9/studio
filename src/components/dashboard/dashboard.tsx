@@ -24,16 +24,17 @@ export function Dashboard() {
   const router = useRouter();
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
-  const [activeTab, setActiveTab] = useState("overview");
-
+  
   const viewOrderId = searchParams.get('view_order');
   const createOrder = searchParams.get('create_order');
 
-  useEffect(() => {
-    if(createOrder) {
-      setActiveTab('create-order');
-    }
-  }, [createOrder]);
+  const getDefaultTab = () => {
+    if (viewOrderId) return 'track-order';
+    if (createOrder) return 'create-order';
+    return 'overview';
+  }
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
+
 
   useEffect(() => {
     getOrdersByUserId("2").then(setUserOrders);
@@ -41,11 +42,16 @@ export function Dashboard() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // clean up query params
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.delete('view_order');
-    newParams.delete('create_order');
-    const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '');
+    if (value !== 'track-order') {
+        newParams.delete('view_order');
+    }
+    if (value !== 'create-order') {
+        newParams.delete('create_order');
+    }
+    
+    // Add a hash to navigate to the dashboard section
+    const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '') + '#dashboard';
     router.replace(newUrl, {scroll: false});
   }
 
@@ -57,11 +63,17 @@ export function Dashboard() {
         setActiveTab("track-order");
       }
     } else {
-      if(activeTab === 'track-order' && !viewOrderId){
-        setActiveTab("overview");
-      }
+        if(activeTab === 'track-order' && !viewOrderId){
+            setActiveTab("overview");
+        }
     }
   }, [viewOrderId, userOrders, activeTab]);
+
+  useEffect(() => {
+    if (createOrder) {
+      setActiveTab('create-order');
+    }
+  }, [createOrder]);
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -69,7 +81,7 @@ export function Dashboard() {
   }
 
   return (
-    <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
+    <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40 scroll-mt-20">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
