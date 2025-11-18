@@ -55,7 +55,7 @@ function DeleteOrderAlert({ orderId }: { orderId: string }) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>إلغاء</AlertDialogCancel>
-          <form action={() => deleteOrder(orderId)}>
+          <form action={deleteOrder.bind(null, orderId)}>
             <AlertDialogAction type="submit">متابعة</AlertDialogAction>
           </form>
         </AlertDialogFooter>
@@ -69,7 +69,7 @@ function AdminOrderActions({ order }: { order: Order }) {
   return (
     <div className="flex gap-2">
       {order.isArchived ? (
-         <form action={() => restoreOrder(order.id)}>
+         <form action={restoreOrder.bind(null, order.id)}>
             <Button size="icon" variant="outline" className="h-8 w-8">
               <ArchiveRestore className="h-4 w-4" />
               <span className="sr-only">استعادة الطلب</span>
@@ -79,13 +79,13 @@ function AdminOrderActions({ order }: { order: Order }) {
          <>
           {order.status === "Pending" && (
             <>
-              <form action={() => approveOrder(order.id)}>
+              <form action={approveOrder.bind(null, order.id)}>
                 <Button size="icon" variant="outline" className="h-8 w-8 border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600">
                   <Check className="h-4 w-4" />
                   <span className="sr-only">الموافقة على الطلب</span>
                 </Button>
               </form>
-              <form action={() => rejectOrder(order.id)}>
+              <form action={rejectOrder.bind(null, order.id)}>
                 <Button size="icon" variant="outline" className="h-8 w-8 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600">
                   <X className="h-4 w-4" />
                   <span className="sr-only">رفض الطلب</span>
@@ -99,7 +99,7 @@ function AdminOrderActions({ order }: { order: Order }) {
               <span className="sr-only">تعديل الطلب</span>
             </Button>
           </Link>
-          <form action={() => archiveOrder(order.id)}>
+          <form action={archiveOrder.bind(null, order.id)}>
             <Button size="icon" variant="outline" className="h-8 w-8">
               <Archive className="h-4 w-4" />
               <span className="sr-only">أرشفة الطلب</span>

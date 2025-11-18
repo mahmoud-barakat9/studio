@@ -43,10 +43,7 @@ function DeleteUserAlert({ userId }: { userId: string }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <form action={async () => {
-              "use server"
-              await deleteUser(userId);
-            }}>
+            <form action={deleteUser.bind(null, userId)}>
               <AlertDialogAction type="submit">متابعة</AlertDialogAction>
             </form>
           </AlertDialogFooter>
