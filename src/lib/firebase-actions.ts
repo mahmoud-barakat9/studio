@@ -64,7 +64,7 @@ export async function addOrder(orderData: any) {
         userId: orderData.userId,
         orderName: orderData.orderName,
         customerName: selectedUser?.name || orderData.customerName,
-        customerPhone: orderData.customerPhone || '555-5678',
+        customerPhone: selectedUser?.phone || orderData.customerPhone || '555-5678',
         status: orderData.status,
         date: new Date().toISOString().split('T')[0],
         totalArea,

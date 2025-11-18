@@ -36,6 +36,7 @@ import type { User } from '@/lib/definitions';
 const userSchema = z.object({
   name: z.string().min(1, 'الاسم مطلوب.'),
   email: z.string().email('بريد إلكتروني غير صالح.'),
+  phone: z.string().optional(),
   role: z.enum(['admin', 'user'], { required_error: 'الدور مطلوب.' }),
   password: z.string().optional(),
 });
@@ -48,6 +49,7 @@ export function EditUserForm({ user }: { user: User }) {
     defaultValues: {
       name: user.name,
       email: user.email,
+      phone: user.phone || '',
       role: user.role,
       password: '',
     },
@@ -97,6 +99,19 @@ export function EditUserForm({ user }: { user: User }) {
                   <FormLabel>البريد الإلكتروني</FormLabel>
                   <FormControl>
                     <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>رقم الهاتف</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

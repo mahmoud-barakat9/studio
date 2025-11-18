@@ -115,6 +115,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       userId = await addUserAndGetId({
         name: formData.newUserName,
         email: formData.newUserEmail,
+        phone: formData.newUserPhone,
         role: 'user',
       });
     } else {
@@ -200,6 +201,7 @@ export async function updateUser(userId: string, formData: any) {
         name: formData.name,
         email: formData.email,
         role: formData.role,
+        phone: formData.phone,
     };
 
     if (formData.password) {

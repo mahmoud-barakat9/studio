@@ -151,7 +151,7 @@ export default async function AdminOrderDetailPage({
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">رقم الهاتف</span>
-                        <span className="text-right break-all">{order.customerPhone}</span>
+                        <span className="text-right break-all">{customer?.phone || order.customerPhone}</span>
                     </div>
                 </CardContent>
             </Card>

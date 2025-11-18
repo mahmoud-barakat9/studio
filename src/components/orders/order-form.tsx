@@ -67,16 +67,17 @@ const adminOrderSchema = baseOrderSchema.extend({
     userId: z.string().optional(),
     newUserName: z.string().optional(),
     newUserEmail: z.string().email({ message: "البريد الإلكتروني غير صالح" }).optional().or(z.literal('')),
+    newUserPhone: z.string().optional(),
   })
   .refine(
     (data) => {
       if (data.userId === 'new') {
-        return !!data.newUserName && !!data.newUserEmail;
+        return !!data.newUserName && !!data.newUserEmail && !!data.newUserPhone;
       }
       return !!data.userId && data.userId !== 'new';
     },
     {
-      message: 'يجب اختيار مستخدم حالي أو إدخال تفاصيل مستخدم جديد.',
+      message: 'يجب اختيار مستخدم حالي أو إدخال تفاصيل مستخدم جديد كاملة (الاسم، البريد الإلكتروني، ورقم الهاتف).',
       path: ['userId'],
     }
   );
@@ -100,6 +101,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
       userId: '',
       newUserName: '',
       newUserEmail: '',
+      newUserPhone: '',
     },
   });
 
@@ -265,6 +267,21 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             </FormItem>
                           )}
                         />
+                        <div className="md:col-span-2">
+                          <FormField
+                            control={form.control}
+                            name="newUserPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>رقم هاتف المستخدم الجديد</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="e.g., 555-123-4567" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </>
                     )}
                   </>
