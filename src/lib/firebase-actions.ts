@@ -1,7 +1,7 @@
 'use server';
 
 import { orders, users } from '@/lib/data';
-import type { Order, User } from '@/lib/definitions';
+import type { Order, User, Opening } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 
 // This is a mock implementation. In a real app, you would use Firebase.
@@ -76,4 +76,47 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     revalidatePath('/admin/orders');
     revalidatePath('/');
     return Promise.resolve(orders[orderIndex]);
+}
+
+
+export async function updateOrder(orderId: string, orderData: Partial<Order>): Promise<Order> {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) {
+        throw new Error("Order not found");
+    }
+
+    const totalArea = (orderData.openings || orders[orderIndex].openings).reduce(
+      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * 0.05,
+      0
+    );
+    const totalCost = totalArea * 120;
+
+    const updatedOrder = {
+        ...orders[orderIndex],
+        ...orderData,
+        totalArea,
+        totalCost,
+    };
+
+    orders[orderIndex] = updatedOrder;
+
+    console.log(`Updated order ${orderId}`, updatedOrder);
+    revalidatePath('/admin/orders');
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath(`/admin/orders/${orderId}/edit`);
+    revalidatePath('/');
+    return Promise.resolve(updatedOrder);
+}
+
+
+export async function deleteOrder(orderId: string): Promise<{ success: boolean }> {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) {
+        throw new Error("Order not found");
+    }
+    orders.splice(orderIndex, 1);
+    console.log(`Deleted order ${orderId}`);
+    revalidatePath('/admin/orders');
+    revalidatePath('/');
+    return Promise.resolve({ success: true });
 }

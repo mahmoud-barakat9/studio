@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
@@ -33,7 +33,7 @@ export async function login(prevState: any, formData: FormData) {
     redirect('/admin/dashboard');
   } else if (email === 'user@abjour.com') {
     cookies().set('session', 'user-session', { httpOnly: true });
-    redirect('/dashboard');
+    redirect('/dashboard?tab=overview');
   } else {
     return {
       message: 'Invalid email or password.',
@@ -111,6 +111,27 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   return { success: true };
 }
 
+
+export async function updateOrder(orderId: string, formData: any, asAdmin: boolean) {
+  const orderData = {
+    ...formData,
+    status: formData.status, 
+  };
+
+  await updateOrderDB(orderId, orderData);
+
+  if (asAdmin) {
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath('/admin/orders');
+    redirect('/admin/orders');
+  } else {
+    // non-admin updates not implemented
+  }
+  
+  return { success: true };
+}
+
+
 export async function approveOrder(orderId: string) {
   const order = await getOrderById(orderId);
   if (!order) throw new Error('Order not found');
@@ -133,4 +154,11 @@ export async function rejectOrder(orderId: string) {
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
   const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
   redirect(whatsappUrl);
+}
+
+
+export async function deleteOrder(orderId: string) {
+  await deleteOrderDB(orderId);
+  revalidatePath('/admin/orders');
+  revalidatePath('/dashboard');
 }
