@@ -117,12 +117,12 @@ export function MainHeader() {
                 </DropdownMenu>
             ) : (
                 <>
-                    <Link href="/login" passHref>
-                        <Button variant="ghost">تسجيل الدخول</Button>
-                    </Link>
-                    <Link href="/register" passHref>
-                        <Button>اشتراك</Button>
-                    </Link>
+                    <Button asChild variant="ghost">
+                        <Link href="/login">تسجيل الدخول</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/register">اشتراك</Link>
+                    </Button>
                 </>
             )}
         </div>
@@ -186,12 +186,12 @@ export function MainHeader() {
                 </DropdownMenu>
                ) : (
                 <>
-                    <Link href="/login" passHref>
-                        <Button variant="outline" className="w-full" onClick={handleLinkClick}>تسجيل الدخول</Button>
-                    </Link>
-                    <Link href="/register" passHref>
-                        <Button className="w-full" onClick={handleLinkClick}>اشتراك</Button>
-                    </Link>
+                    <Button asChild className="w-full" onClick={handleLinkClick} variant="outline">
+                      <Link href="/login">تسجيل الدخول</Link>
+                    </Button>
+                    <Button asChild className="w-full" onClick={handleLinkClick}>
+                      <Link href="/register">اشتراك</Link>
+                    </Button>
                 </>
                )}
             </div>

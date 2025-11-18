@@ -28,16 +28,16 @@ export function Hero() {
           نظام متكامل وسهل لإدارة طلبات الأباجور، من التصميم إلى التسليم. احصل على دقة في الأبعاد، وسرعة في التنفيذ، وتجربة فريدة لعملائك.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/?create_order=true" passHref>
-            <Button size="lg" className="w-full sm:w-auto">
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <Link href="/dashboard?create_order=true">
               ابدأ طلبك الآن <ArrowLeft className="mr-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link href="/welcome#features" passHref>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-primary">
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-primary">
+            <Link href="/welcome#features">
               اكتشف المميزات
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

@@ -7,8 +7,10 @@ import { useState, useEffect } from "react";
 export function MainFooter() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
+    setIsClient(true);
     setCurrentYear(new Date().getFullYear());
     const session = document.cookie.includes('session');
     setIsLoggedIn(session);
@@ -58,7 +60,7 @@ export function MainFooter() {
           </div>
         </div>
         <div className="border-t mt-8 pt-4 text-center text-sm">
-          <p>&copy; {currentYear} طلب أباجور. جميع الحقوق محفوظة.</p>
+          {isClient ? <p>&copy; {currentYear} طلب أباجور. جميع الحقوق محفوظة.</p> : <div className="h-6" />}
         </div>
       </div>
     </footer>
