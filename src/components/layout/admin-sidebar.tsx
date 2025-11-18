@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarMenuBadge,
 } from "@/components/ui/sidebar";
 import {
   Avatar,
@@ -30,12 +31,12 @@ import { Button } from "../ui/button";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList },
+  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badge: true },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -52,12 +53,15 @@ export function AdminSidebar() {
             <SidebarMenuItem key={link.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === link.href}
+                isActive={pathname.startsWith(link.href)}
                 tooltip={link.label}
               >
                 <Link href={link.href}>
                   <link.icon />
                   <span>{link.label}</span>
+                  {link.badge && pendingOrdersCount > 0 && (
+                     <SidebarMenuBadge>{pendingOrdersCount}</SidebarMenuBadge>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

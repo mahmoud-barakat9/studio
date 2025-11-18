@@ -19,7 +19,8 @@ import { OrderTracker } from "@/components/orders/order-tracker";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Share2 } from "lucide-react";
+import { WhatsappShare } from "@/components/orders/whatsapp-share";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -54,6 +55,11 @@ export default async function AdminOrderDetailPage({
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
+          <WhatsappShare order={order} customer={customer} />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2 grid auto-rows-max gap-4">
            <Card>
