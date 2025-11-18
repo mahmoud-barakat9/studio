@@ -13,13 +13,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const guestLinks = [
   { href: "/", label: "الرئيسية" },
-  { href: "/?create_order=true#create-order", label: "إنشاء طلب" },
   { href: "/#features", label: "المميزات" },
   { href: "/#contact", label: "تواصل معنا" },
 ];
 
 const userLinks = [
     { href: "/#dashboard", label: "طلباتي" },
+    { href: "/#features", label: "المميزات" },
+    { href: "/#contact", label: "تواصل معنا" },
 ]
 
 
