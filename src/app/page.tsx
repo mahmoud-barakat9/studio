@@ -14,15 +14,10 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <MainHeader />
       <main className="flex-1">
-        {isLoggedIn ? (
-          <Dashboard />
-        ) : (
-          <>
-            <Hero />
-            <Features />
-            <Contact />
-          </>
-        )}
+        {!isLoggedIn && <Hero />}
+        {isLoggedIn && <Dashboard />}
+        <Features />
+        <Contact />
       </main>
       <MainFooter />
     </div>
