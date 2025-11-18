@@ -1,5 +1,8 @@
+"use client";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,23 +17,34 @@ import { getOrdersByUserId } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderForm } from "@/components/orders/order-form";
 import { OrderTracker } from "@/components/orders/order-tracker";
-import { notFound } from "next/navigation";
+import type { Order } from "@/lib/definitions";
 
-export default async function Dashboard({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const userOrders = await getOrdersByUserId("2"); // Mock user Fatima Zahra
-  const viewOrderId = searchParams?.view_order;
-  let orderToView;
+export default function Dashboard() {
+  const searchParams = useSearchParams();
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
+  const [orderToView, setOrderToView] = useState<Order | undefined>();
+  const [activeTab, setActiveTab] = useState("overview");
 
-  if (viewOrderId && typeof viewOrderId === "string") {
-    orderToView = userOrders.find((o) => o.id === viewOrderId);
-  }
-  
-  const defaultTab = viewOrderId ? "track-order" : "overview";
+  const viewOrderId = searchParams.get('view_order');
 
+  useEffect(() => {
+    getOrdersByUserId("2").then(setUserOrders);
+  }, []);
+
+  useEffect(() => {
+    if (viewOrderId && userOrders.length > 0) {
+      const foundOrder = userOrders.find((o) => o.id === viewOrderId);
+      setOrderToView(foundOrder);
+      if (foundOrder) {
+        setActiveTab("track-order");
+      }
+    } else {
+        // If viewOrderId is removed from URL, switch back to overview
+        if(activeTab === 'track-order'){
+            setActiveTab("overview");
+        }
+    }
+  }, [viewOrderId, userOrders, activeTab]);
 
   return (
     <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -45,7 +59,7 @@ export default async function Dashboard({
         </div>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="create-order">إنشاء طلب جديد</TabsTrigger>
@@ -63,9 +77,8 @@ export default async function Dashboard({
             <CardContent>
               <OrdersTable orders={userOrders.slice(0, 3)} showViewAction={true} />
               <div className="flex items-center justify-start pt-4">
-                {/* This is not a trigger, just a regular button that looks like a trigger */}
                  <Button asChild variant="outline" size="sm">
-                    <Link href="#all-orders-tab" onClick={() => document.querySelector<HTMLButtonElement>('button[data-radix-collection-item][value="all-orders"]')?.click()}>
+                    <Link href="#all-orders-tab" onClick={() => setActiveTab('all-orders')}>
                         عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
                     </Link>
                 </Button>
@@ -106,7 +119,7 @@ export default async function Dashboard({
                     <CardContent>
                        <p>الرجاء تحديد طلب لعرض تفاصيله.</p>
                        <Button asChild variant="link" className="p-0 mt-2">
-                            <Link href="#all-orders-tab" onClick={() => document.querySelector<HTMLButtonElement>('button[data-radix-collection-item][value="all-orders"]')?.click()}>
+                            <Link href="#all-orders-tab" onClick={() => setActiveTab('all-orders')}>
                                 العودة إلى كل الطلبات
                             </Link>
                        </Button>
