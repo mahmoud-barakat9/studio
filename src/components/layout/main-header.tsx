@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -102,16 +102,16 @@ export function MainHeader() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {isAdmin ? (
-                             <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
+                             <DropdownMenuItem asChild><Link href="/admin/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <DropdownMenuItem asChild><Link href="/dashboard">لوحة التحكم</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
                         )}
                         <DropdownMenuItem asChild>
-                           <Link href="/admin/profile">الملف الشخصي</Link>
+                           <Link href={isAdmin ? "/admin/profile" : "/"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                        <Link href="/login">تسجيل الخروج</Link>
+                        <Link href="/login"><LogOut className="ml-2 h-4 w-4" />تسجيل الخروج</Link>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -171,16 +171,16 @@ export function MainHeader() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {isAdmin ? (
-                             <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
+                             <DropdownMenuItem asChild><Link href="/admin/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <DropdownMenuItem asChild><Link href="/dashboard">لوحة التحكم</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
                         )}
                          <DropdownMenuItem asChild>
-                           <Link href="/admin/profile">الملف الشخصي</Link>
+                           <Link href={isAdmin ? "/admin/profile" : "/"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                        <Link href="/login">تسجيل الخروج</Link>
+                        <Link href="/login"><LogOut className="ml-2 h-4 w-4" />تسجيل الخروج</Link>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -201,3 +201,5 @@ export function MainHeader() {
     </header>
   );
 }
+
+    
