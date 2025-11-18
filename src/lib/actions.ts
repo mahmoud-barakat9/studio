@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
@@ -94,7 +94,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   const orderData = {
     ...formData,
     userId,
-    status: 'Order Placed',
+    status: asAdmin ? 'Order Placed' : 'Pending Approval',
     date: new Date().toISOString().split('T')[0],
   };
 
@@ -104,9 +104,33 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     revalidatePath('/admin/orders');
     redirect('/admin/orders');
   } else {
-    // We don't redirect here anymore, so the toast can be seen
     revalidatePath('/dashboard');
+    revalidatePath('/admin/orders');
   }
   
   return { success: true };
+}
+
+export async function approveOrder(orderId: string) {
+  const order = await getOrderById(orderId);
+  if (!order) throw new Error('Order not found');
+
+  await updateOrderStatus(orderId, 'In Production');
+  revalidatePath('/admin/orders');
+
+  const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وهو الآن قيد الإنتاج.`);
+  const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
+  redirect(whatsappUrl);
+}
+
+export async function rejectOrder(orderId: string) {
+  const order = await getOrderById(orderId);
+  if (!order) throw new Error('Order not found');
+
+  await updateOrderStatus(orderId, 'Rejected');
+  revalidatePath('/admin/orders');
+  
+  const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
+  const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
+  redirect(whatsappUrl);
 }

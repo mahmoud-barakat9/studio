@@ -52,8 +52,8 @@ export async function addOrder(orderData: any) {
         userId: orderData.userId,
         orderName: orderData.orderName,
         customerName: selectedUser?.name || orderData.customerName,
-        customerPhone: orderData.customerPhone || 'N/A',
-        status: 'Order Placed',
+        customerPhone: orderData.customerPhone || '555-5678',
+        status: orderData.status,
         date: new Date().toISOString().split('T')[0],
         totalArea,
         totalCost,
@@ -64,4 +64,16 @@ export async function addOrder(orderData: any) {
     revalidatePath('/admin/orders');
     revalidatePath('/');
     return Promise.resolve(newOrder);
+}
+
+export async function updateOrderStatus(orderId: string, status: Order['status']): Promise<Order> {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) {
+        throw new Error("Order not found");
+    }
+    orders[orderIndex].status = status;
+    console.log(`Updated order ${orderId} status to ${status}`);
+    revalidatePath('/admin/orders');
+    revalidatePath('/');
+    return Promise.resolve(orders[orderIndex]);
 }
