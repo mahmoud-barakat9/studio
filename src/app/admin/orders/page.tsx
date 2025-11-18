@@ -11,12 +11,12 @@ export default async function AdminOrdersPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex items-center">
-        <h1 className="font-semibold text-lg md:text-2xl">All Orders</h1>
-        <div className="ml-auto flex items-center gap-2">
+        <h1 className="font-semibold text-lg md:text-2xl">كل الطلبات</h1>
+        <div className="mr-auto flex items-center gap-2">
             <Link href="/admin/orders/new">
                 <Button size="sm">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Create Order
+                <PlusCircle className="h-4 w-4 ml-2" />
+                إنشاء طلب
                 </Button>
             </Link>
         </div>

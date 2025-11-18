@@ -18,41 +18,41 @@ import {
 import type { ChartConfig } from "@/components/ui/chart";
 
 const revenueData = [
-  { month: "January", revenue: 11860 },
-  { month: "February", revenue: 13050 },
-  { month: "March", revenue: 9370 },
-  { month: "April", revenue: 12730 },
-  { month: "May", revenue: 15090 },
-  { month: "June", revenue: 11140 },
+  { month: "يناير", revenue: 11860 },
+  { month: "فبراير", revenue: 13050 },
+  { month: "مارس", revenue: 9370 },
+  { month: "أبريل", revenue: 12730 },
+  { month: "مايو", revenue: 15090 },
+  { month: "يونيو", revenue: 11140 },
 ];
 
 const revenueChartConfig = {
   revenue: {
-    label: "Revenue",
+    label: "الإيرادات",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 
 const orderTypeData = [
-  { type: "Standard", count: 251, fill: "var(--color-standard)" },
-  { type: "Narrow", count: 124, fill: "var(--color-narrow)" },
-  { type: "Wide", count: 86, fill: "var(--color-wide)" },
+  { type: "قياسي", count: 251, fill: "var(--color-standard)" },
+  { type: "ضيق", count: 124, fill: "var(--color-narrow)" },
+  { type: "عريض", count: 86, fill: "var(--color-wide)" },
 ];
 
 const orderTypeConfig = {
   count: {
-    label: "Count",
+    label: "العدد",
   },
   standard: {
-    label: "Standard",
+    label: "قياسي",
     color: "hsl(var(--chart-1))",
   },
   narrow: {
-    label: "Narrow",
+    label: "ضيق",
     color: "hsl(var(--chart-2))",
   },
   wide: {
-    label: "Wide",
+    label: "عريض",
     color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;
@@ -60,12 +60,12 @@ const orderTypeConfig = {
 export default function AdminReportsPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <h1 className="font-semibold text-lg md:text-2xl">Reports</h1>
+      <h1 className="font-semibold text-lg md:text-2xl">التقارير</h1>
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Monthly Revenue</CardTitle>
-            <CardDescription>Revenue from the last 6 months.</CardDescription>
+            <CardTitle>الإيرادات الشهرية</CardTitle>
+            <CardDescription>إيرادات آخر 6 أشهر.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={revenueChartConfig} className="h-72 w-full">
@@ -92,9 +92,9 @@ export default function AdminReportsPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Order Types Distribution</CardTitle>
+            <CardTitle>توزيع أنواع الطلبات</CardTitle>
             <CardDescription>
-              Distribution of different abjour types ordered.
+              توزيع أنواع الأباجور المختلفة المطلوبة.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center">

@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 
 export const metadata: Metadata = {
-  title: 'Abjour Track',
-  description: 'Create and track your abjour orders with ease.',
+  title: 'طلب أباجور',
+  description: 'أنشئ وتتبع طلبات الأباجور الخاصة بك بكل سهولة.',
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={cn('antialiased', inter.variable)}>
         {children}
         <Toaster />

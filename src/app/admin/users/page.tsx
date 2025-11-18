@@ -15,15 +15,15 @@ export default function AdminUsersPage() {
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>إدارة المستخدمين</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>الاسم</TableHead>
+                <TableHead>البريد الإلكتروني</TableHead>
+                <TableHead>الدور</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -32,7 +32,7 @@ export default function AdminUsersPage() {
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? 'مسؤول' : 'مستخدم'}</Badge>
                     </TableCell>
                 </TableRow>
               ))}

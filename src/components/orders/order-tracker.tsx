@@ -11,18 +11,22 @@ import { cn } from "@/lib/utils";
 const statuses = [
   {
     name: "Order Placed",
+    label: "تم تقديم الطلب",
     icon: ClipboardList,
   },
   {
     name: "In Production",
+    label: "قيد الإنتاج",
     icon: PackageCheck,
   },
   {
     name: "Shipped",
+    label: "تم الشحن",
     icon: Truck,
   },
   {
     name: "Completed",
+    label: "مكتمل",
     icon: CheckCircle2,
   },
 ] as const;
@@ -64,11 +68,11 @@ export function OrderTracker({
                   (isCompleted || isCurrent) ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                {status.name}
+                {status.label}
               </p>
             </div>
             {index < statuses.length - 1 && (
-              <div className="flex-1 h-1 bg-border absolute top-6 left-1/2 w-full">
+              <div className="flex-1 h-1 bg-border absolute top-6 right-1/2 w-full">
                 <div
                   className={cn(
                     "h-full transition-all duration-500",

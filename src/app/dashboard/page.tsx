@@ -18,14 +18,14 @@ export default async function Dashboard() {
     <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="flex items-center justify-between">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome, Fatima!</h1>
-            <p className="text-muted-foreground">Here's a summary of your orders.</p>
+            <h1 className="text-3xl font-bold tracking-tight">أهلاً بكِ، فاطمة!</h1>
+            <p className="text-muted-foreground">هذا ملخص لطلباتك.</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/orders/new">
             <Button size="sm">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create New Order
+              <PlusCircle className="h-4 w-4 ml-2" />
+              إنشاء طلب جديد
             </Button>
           </Link>
         </div>
@@ -33,17 +33,17 @@ export default async function Dashboard() {
       <div>
         <Card>
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>الطلبات الأخيرة</CardTitle>
             <CardDescription>
-              Your most recent abjour orders.
+              أحدث طلبات الأباجور الخاصة بك.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <OrdersTable orders={userOrders.slice(0,3)} />
-             <div className="flex items-center justify-end pt-4">
+             <div className="flex items-center justify-start pt-4">
                 <Link href="/dashboard/orders">
                     <Button variant="outline" size="sm">
-                        View All Orders <ArrowUpRight className="h-4 w-4 ml-2" />
+                        عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
                     </Button>
                 </Link>
             </div>

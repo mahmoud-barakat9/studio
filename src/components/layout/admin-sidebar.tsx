@@ -26,21 +26,21 @@ import {
 import { BrandLogo } from "../icons";
 
 const links = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ClipboardList },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/reports", label: "Reports", icon: LineChart },
+  { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList },
+  { href: "/admin/users", label: "المستخدمون", icon: Users },
+  { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
+    <Sidebar side="right">
       <SidebarHeader>
         <div className="flex items-center gap-2">
             <BrandLogo />
-            <span className="text-lg font-semibold">Abjour Track</span>
+            <span className="text-lg font-semibold">طلب أباجور</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -64,9 +64,9 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <Link href="/login" passHref legacyBehavior>
-                <SidebarMenuButton tooltip="Logout">
+                <SidebarMenuButton tooltip="تسجيل الخروج">
                     <LogOut />
-                    <span>Logout</span>
+                    <span>تسجيل الخروج</span>
                 </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
@@ -77,7 +77,7 @@ export function AdminSidebar() {
                 <AvatarFallback>A</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-                <span className="font-semibold text-sm">Administrator</span>
+                <span className="font-semibold text-sm">مسؤول</span>
                 <span className="text-xs text-muted-foreground">admin@abjour.com</span>
             </div>
         </div>

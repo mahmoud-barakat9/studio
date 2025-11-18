@@ -16,17 +16,17 @@ import { DollarSign, Users, ClipboardList } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 
 const chartData = [
-  { month: "January", orders: 186 },
-  { month: "February", orders: 305 },
-  { month: "March", orders: 237 },
-  { month: "April", orders: 273 },
-  { month: "May", orders: 209 },
-  { month: "June", orders: 214 },
+  { month: "يناير", orders: 186 },
+  { month: "فبراير", orders: 305 },
+  { month: "مارس", orders: 237 },
+  { month: "أبريل", orders: 273 },
+  { month: "مايو", orders: 209 },
+  { month: "يونيو", orders: 214 },
 ];
 
 const chartConfig = {
   orders: {
-    label: "Orders",
+    label: "الطلبات",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
@@ -37,37 +37,37 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$45,231.89</div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              +20.1% عن الشهر الماضي
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">طلبات جديدة</CardTitle>
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+235</div>
             <p className="text-xs text-muted-foreground">
-              +180.1% from last month
+              +180.1% عن الشهر الماضي
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <CardTitle className="text-sm font-medium">المستخدمون النشطون</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+573</div>
             <p className="text-xs text-muted-foreground">
-              +19% from last month
+              +19% عن الشهر الماضي
             </p>
           </CardContent>
         </Card>
@@ -75,9 +75,9 @@ export default function AdminDashboardPage() {
       <div>
         <Card>
           <CardHeader>
-            <CardTitle>Orders Overview</CardTitle>
+            <CardTitle>نظرة عامة على الطلبات</CardTitle>
             <CardDescription>
-              An overview of orders in the last 6 months.
+              نظرة عامة على الطلبات في آخر 6 أشهر.
             </CardDescription>
           </CardHeader>
           <CardContent>

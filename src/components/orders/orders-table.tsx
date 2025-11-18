@@ -16,10 +16,10 @@ import { Card, CardContent } from "../ui/card";
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
-  "Order Placed": { variant: "secondary", text: "Order Placed" },
-  "In Production": { variant: "outline", text: "In Production" },
-  Shipped: { variant: "default", text: "Shipped" },
-  Completed: { variant: "default", text: "Completed" },
+  "Order Placed": { variant: "secondary", text: "تم تقديم الطلب" },
+  "In Production": { variant: "outline", text: "قيد الإنتاج" },
+  Shipped: { variant: "default", text: "تم الشحن" },
+  Completed: { variant: "default", text: "مكتمل" },
 };
 
 export function OrdersTable({
@@ -32,7 +32,7 @@ export function OrdersTable({
   isAdmin?: boolean;
 }) {
   const getUserName = (userId: string) => {
-    return users.find((u) => u.id === userId)?.name || "Unknown";
+    return users.find((u) => u.id === userId)?.name || "غير معروف";
   };
   return (
     <Card>
@@ -40,13 +40,13 @@ export function OrdersTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Order Name</TableHead>
-              {isAdmin && <TableHead>Customer</TableHead>}
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Total Cost</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>رقم الطلب</TableHead>
+              <TableHead>اسم الطلب</TableHead>
+              {isAdmin && <TableHead>العميل</TableHead>}
+              <TableHead>التاريخ</TableHead>
+              <TableHead>الحالة</TableHead>
+              <TableHead className="text-left">التكلفة الإجمالية</TableHead>
+              <TableHead className="text-left">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,14 +64,14 @@ export function OrdersTable({
                       {statusStyle.text}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-left">
                     ${order.totalCost.toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-left">
                     <Link href={`/dashboard/orders/${order.id}`}>
                       <Button variant="ghost" size="icon">
                         <Eye className="h-4 w-4" />
-                        <span className="sr-only">View Order</span>
+                        <span className="sr-only">عرض الطلب</span>
                       </Button>
                     </Link>
                   </TableCell>

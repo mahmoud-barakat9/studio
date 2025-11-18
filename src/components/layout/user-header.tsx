@@ -1,9 +1,6 @@
 import Link from "next/link";
 import {
   Menu,
-  ClipboardList,
-  Home,
-  Package2,
   LogOut,
   User,
 } from "lucide-react";
@@ -29,66 +26,66 @@ export function UserHeader() {
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <BrandLogo />
-          <span className="sr-only">Abjour Track</span>
+          <span className="sr-only">طلب أباجور</span>
         </Link>
         <Link
           href="/dashboard"
           className="text-foreground transition-colors hover:text-foreground"
         >
-          Dashboard
+          لوحة التحكم
         </Link>
         <Link
           href="/dashboard/orders"
           className="text-muted-foreground transition-colors hover:text-foreground"
         >
-          Orders
+          طلباتي
         </Link>
       </nav>
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
+            <span className="sr-only">فتح قائمة التنقل</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side="right">
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/dashboard"
               className="flex items-center gap-2 text-lg font-semibold"
             >
               <BrandLogo />
-              <span className="sr-only">Abjour Track</span>
+              <span className="sr-only">طلب أباجور</span>
             </Link>
             <Link href="/dashboard" className="hover:text-foreground">
-              Dashboard
+              لوحة التحكم
             </Link>
             <Link
               href="/dashboard/orders"
               className="text-muted-foreground hover:text-foreground"
             >
-              Orders
+              طلباتي
             </Link>
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <div className="ml-auto flex-1 sm:flex-initial"></div>
+      <div className="flex w-full items-center gap-4 md:mr-auto md:gap-2 lg:gap-4">
+        <div className="mr-auto flex-1 sm:flex-initial"></div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <User className="h-5 w-5" />
-              <span className="sr-only">Toggle user menu</span>
+              <span className="sr-only">فتح قائمة المستخدم</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>حسابي</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem>الإعدادات</DropdownMenuItem>
+            <DropdownMenuItem>الدعم</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/login">Logout</Link>
+              <Link href="/login">تسجيل الخروج</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

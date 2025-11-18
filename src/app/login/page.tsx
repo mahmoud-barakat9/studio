@@ -15,17 +15,17 @@ export default function LoginPage() {
           <div className="grid gap-2 text-center">
             <div className="flex justify-center items-center gap-4 mb-4">
               <BrandLogo />
-              <h1 className="text-3xl font-bold">Abjour Track</h1>
+              <h1 className="text-3xl font-bold">طلب أباجور</h1>
             </div>
             <p className="text-balance text-muted-foreground">
-              Enter your email below to login to your account
+              أدخل بريدك الإلكتروني أدناه لتسجيل الدخول إلى حسابك
             </p>
           </div>
           <LoginForm />
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            ليس لديك حساب؟{" "}
             <Link href="#" className="underline">
-              Sign up
+              اشتراك
             </Link>
           </div>
         </div>

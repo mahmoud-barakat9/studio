@@ -1,6 +1,6 @@
 export type Opening = {
   serial: string;
-  abjourType: "Standard" | "Narrow" | "Wide" | string;
+  abjourType: "قياسي" | "ضيق" | "عريض" | string;
   color: string;
   codeLength: number;
   numberOfCodes: number;

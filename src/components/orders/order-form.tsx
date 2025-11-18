@@ -42,25 +42,25 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/definitions';
 
 const openingSchema = z.object({
-  serial: z.string().min(1, 'Serial is required.'),
-  abjourType: z.string().min(1, 'Type is required.'),
-  color: z.string().min(1, 'Color is required.'),
+  serial: z.string().min(1, 'الرقم التسلسلي مطلوب.'),
+  abjourType: z.string().min(1, 'النوع مطلوب.'),
+  color: z.string().min(1, 'اللون مطلوب.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
-  codeLength: z.coerce.number().min(0.1, 'Length is required.'),
-  numberOfCodes: z.coerce.number().int().min(1, 'Codes are required.'),
+  codeLength: z.coerce.number().min(0.1, 'الطول مطلوب.'),
+  numberOfCodes: z.coerce.number().int().min(1, 'عدد الأكواد مطلوب.'),
   hasEndCap: z.boolean().default(false),
   hasAccessories: z.boolean().default(false),
 });
 
 const baseOrderSchema = z.object({
-  orderName: z.string().min(1, 'Order name is required.'),
-  openings: z.array(openingSchema).min(1, 'At least one opening is required.'),
+  orderName: z.string().min(1, 'اسم الطلب مطلوب.'),
+  openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
 });
 
 const userOrderSchema = baseOrderSchema.extend({
-  customerName: z.string().min(1, 'Customer name is required.'),
-  customerPhone: z.string().min(1, 'Phone number is required.'),
+  customerName: z.string().min(1, 'اسم العميل مطلوب.'),
+  customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
 
 const adminOrderSchema = baseOrderSchema.extend({
@@ -76,7 +76,7 @@ const adminOrderSchema = baseOrderSchema.extend({
       return !!data.userId;
     },
     {
-      message: 'A user must be selected or a new user created.',
+      message: 'يجب اختيار مستخدم أو إنشاء مستخدم جديد.',
       path: ['userId'],
     }
   );
@@ -84,8 +84,8 @@ const adminOrderSchema = baseOrderSchema.extend({
 
 type OrderFormValues = z.infer<typeof userOrderSchema & typeof adminOrderSchema>;
 
-const abjourTypes = ['Standard', 'Narrow', 'Wide'];
-const colors = ['White', 'Beige', 'Gray', 'Black', 'Wood Finish', 'Silver'];
+const abjourTypes = ['قياسي', 'ضيق', 'عريض'];
+const colors = ['أبيض', 'بيج', 'رمادي', 'أسود', 'خشبي', 'فضي'];
 
 export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?: boolean, users?: User[] }) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
@@ -93,7 +93,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      customerName: 'Fatima Zahra',
+      customerName: 'فاطمة الزهراء',
       customerPhone: '555-5678',
       orderName: '',
       openings: [],
@@ -134,12 +134,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     if (nameState?.data?.orderName) {
       form.setValue('orderName', nameState.data.orderName);
       toast({
-        title: 'Suggested Name Generated!',
-        description: 'The order name has been filled in for you.',
+        title: 'تم إنشاء اسم مقترح!',
+        description: 'تم ملء اسم الطلب لك.',
       });
     }
     if (nameState?.error) {
-      toast({ variant: 'destructive', title: 'Error', description: nameState.error });
+      toast({ variant: 'destructive', title: 'خطأ', description: nameState.error });
     }
   }, [nameState, form, toast]);
 
@@ -148,8 +148,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     if (!firstOpening) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Please add at least one opening to generate a name.',
+        title: 'خطأ',
+        description: 'الرجاء إضافة فتحة واحدة على الأقل لإنشاء اسم.',
       });
       return;
     }
@@ -163,8 +163,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     if (!opening.width || !opening.abjourType) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Please provide both width and abjour type to calculate.',
+        title: 'خطأ',
+        description: 'الرجاء توفير العرض ونوع الأباجور للحساب.',
       });
       return;
     }
@@ -178,12 +178,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         form.setValue(`openings.${index}.codeLength`, result.data.codeLength);
         form.setValue(`openings.${index}.numberOfCodes`, result.data.numberOfCodes);
         toast({
-          title: 'Dimensions Calculated!',
-          description: 'Code length and number of codes have been updated.',
+          title: 'تم حساب الأبعاد!',
+          description: 'تم تحديث طول الكود وعدد الأكواد.',
         });
       }
       if (result.error) {
-        toast({ variant: 'destructive', title: 'Error', description: result.error });
+        toast({ variant: 'destructive', title: 'خطأ', description: result.error });
       }
     });
   };
@@ -200,7 +200,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {isAdmin ? 'User Information' : 'Customer Details'}
+                  {isAdmin ? 'معلومات المستخدم' : 'تفاصيل العميل'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-4">
@@ -211,15 +211,15 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       name="userId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Select User</FormLabel>
+                          <FormLabel>اختر مستخدمًا</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select an existing user or create new" />
+                                <SelectValue placeholder="اختر مستخدمًا حاليًا أو أنشئ جديدًا" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="new">Create a new user</SelectItem>
+                              <SelectItem value="new">إنشاء مستخدم جديد</SelectItem>
                               {allUsers.map((user) => (
                                 <SelectItem key={user.id} value={user.id}>
                                   {user.name}
@@ -238,9 +238,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                           name="newUserName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>New User Name</FormLabel>
+                              <FormLabel>اسم المستخدم الجديد</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="e.g. John Doe" />
+                                <Input {...field} placeholder="مثال: جون دو" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -251,9 +251,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                           name="newUserEmail"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>New User Email</FormLabel>
+                              <FormLabel>البريد الإلكتروني للمستخدم الجديد</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="e.g. john@example.com" />
+                                <Input {...field} placeholder="مثال: john@example.com" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -269,7 +269,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Customer Name</FormLabel>
+                          <FormLabel>اسم العميل</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -282,7 +282,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       name="customerPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
+                          <FormLabel>رقم الهاتف</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -298,7 +298,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Order Openings</CardTitle>
+                  <CardTitle>فتحات الطلب</CardTitle>
                   <Button
                     type="button"
                     size="sm"
@@ -306,8 +306,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     onClick={() =>
                       append({
                         serial: `A${fields.length + 1}`,
-                        abjourType: 'Standard',
-                        color: 'White',
+                        abjourType: 'قياسي',
+                        color: 'أبيض',
                         codeLength: 0,
                         numberOfCodes: 0,
                         hasEndCap: false,
@@ -315,11 +315,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       })
                     }
                   >
-                    <PlusCircle className="w-4 h-4 mr-2" /> Add Opening
+                    <PlusCircle className="w-4 h-4 ml-2" /> إضافة فتحة
                   </Button>
                 </div>
                 <CardDescription>
-                  Add one or more openings for this order.
+                  أضف فتحة واحدة أو أكثر لهذا الطلب.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -332,7 +332,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 left-2"
                       onClick={() => remove(index)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -343,7 +343,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         name={`openings.${index}.serial`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Serial</FormLabel>
+                            <FormLabel>الرقم التسلسلي</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -356,7 +356,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         name={`openings.${index}.abjourType`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Abjour Type</FormLabel>
+                            <FormLabel>نوع الأباجور</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -383,7 +383,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         name={`openings.${index}.color`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Color</FormLabel>
+                            <FormLabel>اللون</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -410,7 +410,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     <div className="grid md:grid-cols-2 gap-4 items-end">
                       <div>
                         <p className="text-sm font-medium mb-2">
-                          Enter Dimensions Manually or...
+                          أدخل الأبعاد يدويًا أو...
                         </p>
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
@@ -418,7 +418,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             name={`openings.${index}.codeLength`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Code Length</FormLabel>
+                                <FormLabel>طول الكود</FormLabel>
                                 <FormControl>
                                   <Input type="number" step="0.01" {...field} />
                                 </FormControl>
@@ -431,7 +431,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             name={`openings.${index}.numberOfCodes`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Number of Codes</FormLabel>
+                                <FormLabel>عدد الأكواد</FormLabel>
                                 <FormControl>
                                   <Input type="number" {...field} />
                                 </FormControl>
@@ -443,7 +443,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       </div>
                       <div className="space-y-4">
                         <p className="text-sm font-medium">
-                          ...Calculate Automatically with AI
+                          ...احسب تلقائيًا باستخدام الذكاء الاصطناعي
                         </p>
                         <div className="grid grid-cols-2 gap-4 items-end">
                           <FormField
@@ -451,7 +451,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             name={`openings.${index}.width`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Opening Width (cm)</FormLabel>
+                                <FormLabel>عرض الفتحة (سم)</FormLabel>
                                 <FormControl>
                                   <Input type="number" {...field} />
                                 </FormControl>
@@ -464,11 +464,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             disabled={isDimPending}
                           >
                             {isDimPending ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                             ) : (
-                              <Wand2 className="mr-2 h-4 w-4" />
+                              <Wand2 className="ml-2 h-4 w-4" />
                             )}
-                            Calculate
+                            احسب
                           </Button>
                         </div>
                       </div>
@@ -486,7 +486,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                                 onCheckedChange={field.onChange}
                               />
                             </FormControl>
-                            <FormLabel>Add End Cap</FormLabel>
+                            <FormLabel>إضافة غطاء طرفي</FormLabel>
                           </FormItem>
                         )}
                       />
@@ -501,7 +501,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                                 onCheckedChange={field.onChange}
                               />
                             </FormControl>
-                            <FormLabel>Add Accessories</FormLabel>
+                            <FormLabel>إضافة إكسسوارات</FormLabel>
                           </FormItem>
                         )}
                       />
@@ -521,7 +521,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
           <div className="md:col-span-1 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle>ملخص الطلب</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -530,12 +530,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     name="orderName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Order Name</FormLabel>
+                        <FormLabel>اسم الطلب</FormLabel>
                         <FormControl>
                           <div className="flex items-center gap-2">
                             <Input
                               {...field}
-                              placeholder="e.g., 'Villa Living Room'"
+                              placeholder="مثال: 'غرفة معيشة الفيلا'"
                             />
                             <Button
                               type="button"
@@ -549,7 +549,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                               ) : (
                                 <Wand2 className="h-4 w-4" />
                               )}
-                              <span className="sr-only">Suggest Name</span>
+                              <span className="sr-only">اقتراح اسم</span>
                             </Button>
                           </div>
                         </FormControl>
@@ -561,11 +561,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 <Separator />
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Area</span>
-                    <span className="font-medium">{totalArea.toFixed(2)} m²</span>
+                    <span className="text-muted-foreground">المساحة الإجمالية</span>
+                    <span className="font-medium">{totalArea.toFixed(2)} م²</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Estimated Cost</span>
+                    <span className="text-muted-foreground">التكلفة التقديرية</span>
                     <span className="font-medium">${totalCost.toFixed(2)}</span>
                   </div>
                 </div>
@@ -577,9 +577,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                   disabled={form.formState.isSubmitting}
                 >
                   {form.formState.isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
-                  Place Order
+                  إرسال الطلب
                 </Button>
               </CardFooter>
             </Card>

@@ -10,11 +10,11 @@ export default async function UserOrdersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">My Orders</h1>
+        <h1 className="text-2xl font-bold">طلباتي</h1>
         <Link href="/dashboard/orders/new">
           <Button size="sm">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create New Order
+            <PlusCircle className="h-4 w-4 ml-2" />
+            إنشاء طلب جديد
           </Button>
         </Link>
       </div>

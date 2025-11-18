@@ -36,20 +36,20 @@ export default async function OrderDetailsPage({
         <Card>
           <CardHeader>
             <CardTitle>{order.orderName}</CardTitle>
-            <CardDescription>Order ID: {order.id}</CardDescription>
+            <CardDescription>رقم الطلب: {order.id}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Customer</span>
+                <span className="text-muted-foreground">العميل</span>
                 <span>{order.customerName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Phone</span>
+                <span className="text-muted-foreground">الهاتف</span>
                 <span>{order.customerPhone}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Date</span>
+                <span className="text-muted-foreground">التاريخ</span>
                 <span>{order.date}</span>
               </div>
             </div>
@@ -57,18 +57,18 @@ export default async function OrderDetailsPage({
           <CardFooter className="flex-col items-start gap-2">
             <Separator />
             <div className="flex justify-between w-full font-semibold">
-              <span>Total Area</span>
-              <span>{order.totalArea.toFixed(2)} m²</span>
+              <span>المساحة الإجمالية</span>
+              <span>{order.totalArea.toFixed(2)} م²</span>
             </div>
             <div className="flex justify-between w-full font-semibold">
-              <span>Total Cost</span>
+              <span>التكلفة الإجمالية</span>
               <span>${order.totalCost.toFixed(2)}</span>
             </div>
           </CardFooter>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Order Status</CardTitle>
+            <CardTitle>حالة الطلب</CardTitle>
           </CardHeader>
           <CardContent>
             <OrderTracker currentStatus={order.status} />
@@ -78,18 +78,18 @@ export default async function OrderDetailsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Order Openings</CardTitle>
+          <CardTitle>فتحات الطلب</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Serial</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Color</TableHead>
-                <TableHead>Code Length</TableHead>
-                <TableHead>Num. of Codes</TableHead>
-                <TableHead>Extras</TableHead>
+                <TableHead>الرقم التسلسلي</TableHead>
+                <TableHead>النوع</TableHead>
+                <TableHead>اللون</TableHead>
+                <TableHead>طول الكود</TableHead>
+                <TableHead>عدد الأكواد</TableHead>
+                <TableHead>إضافات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,11 +98,11 @@ export default async function OrderDetailsPage({
                   <TableCell>{opening.serial}</TableCell>
                   <TableCell>{opening.abjourType}</TableCell>
                   <TableCell>{opening.color}</TableCell>
-                  <TableCell>{opening.codeLength} m</TableCell>
+                  <TableCell>{opening.codeLength} م</TableCell>
                   <TableCell>{opening.numberOfCodes}</TableCell>
                   <TableCell>
-                    {opening.hasEndCap && "End Cap "}
-                    {opening.hasAccessories && "Accessories"}
+                    {opening.hasEndCap && "غطاء طرفي "}
+                    {opening.hasAccessories && "إكسسوارات"}
                   </TableCell>
                 </TableRow>
               ))}
