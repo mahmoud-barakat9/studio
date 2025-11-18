@@ -30,12 +30,10 @@ export async function login(prevState: any, formData: FormData) {
 
   if (email === 'admin@abjour.com') {
     cookies().set('session', 'admin-session', { httpOnly: true });
-    cookies().set('role', 'admin', { httpOnly: true });
     redirect('/admin/dashboard');
   } else if (email === 'user@abjour.com') {
     cookies().set('session', 'user-session', { httpOnly: true });
-    cookies().set('role', 'user', { httpOnly: true });
-    redirect('/');
+    redirect('/dashboard');
   } else {
     return {
       message: 'Invalid email or password.',
@@ -106,7 +104,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     revalidatePath('/admin/orders');
     redirect('/admin/orders');
   } else {
-    revalidatePath('/');
-    redirect('/?tab=all-orders');
+    revalidatePath('/dashboard');
+    redirect('/dashboard?tab=all-orders');
   }
 }

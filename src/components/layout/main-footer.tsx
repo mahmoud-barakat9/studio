@@ -10,12 +10,13 @@ export function MainFooter() {
   
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-    setIsLoggedIn(document.cookie.includes('session'));
+    const session = document.cookie.includes('session');
+    setIsLoggedIn(session);
   }, []);
 
-  const homeUrl = isLoggedIn ? '/' : '/welcome';
-  const dashboardUrl = isLoggedIn ? '/' : '/login';
-  const newOrderUrl = isLoggedIn ? '/?create_order=true' : '/login';
+  const homeUrl = isLoggedIn ? '/dashboard' : '/welcome';
+  const dashboardUrl = isLoggedIn ? '/dashboard' : '/login';
+  const newOrderUrl = isLoggedIn ? '/dashboard?create_order=true' : '/login';
 
   return (
     <footer className="bg-muted text-muted-foreground">

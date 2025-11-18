@@ -18,7 +18,7 @@ const guestLinks = [
 ];
 
 const userLinks = [
-    { href: "/", label: "لوحة التحكم" },
+    { href: "/dashboard", label: "لوحة التحكم" },
 ]
 
 
@@ -34,10 +34,10 @@ export function MainHeader() {
     setIsClient(true);
     // In a real app, you'd check a session or cookie
     const session = document.cookie.includes('session');
-    const role = document.cookie.includes('role=admin') ? 'admin' : 'user';
+    const isAdminSession = document.cookie.includes('session=admin-session');
     setIsLoggedIn(session);
     if(session) {
-        setIsAdmin(role === 'admin');
+        setIsAdmin(isAdminSession);
     }
   }, []);
 
@@ -47,6 +47,7 @@ export function MainHeader() {
   };
   
   const links = isLoggedIn && !isAdmin ? userLinks : guestLinks;
+  const homeUrl = isLoggedIn && !isAdmin ? "/dashboard" : "/welcome";
 
   if (!isClient) {
     // Return a placeholder or null to avoid hydration errors
@@ -65,7 +66,7 @@ export function MainHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href={isLoggedIn && !isAdmin ? "/" : "/welcome"} className="flex items-center gap-2">
+        <Link href={homeUrl} className="flex items-center gap-2">
           <BrandLogo />
           <span className="font-bold text-lg">طلب أباجور</span>
         </Link>
@@ -103,8 +104,11 @@ export function MainHeader() {
                         {isAdmin ? (
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/dashboard">لوحة التحكم</Link></DropdownMenuItem>
                         )}
+                        <DropdownMenuItem asChild>
+                           <Link href="/admin/profile">الملف الشخصي</Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                         <Link href="/login">تسجيل الخروج</Link>
@@ -169,8 +173,11 @@ export function MainHeader() {
                         {isAdmin ? (
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
-                            <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/dashboard">لوحة التحكم</Link></DropdownMenuItem>
                         )}
+                         <DropdownMenuItem asChild>
+                           <Link href="/admin/profile">الملف الشخصي</Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                         <Link href="/login">تسجيل الخروج</Link>
