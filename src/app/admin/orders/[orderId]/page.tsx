@@ -56,8 +56,18 @@ export default async function AdminOrderDetailPage({
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
+        <div className="flex items-center mb-4">
+            <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
+            <Link href="/admin/orders" className="mr-auto">
+                <Button variant="outline">
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                    العودة إلى كل الطلبات
+                </Button>
+            </Link>
+        </div>
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
+          <div/>
           <div className="flex items-center gap-2">
             <PrintOrder order={order} customer={customer} />
             <WhatsappShare order={order} customer={customer} />
