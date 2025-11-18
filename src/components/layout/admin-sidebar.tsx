@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  UserCog,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,6 +25,8 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { BrandLogo } from "../icons";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -61,25 +64,31 @@ export function AdminSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/login" passHref legacyBehavior>
-                <SidebarMenuButton tooltip="تسجيل الخروج">
-                    <LogOut />
-                    <span>تسجيل الخروج</span>
-                </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
         <div className="flex items-center gap-3 p-2">
-            <Avatar>
-                <AvatarImage src="https://i.pravatar.cc/150?u=admin" />
-                <AvatarFallback>A</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-                <span className="font-semibold text-sm">مسؤول</span>
-                <span className="text-xs text-muted-foreground">admin@abjour.com</span>
-            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-3 justify-start p-2 w-full h-auto">
+                        <Avatar>
+                            <AvatarImage src="https://i.pravatar.cc/150?u=admin" />
+                            <AvatarFallback>A</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start">
+                            <span className="font-semibold text-sm">مسؤول</span>
+                            <span className="text-xs text-muted-foreground">admin@abjour.com</span>
+                        </div>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="mb-2">
+                    <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/admin/profile"><UserCog className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/login"><LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج</Link>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </SidebarFooter>
     </Sidebar>
