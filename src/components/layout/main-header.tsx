@@ -18,6 +18,7 @@ const guestLinks = [
 ];
 
 const userLinks = [
+    { href: "/", label: "الرئيسية" },
     { href: "/#dashboard", label: "طلباتي" },
     { href: "/#features", label: "المميزات" },
     { href: "/#contact", label: "تواصل معنا" },
@@ -78,7 +79,7 @@ export function MainHeader() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                (pathname + window.location.hash) === link.href ? "text-primary" : "text-muted-foreground"
+                (pathname + (typeof window !== 'undefined' ? window.location.hash : '')) === link.href ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.label}
@@ -147,7 +148,7 @@ export function MainHeader() {
                 onClick={handleLinkClick}
                 className={cn(
                   "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                   (pathname + window.location.hash) === link.href ? "text-primary" : "text-foreground"
+                   (pathname + (typeof window !== 'undefined' ? window.location.hash: '')) === link.href ? "text-primary" : "text-foreground"
                 )}
               >
                 {link.label}
