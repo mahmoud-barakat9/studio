@@ -20,7 +20,7 @@ export function Hero() {
           )}
           <div className="absolute inset-0 bg-black/60" />
       </div>
-      <div className="relative z-10 p-4">
+      <div className="relative z-10 p-4 container mx-auto">
         <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-md">
           أباجورك المثالي، بخطوات بسيطة
         </h1>
