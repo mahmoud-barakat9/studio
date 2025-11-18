@@ -99,22 +99,30 @@ const OrderPrintLayout = React.forwardRef<
 });
 OrderPrintLayout.displayName = 'OrderPrintLayout';
 
+const PrintTrigger = React.forwardRef<HTMLButtonElement>((props, ref) => {
+    return (
+      <Button ref={ref} variant="outline">
+        <Printer className="ml-2 h-4 w-4" />
+        طباعة
+      </Button>
+    );
+});
+PrintTrigger.displayName = 'PrintTrigger';
+
+
 export function PrintOrder({ order, customer }: PrintOrderProps) {
   const componentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: `طلب-${order.id}-${order.orderName}`,
-    bodyClass: 'bg-white',
-  });
-
+  
   const customerName = customer?.name || order.customerName;
 
   return (
     <div>
-      <Button variant="outline" onClick={handlePrint}>
-        <Printer className="ml-2 h-4 w-4" />
-        طباعة
-      </Button>
+       <ReactToPrint
+        trigger={() => <PrintTrigger />}
+        content={() => componentRef.current}
+        documentTitle={`طلب-${order.id}-${order.orderName}`}
+        bodyClass="bg-white"
+      />
       <div className="hidden">
         <OrderPrintLayout order={order} customerName={customerName} ref={componentRef} />
       </div>
