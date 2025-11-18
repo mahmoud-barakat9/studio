@@ -9,6 +9,7 @@ import {
   LineChart,
   LogOut,
   UserCog,
+  Boxes,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +34,7 @@ const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badge: true },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
+  { href: "/admin/materials", label: "المواد", icon: Boxes },
   { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 

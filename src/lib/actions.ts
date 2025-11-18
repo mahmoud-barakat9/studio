@@ -6,9 +6,10 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import type { AbjourTypeData } from './definitions';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -233,3 +234,63 @@ export async function archiveOrder(orderId: string) {
     await updateOrderArchivedStatus(orderId, false);
     revalidatePath('/admin/orders');
   }
+
+const materialSchema = z.object({
+  name: z.string().min(2),
+  bladeWidth: z.coerce.number().min(0.1),
+  pricePerSquareMeter: z.coerce.number().min(0.1),
+  colors: z.string().min(1),
+});
+
+export async function createMaterial(formData: z.infer<typeof materialSchema>) {
+    const validatedFields = materialSchema.safeParse(formData);
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+    
+    const materialData: AbjourTypeData = {
+        ...validatedFields.data,
+        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean)
+    };
+
+    try {
+        await addMaterial(materialData);
+        revalidatePath('/admin/materials');
+        redirect('/admin/materials');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
+export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
+     const validatedFields = materialSchema.safeParse(formData);
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+
+    const materialData: AbjourTypeData = {
+        ...validatedFields.data,
+        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean)
+    };
+    
+    try {
+        await updateMaterialDB(materialData);
+        revalidatePath('/admin/materials');
+        revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
+        redirect('/admin/materials');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
+export async function deleteMaterial(materialName: string) {
+    try {
+        await deleteMaterialDB(materialName);
+        revalidatePath('/admin/materials');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}

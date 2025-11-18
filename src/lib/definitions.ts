@@ -24,7 +24,7 @@ export type Order = {
   totalArea: number;
   totalCost: number;
   openings: Opening[];
-  isArchived?: boolean;
+  isArchived: boolean;
 };
 
 export type User = {

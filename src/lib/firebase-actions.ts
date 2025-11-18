@@ -1,7 +1,8 @@
 'use server';
 
+import { abjourTypesData } from '@/lib/abjour-data';
 import { orders, users } from '@/lib/data';
-import type { Order, User, Opening } from '@/lib/definitions';
+import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 
 // This is a mock implementation. In a real app, you would use Firebase.
@@ -114,10 +115,10 @@ export async function updateOrder(orderId: string, orderData: Partial<Order>): P
     }
 
     const totalArea = (orderData.openings || orders[orderIndex].openings).reduce(
-      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0) / 100,
+      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || orders[orderIndex].bladeWidth) / 100,
       0
     );
-    const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
+    const totalCost = totalArea * (orderData.pricePerSquareMeter || orders[orderIndex].pricePerSquareMeter);
 
     const updatedOrder = {
         ...orders[orderIndex],
@@ -183,5 +184,46 @@ export async function deleteUser(userId: string): Promise<{ success: boolean }> 
     
     console.log(`Deleted user ${userId}`);
     revalidatePath('/admin/users');
+    return Promise.resolve({ success: true });
+}
+
+
+// MOCK ACTIONS FOR MATERIALS
+export async function getMaterials(): Promise<AbjourTypeData[]> {
+    return Promise.resolve(abjourTypesData);
+}
+
+export async function getMaterialByName(name: string): Promise<AbjourTypeData | undefined> {
+    return Promise.resolve(abjourTypesData.find(m => m.name === name));
+}
+
+export async function addMaterial(materialData: AbjourTypeData): Promise<AbjourTypeData> {
+    const existing = abjourTypesData.find(m => m.name === materialData.name);
+    if (existing) {
+        throw new Error("مادة بهذا الاسم موجودة بالفعل.");
+    }
+    abjourTypesData.push(materialData);
+    revalidatePath('/admin/materials');
+    return Promise.resolve(materialData);
+}
+
+export async function updateMaterial(materialData: AbjourTypeData): Promise<AbjourTypeData> {
+    const index = abjourTypesData.findIndex(m => m.name === materialData.name);
+    if (index === -1) {
+        throw new Error("المادة غير موجودة.");
+    }
+    abjourTypesData[index] = materialData;
+    revalidatePath('/admin/materials');
+    revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
+    return Promise.resolve(materialData);
+}
+
+export async function deleteMaterial(materialName: string): Promise<{ success: boolean }> {
+    const index = abjourTypesData.findIndex(m => m.name === materialName);
+    if (index === -1) {
+        throw new Error("المادة غير موجودة.");
+    }
+    abjourTypesData.splice(index, 1);
+    revalidatePath('/admin/materials');
     return Promise.resolve({ success: true });
 }
