@@ -21,10 +21,22 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
     return Promise.resolve(orders.filter(order => order.userId === userId));
 }
 
-export async function getUsers(): Promise<User[]> {
+export async function getUsers(includeAdmins = false): Promise<User[]> {
   // In a real app, this would fetch from Firestore
+  if (includeAdmins) {
+      return Promise.resolve(users);
+  }
   return Promise.resolve(users.filter(u => u.role === 'user' && u.email !== 'user@abjour.com'));
 }
+
+export async function getAllUsers(): Promise<User[]> {
+    return Promise.resolve(users);
+}
+
+export async function getUserById(id: string): Promise<User | undefined> {
+    return Promise.resolve(users.find((u) => u.id === id));
+}
+
 
 export async function addUserAndGetId(userData: Omit<User, 'id'>): Promise<string> {
     const newId = `U${users.length + 1}`;
@@ -118,5 +130,42 @@ export async function deleteOrder(orderId: string): Promise<{ success: boolean }
     console.log(`Deleted order ${orderId}`);
     revalidatePath('/admin/orders');
     revalidatePath('/');
+    return Promise.resolve({ success: true });
+}
+
+export async function updateUser(userId: string, userData: Partial<User>): Promise<User> {
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        throw new Error("User not found");
+    }
+    
+    const updatedUser = {
+        ...users[userIndex],
+        ...userData
+    };
+
+    // a real implementation would hash the password
+    // if (userData.password) { ... }
+    
+    users[userIndex] = updatedUser;
+    
+    console.log(`Updated user ${userId}`, updatedUser);
+    revalidatePath('/admin/users');
+    revalidatePath(`/admin/users/${userId}/edit`);
+    return Promise.resolve(updatedUser);
+}
+
+export async function deleteUser(userId: string): Promise<{ success: boolean }> {
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        throw new Error("User not found");
+    }
+    
+    // In a real app, you'd handle associated data like orders.
+    // For this mock, we'll just remove the user.
+    users.splice(userIndex, 1);
+    
+    console.log(`Deleted user ${userId}`);
+    revalidatePath('/admin/users');
     return Promise.resolve({ success: true });
 }

@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
@@ -161,4 +161,31 @@ export async function deleteOrder(orderId: string) {
   await deleteOrderDB(orderId);
   revalidatePath('/admin/orders');
   revalidatePath('/dashboard');
+}
+
+
+export async function updateUser(userId: string, formData: any) {
+    const dataToUpdate: any = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+    };
+
+    if (formData.password) {
+        // In a real app, you would hash this password
+        dataToUpdate.password = formData.password;
+    }
+    
+    await updateUserDB(userId, dataToUpdate);
+
+    revalidatePath('/admin/users');
+    revalidatePath(`/admin/users/${userId}/edit`);
+    redirect('/admin/users');
+
+    return { success: true };
+}
+
+export async function deleteUser(userId: string) {
+    await deleteUserDB(userId);
+    revalidatePath('/admin/users');
 }
