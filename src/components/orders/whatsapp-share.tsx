@@ -12,9 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Share2, Loader2, Send } from 'lucide-react';
+import { Share2, Loader2, Send, Image as ImageIcon } from 'lucide-react';
 import type { Order, User, Opening } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 interface WhatsappShareProps {
   order: Order;
@@ -84,6 +85,7 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
   const [open, setOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShareSupported, setIsShareSupported] = useState(false);
+  const [imageData, setImageData] = useState<{ blob: Blob, url: string } | null>(null);
   const { toast } = useToast();
   const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -93,53 +95,75 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
     }
   }, []);
 
-  const handleShare = async () => {
+  const handleGenerateImage = async () => {
     if (!summaryRef.current) return;
 
     setIsGenerating(true);
+    setImageData(null);
     try {
       const canvas = await html2canvas(summaryRef.current, { scale: 2 });
       const dataUrl = canvas.toDataURL('image/png');
       const blob = await (await fetch(dataUrl)).blob();
-
-      if (isShareSupported && blob) {
-        await navigator.share({
-          files: [
-            new File([blob], `order-${order.id}.png`, {
-              type: 'image/png',
-            }),
-          ],
-          title: `ملخص الطلب: ${order.orderName}`,
-          text: `تفاصيل طلب رقم ${order.id}`,
-        });
-      } else if (!isShareSupported) {
-        toast({
-          variant: 'destructive',
-          title: 'المشاركة غير مدعومة',
-          description: 'متصفحك لا يدعم خاصية المشاركة.',
-        });
-      }
+      setImageData({ blob, url: dataUrl });
     } catch (error) {
-      console.error('Error sharing order:', error);
-      // Avoid showing a toast for user-cancelled share action
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
+      console.error('Error generating image:', error);
       toast({
         variant: 'destructive',
         title: 'حدث خطأ',
-        description: 'لم نتمكن من مشاركة الطلب. حاول مرة أخرى.',
+        description: 'لم نتمكن من إنشاء الصورة. حاول مرة أخرى.',
       });
     } finally {
       setIsGenerating(false);
-      setOpen(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!imageData || !isShareSupported) {
+        toast({
+          variant: 'destructive',
+          title: 'المشاركة غير مدعومة أو الصورة غير جاهزة',
+          description: 'الرجاء إنشاء الصورة أولاً.',
+        });
+      return;
+    }
+    
+    try {
+        await navigator.share({
+            files: [
+            new File([imageData.blob], `order-${order.id}.png`, {
+                type: 'image/png',
+            }),
+            ],
+            title: `ملخص الطلب: ${order.orderName}`,
+            text: `تفاصيل طلب رقم ${order.id}`,
+        });
+        setOpen(false); // Close dialog on successful share
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            // User cancelled the share sheet
+            return;
+        }
+        console.error('Error sharing order:', error);
+        toast({
+            variant: 'destructive',
+            title: 'حدث خطأ',
+            description: 'لم نتمكن من مشاركة الطلب. حاول مرة أخرى.',
+        });
     }
   };
 
   const customerName = customer?.name || order.customerName;
 
+  const resetState = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+        setImageData(null);
+        setIsGenerating(false);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={resetState}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <Share2 className="ml-2 h-4 w-4" />
@@ -150,32 +174,46 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
         <DialogHeader>
           <DialogTitle>مشاركة ملخص الطلب</DialogTitle>
           <DialogDescription>
-            سيتم إنشاء صورة احترافية تحتوي على تفاصيل الطلب لمشاركتها.
+            قم بإنشاء صورة احترافية تحتوي على تفاصيل الطلب لمشاركتها.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 relative">
-            <div className="mx-auto w-fit border rounded-md overflow-hidden">
-             <OrderSummaryTable order={order} customerName={customerName} ref={summaryRef} />
+          <div className={`mx-auto w-fit border rounded-md overflow-hidden ${imageData ? 'hidden' : ''}`}>
+            <OrderSummaryTable order={order} customerName={customerName} ref={summaryRef} />
+          </div>
+          {imageData && (
+             <div className="text-center">
+                <Image src={imageData.url} alt="Order Summary" width={500} height={300} className="rounded-md border mx-auto" />
+             </div>
+          )}
+          {isGenerating && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-            {isGenerating && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            )}
+          )}
         </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            onClick={handleShare}
-            disabled={isGenerating || !isShareSupported}
-          >
-            {isGenerating ? (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="ml-2 h-4 w-4" />
-            )}
-            {isGenerating ? 'جارٍ إنشاء الصورة...' : 'مشاركة الآن'}
-          </Button>
+        <DialogFooter className="sm:justify-between gap-2">
+            <Button
+                type="button"
+                onClick={handleGenerateImage}
+                disabled={isGenerating}
+                variant="secondary"
+            >
+                {isGenerating ? (
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                ) : (
+                <ImageIcon className="ml-2 h-4 w-4" />
+                )}
+                {isGenerating ? 'جارٍ الإنشاء...' : imageData ? 'إعادة إنشاء الصورة' : 'إنشاء الصورة'}
+            </Button>
+            <Button
+                type="button"
+                onClick={handleShare}
+                disabled={!imageData || !isShareSupported}
+            >
+                <Send className="ml-2 h-4 w-4" />
+                مشاركة الآن
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
