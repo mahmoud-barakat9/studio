@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import {
@@ -83,8 +83,15 @@ OrderSummaryTable.displayName = 'OrderSummaryTable';
 export function WhatsappShare({ order, customer }: WhatsappShareProps) {
   const [open, setOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isShareSupported, setIsShareSupported] = useState(false);
   const { toast } = useToast();
   const summaryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      setIsShareSupported(true);
+    }
+  }, []);
 
   const handleShare = async () => {
     if (!summaryRef.current) return;
@@ -95,7 +102,7 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
       const dataUrl = canvas.toDataURL('image/png');
       const blob = await (await fetch(dataUrl)).blob();
 
-      if (navigator.share) {
+      if (isShareSupported) {
         await navigator.share({
           files: [
             new File([blob], `order-${order.id}.png`, {
@@ -156,7 +163,7 @@ export function WhatsappShare({ order, customer }: WhatsappShareProps) {
           <Button
             type="button"
             onClick={handleShare}
-            disabled={isGenerating || !navigator.share}
+            disabled={isGenerating || !isShareSupported}
           >
             {isGenerating ? (
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
