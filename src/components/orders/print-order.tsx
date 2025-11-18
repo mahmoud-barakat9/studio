@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import ReactToPrint, { useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import type { Order, User, Opening } from '@/lib/definitions';
@@ -56,7 +56,7 @@ const OrderPrintLayout = React.forwardRef<
                 <table className="w-full border-collapse text-sm text-center">
                     <thead className="bg-gray-200 font-bold">
                     <tr>
-                        <th className="border p-2">رقم القطعة</th>
+                        <th className="border p-2">#</th>
                         <th className="border p-2">نوع التركيب</th>
                         <th className="border p-2">طول الشفرة (م)</th>
                         <th className="border p-2">عدد الشفرات</th>
@@ -66,11 +66,11 @@ const OrderPrintLayout = React.forwardRef<
                     </tr>
                     </thead>
                     <tbody>
-                    {order.openings.map((opening: Opening) => {
+                    {order.openings.map((opening: Opening, index) => {
                         const area = (opening.codeLength * opening.numberOfCodes * order.bladeWidth / 100).toFixed(2);
                         return (
                         <tr key={opening.serial} className="even:bg-gray-50">
-                            <td className="border p-2">{opening.serial}</td>
+                            <td className="border p-2">{index + 1}</td>
                             <td className="border p-2">{opening.abjourType}</td>
                             <td className="border p-2">{opening.codeLength}</td>
                             <td className="border p-2">{opening.numberOfCodes}</td>
@@ -99,16 +99,6 @@ const OrderPrintLayout = React.forwardRef<
   );
 });
 OrderPrintLayout.displayName = 'OrderPrintLayout';
-
-const PrintTrigger = React.forwardRef<HTMLButtonElement>((_props, ref) => {
-    return (
-      <Button ref={ref} variant="outline">
-        <Printer className="ml-2 h-4 w-4" />
-        طباعة
-      </Button>
-    );
-});
-PrintTrigger.displayName = 'PrintTrigger';
 
 
 export function PrintOrder({ order, customer }: PrintOrderProps) {

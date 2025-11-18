@@ -44,7 +44,7 @@ import type { User } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 
 const openingSchema = z.object({
-  serial: z.string().min(1, 'الرقم التسلسلي مطلوب.'),
+  serial: z.string(), // This will be managed internally now
   abjourType: z.string().min(1, 'النوع مطلوب.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
@@ -444,7 +444,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     className="w-full sm:w-auto"
                     onClick={() =>
                       append({
-                        serial: `A${fields.length + 1}`,
+                        serial: `OP${fields.length + 1}`, // Temporary internal ID
                         abjourType: 'قياسي',
                         codeLength: 0,
                         numberOfCodes: 0,
@@ -471,6 +471,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     key={field.id}
                     className="p-4 border rounded-lg relative space-y-4"
                   >
+                    <div className="absolute top-2 right-2 font-bold text-lg text-muted-foreground">
+                        {index + 1}
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -480,20 +483,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`openings.${index}.serial`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>الرقم التسلسلي</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <div className="grid md:grid-cols-2 gap-4 pt-4">
+                      
                       <FormField
                         control={form.control}
                         name={`openings.${index}.abjourType`}

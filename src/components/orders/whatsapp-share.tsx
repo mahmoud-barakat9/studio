@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Share2, Loader2, Send, Image as ImageIcon } from 'lucide-react';
+import { Share2, Loader2, Send, ImageIcon } from 'lucide-react';
 import type { Order, User, Opening } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -52,7 +52,7 @@ const OrderSummaryTable = React.forwardRef<
       <table className="w-full border-collapse text-xs text-center">
         <thead className="bg-gray-200">
           <tr>
-            <th className="border p-1">رقم القطعة</th>
+            <th className="border p-1">#</th>
             <th className="border p-1">اسم القطعة</th>
             <th className="border p-1">طول الشفرة</th>
             <th className="border p-1">عدد الشفرات</th>
@@ -61,11 +61,11 @@ const OrderSummaryTable = React.forwardRef<
           </tr>
         </thead>
         <tbody>
-          {order.openings.map((opening: Opening) => {
+          {order.openings.map((opening: Opening, index) => {
             const area = (opening.codeLength * opening.numberOfCodes * 0.05).toFixed(2);
             return (
               <tr key={opening.serial}>
-                <td className="border p-1">{opening.serial}</td>
+                <td className="border p-1">{index + 1}</td>
                 <td className="border p-1">{opening.abjourType}</td>
                 <td className="border p-1">{opening.codeLength}م</td>
                 <td className="border p-1">{opening.numberOfCodes}</td>

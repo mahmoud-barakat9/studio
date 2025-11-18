@@ -111,7 +111,7 @@ export default async function AdminOrderDetailPage({
                 <Table className="min-w-full">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>الرقم التسلسلي</TableHead>
+                        <TableHead>#</TableHead>
                         <TableHead>نوع التركيب</TableHead>
                         <TableHead>طول الكود</TableHead>
                         <TableHead>عدد الأكواد</TableHead>
@@ -119,9 +119,9 @@ export default async function AdminOrderDetailPage({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {order.openings.map((opening) => (
+                      {order.openings.map((opening, index) => (
                         <TableRow key={opening.serial}>
-                          <TableCell>{opening.serial}</TableCell>
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell>{opening.abjourType}</TableCell>
                           <TableCell>{opening.codeLength}م</TableCell>
                           <TableCell>{opening.numberOfCodes}</TableCell>
