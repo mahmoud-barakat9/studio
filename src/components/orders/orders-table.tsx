@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2 } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
-import { approveOrder, rejectOrder, deleteOrder } from "@/lib/actions";
+import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder } from "@/lib/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,28 +68,45 @@ function DeleteOrderAlert({ orderId }: { orderId: string }) {
 function AdminOrderActions({ order }: { order: Order }) {
   return (
     <div className="flex gap-2">
-      {order.status === "Pending" && (
-        <>
-           <form action={() => approveOrder(order.id)}>
-            <Button size="icon" variant="outline" className="h-8 w-8 border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600">
-              <Check className="h-4 w-4" />
-              <span className="sr-only">الموافقة على الطلب</span>
+      {order.isArchived ? (
+         <form action={() => restoreOrder(order.id)}>
+            <Button size="icon" variant="outline" className="h-8 w-8">
+              <ArchiveRestore className="h-4 w-4" />
+              <span className="sr-only">استعادة الطلب</span>
             </Button>
           </form>
-          <form action={() => rejectOrder(order.id)}>
-            <Button size="icon" variant="outline" className="h-8 w-8 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600">
-              <X className="h-4 w-4" />
-              <span className="sr-only">رفض الطلب</span>
+      ) : (
+         <>
+          {order.status === "Pending" && (
+            <>
+              <form action={() => approveOrder(order.id)}>
+                <Button size="icon" variant="outline" className="h-8 w-8 border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600">
+                  <Check className="h-4 w-4" />
+                  <span className="sr-only">الموافقة على الطلب</span>
+                </Button>
+              </form>
+              <form action={() => rejectOrder(order.id)}>
+                <Button size="icon" variant="outline" className="h-8 w-8 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600">
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">رفض الطلب</span>
+                </Button>
+              </form>
+            </>
+          )}
+          <Link href={`/admin/orders/${order.id}/edit`}>
+            <Button size="icon" variant="outline" className="h-8 w-8">
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">تعديل الطلب</span>
+            </Button>
+          </Link>
+          <form action={() => archiveOrder(order.id)}>
+            <Button size="icon" variant="outline" className="h-8 w-8">
+              <Archive className="h-4 w-4" />
+              <span className="sr-only">أرشفة الطلب</span>
             </Button>
           </form>
         </>
       )}
-       <Link href={`/admin/orders/${order.id}/edit`}>
-          <Button size="icon" variant="outline" className="h-8 w-8">
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">تعديل الطلب</span>
-          </Button>
-        </Link>
         <DeleteOrderAlert orderId={order.id} />
     </div>
   );

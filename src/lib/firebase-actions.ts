@@ -70,6 +70,7 @@ export async function addOrder(orderData: any) {
         totalArea,
         totalCost,
         openings: orderData.openings,
+        isArchived: false,
     };
     orders.unshift(newOrder); // Add to the beginning of the array
     console.log("Added new order", newOrder);
@@ -87,6 +88,17 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     console.log(`Updated order ${orderId} status to ${status}`);
     revalidatePath('/admin/orders');
     revalidatePath('/');
+    return Promise.resolve(orders[orderIndex]);
+}
+
+export async function updateOrderArchivedStatus(orderId: string, isArchived: boolean): Promise<Order> {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) {
+        throw new Error("Order not found");
+    }
+    orders[orderIndex].isArchived = isArchived;
+    console.log(`Updated order ${orderId} archived status to ${isArchived}`);
+    revalidatePath('/admin/orders');
     return Promise.resolve(orders[orderIndex]);
 }
 

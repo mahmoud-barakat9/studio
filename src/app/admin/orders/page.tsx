@@ -3,10 +3,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { getOrders, getUsers } from "@/lib/firebase-actions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function AdminOrdersPage() {
   const orders = await getOrders();
   const users = await getUsers();
+
+  const activeOrders = orders.filter(order => !order.isArchived);
+  const archivedOrders = orders.filter(order => order.isArchived);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -21,7 +25,19 @@ export default async function AdminOrdersPage() {
             </Link>
         </div>
       </div>
-      <OrdersTable orders={orders} users={users} isAdmin={true} />
+      
+      <Tabs defaultValue="active">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="active">الطلبات النشطة ({activeOrders.length})</TabsTrigger>
+          <TabsTrigger value="archived">الطلبات المؤرشفة ({archivedOrders.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
+          <OrdersTable orders={activeOrders} users={users} isAdmin={true} />
+        </TabsContent>
+        <TabsContent value="archived">
+          <OrdersTable orders={archivedOrders} users={users} isAdmin={true} />
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }

@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
@@ -222,3 +222,14 @@ export async function deleteUser(userId: string) {
     await deleteUserDB(userId);
     revalidatePath('/admin/users');
 }
+
+
+export async function archiveOrder(orderId: string) {
+    await updateOrderArchivedStatus(orderId, true);
+    revalidatePath('/admin/orders');
+  }
+  
+  export async function restoreOrder(orderId: string) {
+    await updateOrderArchivedStatus(orderId, false);
+    revalidatePath('/admin/orders');
+  }

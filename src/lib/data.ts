@@ -39,6 +39,7 @@ export const orders: Order[] = [
         hasAccessories: true,
       },
     ],
+    isArchived: true,
   },
   {
     id: "ORD002",
@@ -79,6 +80,7 @@ export const orders: Order[] = [
         hasAccessories: true,
       },
     ],
+    isArchived: false,
   },
   {
     id: "ORD003",
@@ -101,6 +103,7 @@ export const orders: Order[] = [
         hasAccessories: false,
       },
     ],
+    isArchived: false,
   },
   {
     id: "ORD004",
@@ -117,5 +120,6 @@ export const orders: Order[] = [
         { serial: "D02", abjourType: "Standard", color: "White", codeLength: 2.8, numberOfCodes: 56, hasEndCap: true, hasAccessories: true },
         { serial: "D03", abjourType: "Narrow", color: "Silver", codeLength: 1.5, numberOfCodes: 30, hasEndCap: false, hasAccessories: false },
     ],
+    isArchived: false,
   },
 ];
