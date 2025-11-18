@@ -19,7 +19,6 @@ const guestLinks = [
 
 const userLinks = [
     { href: "/", label: "الرئيسية" },
-    { href: "/#dashboard", label: "طلباتي" },
     { href: "/#features", label: "المميزات" },
     { href: "/#contact", label: "تواصل معنا" },
 ]
@@ -85,6 +84,17 @@ export function MainHeader() {
               {link.label}
             </Link>
           ))}
+           {isLoggedIn && !isAdmin && (
+             <Link
+              href="/#dashboard"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                (pathname + (typeof window !== 'undefined' ? window.location.hash : '')) === "/#dashboard" ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              طلباتي
+            </Link>
+          )}
         </nav>
         <div className="hidden md:flex items-center gap-2">
             {isLoggedIn ? (
@@ -154,7 +164,19 @@ export function MainHeader() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex flex-col gap-2 w-full mt-4">
+             {isLoggedIn && !isAdmin && (
+              <Link
+                href="/#dashboard"
+                onClick={handleLinkClick}
+                className={cn(
+                  "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
+                  (pathname + (typeof window !== 'undefined' ? window.location.hash: '')) === "/#dashboard" ? "text-primary" : "text-foreground"
+                )}
+              >
+                طلباتي
+              </Link>
+            )}
+            <div className="flex flex-col gap-2 w-full mt-4 items-center">
                {isLoggedIn ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
