@@ -121,54 +121,56 @@ export function OrdersTable({
   return (
     <Card>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>رقم الطلب</TableHead>
-              <TableHead>اسم الطلب</TableHead>
-              {isAdmin && <TableHead>العميل</TableHead>}
-              <TableHead>التاريخ</TableHead>
-              <TableHead>الحالة</TableHead>
-              <TableHead className="text-left">التكلفة الإجمالية</TableHead>
-              <TableHead className="text-left">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => {
-              const statusStyle =
-                statusStyles[order.status] || statusStyles["Pending"];
-              return (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.orderName}</TableCell>
-                  {isAdmin && <TableCell>{getUserName(order.userId)}</TableCell>}
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusStyle.variant}>
-                      {statusStyle.text}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-left">
-                    ${order.totalCost.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-left">
-                     <div className="flex items-center gap-2">
-                        {isAdmin && <AdminOrderActions order={order} />}
-                        {(isAdmin || showViewAction) && (
-                        <Link href={getViewLink(order.id)} scroll={false}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">عرض الطلب</span>
-                            </Button>
-                        </Link>
-                        )}
-                      </div>
-                  </TableCell>
+        <div className="overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>رقم الطلب</TableHead>
+                  <TableHead>اسم الطلب</TableHead>
+                  {isAdmin && <TableHead>العميل</TableHead>}
+                  <TableHead>التاريخ</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead className="text-left">التكلفة الإجمالية</TableHead>
+                  <TableHead className="text-left">الإجراءات</TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => {
+                  const statusStyle =
+                    statusStyles[order.status] || statusStyles["Pending"];
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.id}</TableCell>
+                      <TableCell>{order.orderName}</TableCell>
+                      {isAdmin && <TableCell>{getUserName(order.userId)}</TableCell>}
+                      <TableCell>{order.date}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusStyle.variant}>
+                          {statusStyle.text}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-left">
+                        ${order.totalCost.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-left">
+                         <div className="flex items-center gap-2">
+                            {isAdmin && <AdminOrderActions order={order} />}
+                            {(isAdmin || showViewAction) && (
+                            <Link href={getViewLink(order.id)} scroll={false}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">عرض الطلب</span>
+                                </Button>
+                            </Link>
+                            )}
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+        </div>
       </CardContent>
     </Card>
   );

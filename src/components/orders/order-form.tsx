@@ -191,6 +191,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 title: 'تم إرسال الطلب بنجاح!',
                 description: `تم إنشاء طلبك "${data.orderName}".`,
             });
+            form.reset();
         }
      });
   };
@@ -198,8 +199,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -302,12 +303,18 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>فتحات الطلب</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <CardTitle>فتحات الطلب</CardTitle>
+                    <CardDescription>
+                      أضف فتحة واحدة أو أكثر لهذا الطلب.
+                    </CardDescription>
+                  </div>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
+                    className="w-full sm:w-auto"
                     onClick={() =>
                       append({
                         serial: `A${fields.length + 1}`,
@@ -325,9 +332,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     <PlusCircle className="w-4 h-4 ml-2" /> إضافة فتحة
                   </Button>
                 </div>
-                <CardDescription>
-                  أضف فتحة واحدة أو أكثر لهذا الطلب.
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {fields.map((field, index) => (
@@ -339,7 +343,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 left-2"
+                      className="absolute top-2 left-2 w-6 h-6"
                       onClick={() => remove(index)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -417,7 +421,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     <div className="grid md:grid-cols-2 gap-4 items-end">
                       <div>
                         <p className="text-sm font-medium mb-2">
-                          أدخل الأبعاد يدويًا أو...
+                          الأبعاد اليدوية
                         </p>
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
@@ -450,7 +454,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                       </div>
                       <div className="space-y-4">
                         <p className="text-sm font-medium">
-                          ...احسب تلقائيًا باستخدام الذكاء الاصطناعي
+                          حساب تلقائي باستخدام الذكاء الاصطناعي
                         </p>
                         <div className="grid grid-cols-2 gap-4 items-end">
                           <FormField
@@ -524,7 +528,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
             </Card>
           </div>
 
-          <div className="md:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>

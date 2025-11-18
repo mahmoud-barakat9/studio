@@ -149,8 +149,8 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -171,12 +171,18 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>فتحات الطلب</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                   <div>
+                    <CardTitle>فتحات الطلب</CardTitle>
+                    <CardDescription>
+                      أضف أو عدّل الفتحات الخاصة بهذا الطلب.
+                    </CardDescription>
+                  </div>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
+                    className="w-full sm:w-auto"
                     onClick={() =>
                       append({
                         serial: `A${fields.length + 1}`,
@@ -194,9 +200,6 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
                     <PlusCircle className="w-4 h-4 ml-2" /> إضافة فتحة
                   </Button>
                 </div>
-                <CardDescription>
-                  أضف أو عدّل الفتحات الخاصة بهذا الطلب.
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {fields.map((field, index) => (
@@ -208,7 +211,7 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 left-2"
+                      className="absolute top-2 left-2 w-6 h-6"
                       onClick={() => remove(index)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -393,7 +396,7 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
             </Card>
           </div>
 
-          <div className="md:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>

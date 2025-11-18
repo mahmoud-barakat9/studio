@@ -54,14 +54,14 @@ export default async function AdminOrderDetailPage({
   const customer = users.find((u) => u.id === order.userId);
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex items-center justify-between">
+    <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
           <WhatsappShare order={order} customer={customer} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-2 grid auto-rows-max gap-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="lg:col-span-2 xl:col-span-3 grid auto-rows-max gap-4">
            <Card>
             <CardHeader>
                 <CardTitle>تتبع حالة الطلب</CardTitle>
@@ -75,39 +75,41 @@ export default async function AdminOrderDetailPage({
               <CardTitle>تفاصيل الفتحات</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>الرقم التسلسلي</TableHead>
-                    <TableHead>النوع</TableHead>
-                    <TableHead>اللون</TableHead>
-                    <TableHead>طول الكود</TableHead>
-                    <TableHead>عدد الأكواد</TableHead>
-                    <TableHead>إضافات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.openings.map((opening) => (
-                    <TableRow key={opening.serial}>
-                      <TableCell>{opening.serial}</TableCell>
-                      <TableCell>{opening.abjourType}</TableCell>
-                      <TableCell>{opening.color}</TableCell>
-                      <TableCell>{opening.codeLength}م</TableCell>
-                      <TableCell>{opening.numberOfCodes}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {opening.hasEndCap && <Badge variant="secondary">غطاء طرفي</Badge>}
-                          {opening.hasAccessories && <Badge variant="secondary">إكسسوارات</Badge>}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>الرقم التسلسلي</TableHead>
+                        <TableHead>النوع</TableHead>
+                        <TableHead>اللون</TableHead>
+                        <TableHead>طول الكود</TableHead>
+                        <TableHead>عدد الأكواد</TableHead>
+                        <TableHead>إضافات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {order.openings.map((opening) => (
+                        <TableRow key={opening.serial}>
+                          <TableCell>{opening.serial}</TableCell>
+                          <TableCell>{opening.abjourType}</TableCell>
+                          <TableCell>{opening.color}</TableCell>
+                          <TableCell>{opening.codeLength}م</TableCell>
+                          <TableCell>{opening.numberOfCodes}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {opening.hasEndCap && <Badge variant="secondary">غطاء طرفي</Badge>}
+                              {opening.hasAccessories && <Badge variant="secondary">إكسسوارات</Badge>}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
-        <div className="md:col-span-1 grid auto-rows-max gap-4">
+        <div className="lg:col-span-1 xl:col-span-1 grid auto-rows-max gap-4">
             <Card>
                 <CardHeader>
                     <CardTitle>{order.orderName}</CardTitle>

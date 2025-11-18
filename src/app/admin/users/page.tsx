@@ -64,38 +64,40 @@ export default async function AdminUsersPage() {
           <CardTitle>إدارة المستخدمين</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>الاسم</TableHead>
-                <TableHead>البريد الإلكتروني</TableHead>
-                <TableHead>الدور</TableHead>
-                <TableHead>الإجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? 'مسؤول' : 'مستخدم'}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                        <Link href={`/admin/users/${user.id}/edit`}>
-                            <Button size="icon" variant="outline" className="h-8 w-8">
-                                <Pencil className="h-4 w-4" />
-                                <span className="sr-only">تعديل المستخدم</span>
-                            </Button>
-                        </Link>
-                        <DeleteUserAlert userId={user.id} />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>الاسم</TableHead>
+                    <TableHead>البريد الإلكتروني</TableHead>
+                    <TableHead>الدور</TableHead>
+                    <TableHead>الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? 'مسؤول' : 'مستخدم'}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                            <Link href={`/admin/users/${user.id}/edit`}>
+                                <Button size="icon" variant="outline" className="h-8 w-8">
+                                    <Pencil className="h-4 w-4" />
+                                    <span className="sr-only">تعديل المستخدم</span>
+                                </Button>
+                            </Link>
+                            <DeleteUserAlert userId={user.id} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </main>
