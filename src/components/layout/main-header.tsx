@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, User, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const guestLinks = [
   { href: "/", label: "الرئيسية" },
-  { href: "/#create-order", label: "إنشاء طلب" },
+  { href: "/?create_order=true#create-order", label: "إنشاء طلب" },
   { href: "/#features", label: "المميزات" },
   { href: "/#contact", label: "تواصل معنا" },
 ];
 
 const userLinks = [
-    { href: "/dashboard", label: "لوحة التحكم" },
-    { href: "/dashboard/orders", label: "طلباتي" },
+    { href: "/", label: "لوحة التحكم" },
 ]
 
 
@@ -106,8 +105,7 @@ export function MainHeader() {
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
                             <>
-                                <DropdownMenuItem asChild><Link href="/dashboard">لوحة التحكم</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/dashboard/orders">طلباتي</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
                             </>
                         )}
                         <DropdownMenuSeparator />

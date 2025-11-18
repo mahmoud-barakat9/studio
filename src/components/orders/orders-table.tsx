@@ -42,7 +42,7 @@ export function OrdersTable({
       return `/admin/orders/${orderId}`;
     }
     if (showViewAction) {
-      return `/dashboard?view_order=${orderId}`;
+      return `/?view_order=${orderId}`;
     }
     return `/dashboard/orders/${orderId}`;
   };

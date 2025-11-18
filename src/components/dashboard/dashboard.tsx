@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,15 +21,32 @@ import type { Order } from "@/lib/definitions";
 
 export function Dashboard() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
   const [activeTab, setActiveTab] = useState("overview");
 
   const viewOrderId = searchParams.get('view_order');
+  const createOrder = searchParams.get('create_order');
+
+  useEffect(() => {
+    if(createOrder) {
+      setActiveTab('create-order');
+    }
+  }, [createOrder]);
 
   useEffect(() => {
     getOrdersByUserId("2").then(setUserOrders);
   }, []);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // clean up query params
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.delete('view_order');
+    newParams.delete('create_order');
+    router.replace(`?${newParams.toString()}`, {scroll: false});
+  }
 
   useEffect(() => {
     if (viewOrderId && userOrders.length > 0) {
@@ -39,10 +56,9 @@ export function Dashboard() {
         setActiveTab("track-order");
       }
     } else {
-        // If viewOrderId is removed from URL, switch back to overview
-        if(activeTab === 'track-order'){
-            setActiveTab("overview");
-        }
+      if(activeTab === 'track-order' && !viewOrderId){
+        setActiveTab("overview");
+      }
     }
   }, [viewOrderId, userOrders, activeTab]);
 
@@ -52,7 +68,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8">
+    <div className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -64,7 +80,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="create-order">إنشاء طلب جديد</TabsTrigger>
