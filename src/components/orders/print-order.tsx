@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import ReactToPrint from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import type { Order, User, Opening } from '@/lib/definitions';
