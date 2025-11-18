@@ -45,7 +45,8 @@ export function Dashboard() {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.delete('view_order');
     newParams.delete('create_order');
-    router.replace(`?${newParams.toString()}`, {scroll: false});
+    const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '');
+    router.replace(newUrl, {scroll: false});
   }
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
+    <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

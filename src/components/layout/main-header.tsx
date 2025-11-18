@@ -19,7 +19,7 @@ const guestLinks = [
 ];
 
 const userLinks = [
-    { href: "/", label: "لوحة التحكم" },
+    { href: "/#dashboard", label: "طلباتي" },
 ]
 
 
@@ -47,7 +47,7 @@ export function MainHeader() {
     setIsOpen(false);
   };
   
-  const links = isLoggedIn ? userLinks : guestLinks;
+  const links = isLoggedIn && !isAdmin ? userLinks : guestLinks;
 
   if (!isClient) {
     // Return a placeholder or null to avoid hydration errors
@@ -77,7 +77,7 @@ export function MainHeader() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                pathname === link.href ? "text-primary" : "text-muted-foreground"
+                (pathname + window.location.hash) === link.href ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.label}
@@ -105,7 +105,7 @@ export function MainHeader() {
                              <DropdownMenuItem asChild><Link href="/admin/dashboard">لوحة تحكم المسؤول</Link></DropdownMenuItem>
                         ): (
                             <>
-                                <DropdownMenuItem asChild><Link href="/">لوحة التحكم</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/#dashboard">لوحة التحكم</Link></DropdownMenuItem>
                             </>
                         )}
                         <DropdownMenuSeparator />
@@ -146,7 +146,7 @@ export function MainHeader() {
                 onClick={handleLinkClick}
                 className={cn(
                   "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                   pathname === link.href ? "text-primary" : "text-foreground"
+                   (pathname + window.location.hash) === link.href ? "text-primary" : "text-foreground"
                 )}
               >
                 {link.label}
