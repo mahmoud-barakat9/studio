@@ -1,7 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { BrandLogo } from "@/components/icons";
+import { useState, useEffect } from "react";
 
 export function MainFooter() {
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="bg-muted text-muted-foreground">
       <div className="container py-8 px-4 md:px-6">
@@ -42,7 +51,7 @@ export function MainFooter() {
           </div>
         </div>
         <div className="border-t mt-8 pt-4 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} طلب أباجور. جميع الحقوق محفوظة.</p>
+          <p>&copy; {currentYear} طلب أباجور. جميع الحقوق محفوظة.</p>
         </div>
       </div>
     </footer>
