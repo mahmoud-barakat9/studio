@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/actions";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm() {
   const [state, action] = useActionState(login, undefined);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <form action={action}>
@@ -39,7 +41,26 @@ export function LoginForm() {
               هل نسيت كلمة المرور؟
             </Link>
           </div>
-          <Input id="password" name="password" type="password" required defaultValue="password" />
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              defaultValue="password"
+              className="pl-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+              <span className="sr-only">{showPassword ? 'إخفاء' : 'إظهار'} كلمة المرور</span>
+            </Button>
+          </div>
            {state?.errors?.password && (
             <p className="text-sm text-destructive">{state.errors.password}</p>
           )}
