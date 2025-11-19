@@ -29,7 +29,7 @@ export function OpeningsTable({ openings, onUpdateOpening, onDeleteOpening }: Op
     };
     
     const totalOpenings = openings.length;
-    const totalCodeLength = openings.reduce((sum, op) => sum + op.codeLength, 0);
+    const totalCodeLength = openings.reduce((sum, op) => sum + (op.codeLength * op.numberOfCodes), 0);
     const totalNumberOfCodes = openings.reduce((sum, op) => sum + op.numberOfCodes, 0);
 
     return (
@@ -61,7 +61,7 @@ export function OpeningsTable({ openings, onUpdateOpening, onDeleteOpening }: Op
                                 <TableCell className="max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
                                 <TableCell className="text-left">
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleEdit(index)}>
+                                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleEdit(index)} disabled>
                                             <Pencil className="h-4 w-4" />
                                             <span className="sr-only">تعديل</span>
                                         </Button>
@@ -76,17 +76,17 @@ export function OpeningsTable({ openings, onUpdateOpening, onDeleteOpening }: Op
                     </TableBody>
                 </Table>
             </div>
-             <div className="mt-4 p-4 bg-muted/50 rounded-lg text-sm font-medium">
+             <div className="mt-4 p-4 bg-muted/50 rounded-lg text-sm font-medium space-y-1">
                 <div className="flex justify-between">
                     <span>إجمالي الفتحات:</span>
                     <span>{totalOpenings}</span>
                 </div>
                  <div className="flex justify-between">
-                    <span>إجمالي طول الشفرات:</span>
+                    <span>إجمالي طول الشفرات (مجمع):</span>
                     <span>{totalCodeLength.toFixed(2)} م</span>
                 </div>
                  <div className="flex justify-between">
-                    <span>إجمالي عدد الشفرات:</span>
+                    <span>إجمالي عدد الشفرات (مجمع):</span>
                     <span>{totalNumberOfCodes}</span>
                 </div>
             </div>

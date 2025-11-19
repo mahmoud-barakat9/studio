@@ -76,7 +76,7 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
     const onSubmit = (data: OpeningFormValues) => {
         let finalOpeningData: Omit<Opening, 'serial' | 'abjourType'>;
 
-        if (data.method === 'measure') {
+        if (data.method === 'measure' && calculatedCodeLength > 0 && calculatedNumberOfCodes > 0) {
             finalOpeningData = {
                 width: data.width,
                 height: data.height,
@@ -149,14 +149,18 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                                             className="grid grid-cols-2 gap-4"
                                         >
                                             <FormItem>
-                                                <RadioGroupItem value="direct" id="direct" className="sr-only" />
+                                                <FormControl>
+                                                    <RadioGroupItem value="direct" id="direct" className="sr-only" />
+                                                </FormControl>
                                                 <FormLabel htmlFor="direct" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${field.value === 'direct' ? 'border-primary' : ''}`}>
                                                     طريقة مباشرة
                                                     <span className="text-xs text-muted-foreground mt-1">طول الشفرة + عدد الشفرات</span>
                                                 </FormLabel>
                                             </FormItem>
                                              <FormItem>
-                                                <RadioGroupItem value="measure" id="measure" className="sr-only"/>
+                                                <FormControl>
+                                                    <RadioGroupItem value="measure" id="measure" className="sr-only"/>
+                                                </FormControl>
                                                 <FormLabel htmlFor="measure" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${field.value === 'measure' ? 'border-primary' : ''}`}>
                                                     طريقة القياس
                                                      <span className="text-xs text-muted-foreground mt-1">عرض × ارتفاع الفتحة</span>
@@ -182,8 +186,9 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                                                 <FormItem>
                                                     <FormLabel>طول الشفرة (م)</FormLabel>
                                                     <FormControl>
-                                                        <Input type="number" step="0.01" {...field} />
+                                                        <Input type="number" step="0.01" {...field} value={field.value ?? ''} />
                                                     </FormControl>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -194,8 +199,9 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                                                 <FormItem>
                                                     <FormLabel>عدد الشفرات</FormLabel>
                                                     <FormControl>
-                                                        <Input type="number" {...field} />
+                                                        <Input type="number" {...field} value={field.value ?? ''} />
                                                     </FormControl>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -210,8 +216,9 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                                                     <FormItem>
                                                         <FormLabel>عرض الفتحة (سم)</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} />
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
                                                         </FormControl>
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
@@ -222,13 +229,14 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                                                     <FormItem>
                                                         <FormLabel>ارتفاع الفتحة (سم)</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} />
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
                                                         </FormControl>
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
                                         </div>
-                                        {(watchWidth || 0) > 0 && (watchHeight || 0) > 0 && (
+                                        {(watchWidth || 0) > 0 && (watchHeight || 0) > 0 && bladeWidth > 0 && (
                                             <div className="p-3 bg-muted/50 rounded-md text-sm space-y-2">
                                                 <h4 className="font-semibold text-center">الحسابات التلقائية</h4>
                                                 <div className="flex justify-between"><span>العرض النهائي:</span> <span className="font-mono">{(finalWidth / 100).toFixed(2)} م</span></div>
