@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info } from 'lucide-react';
+import { Wand2, Loader2, Info, PlusCircle } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -185,10 +185,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
       serial: `OP${watchedOpenings.length + 1}`,
     };
     form.setValue('openings', [...watchedOpenings, newOpening]);
-    toast({
-        title: "تمت إضافة الفتحة",
-        description: `الفتحة رقم ${watchedOpenings.length + 1} أضيفت إلى الجدول.`,
-      })
   };
 
   const handleUpdateOpening = (index: number, updatedOpening: Opening) => {
@@ -438,27 +434,36 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
-            <AddOpeningForm 
-                onAddOpening={handleAddOpening} 
-                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
-            />
-
-            {watchedOpenings.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">الفتحات المضافة</h3>
-                   <OpeningsTable 
-                      openings={watchedOpenings}
-                      onUpdateOpening={handleUpdateOpening}
-                      onDeleteOpening={handleDeleteOpening}
-                   />
-                   {form.formState.errors.openings && (
-                    <p className="text-sm font-medium text-destructive mt-2">
-                      {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                    </p>
-                  )}
-                </div>
-            )}
+            <Card>
+                <CardHeader>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            <CardTitle>فتحات الطلب</CardTitle>
+                            <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
+                        </div>
+                        <AddOpeningForm 
+                            onAddOpening={handleAddOpening} 
+                            bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                            isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
+                            openingsCount={watchedOpenings.length}
+                        />
+                    </div>
+                </CardHeader>
+                {watchedOpenings.length > 0 && (
+                    <CardContent>
+                        <OpeningsTable 
+                            openings={watchedOpenings}
+                            onUpdateOpening={handleUpdateOpening}
+                            onDeleteOpening={handleDeleteOpening}
+                        />
+                        {form.formState.errors.openings && (
+                            <p className="text-sm font-medium text-destructive mt-2">
+                            {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
+                            </p>
+                        )}
+                    </CardContent>
+                )}
+            </Card>
             
           </div>
 
