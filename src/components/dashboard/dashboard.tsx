@@ -15,21 +15,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { getOrdersByUserId, getUserById } from "@/lib/firebase-actions";
+import { getOrdersByUserId } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
-import type { Order, User } from "@/lib/definitions";
-import { Skeleton } from "../ui/skeleton";
+import type { Order } from "@/lib/definitions";
 
 export function Dashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   
   const viewOrderId = searchParams.get('view_order');
+  // Mock user, in a real app, this would come from an auth context
+  const mockUserId = '1'; 
+  const mockUserName = "Ahmed Ali";
 
   const getDefaultTab = useCallback(() => {
     if (viewOrderId) return 'track-order';
@@ -39,31 +40,15 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState(getDefaultTab());
 
   useEffect(() => {
-    async function fetchUserData() {
+    async function fetchUserOrders() {
       setIsLoading(true);
-      const userId = getCookie('session-id');
-      if (userId) {
-        try {
-            const user = await getUserById(userId as string);
-            if (user) {
-              setCurrentUser(user);
-              const orders = await getOrdersByUserId(userId as string);
-              setUserOrders(orders);
-            } else {
-              // If user not found, maybe session is invalid
-              router.push('/login');
-            }
-        } catch(e) {
-            console.error("Failed to fetch user data", e);
-            router.push('/login');
-        }
-      } else {
-        router.push('/login');
-      }
+      // Simulating fetching orders for a logged-in user
+      const orders = await getOrdersByUserId(mockUserId);
+      setUserOrders(orders);
       setIsLoading(false);
     }
-    fetchUserData();
-  }, [router]);
+    fetchUserOrders();
+  }, []);
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
@@ -97,40 +82,13 @@ export function Dashboard() {
     handleTabChange('all-orders');
   }
 
-  if (isLoading) {
-    return (
-      <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-9 w-64 mb-2" />
-            <Skeleton className="h-5 w-80" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40 mb-2" />
-            <Skeleton className="h-4 w-56" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
 
   return (
     <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {currentUser ? `أهلاً بكِ، ${currentUser.name}!` : "أهلاً بك!"}
+            {`أهلاً بكِ، ${mockUserName}!`}
           </h1>
           <p className="text-muted-foreground">
             هذا هو مركز التحكم الخاص بطلباتك.

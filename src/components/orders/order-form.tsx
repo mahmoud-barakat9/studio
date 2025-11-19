@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -41,8 +42,6 @@ import { abjourTypesData } from '@/lib/abjour-data';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
 import { CardFooter } from '../ui/card';
-import { getCookie } from 'cookies-next';
-import { getUserById } from '@/lib/firebase-actions';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -64,8 +63,7 @@ const baseOrderSchema = z.object({
 });
 
 const userOrderSchema = baseOrderSchema.extend({
-  userId: z.string().min(1, "معرف المستخدم مطلوب."),
-  customerName: z.string(),
+  customerName: z.string().min(1, 'اسم العميل مطلوب.'),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
 
@@ -97,8 +95,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      customerName: '',
-      customerPhone: '',
+      customerName: 'Ahmed Ali', // Mock data
+      customerPhone: '555-1234', // Mock data
       orderName: '',
       mainAbjourType: '',
       mainColor: '',
@@ -116,7 +114,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [currentDate, setCurrentDate] = useState('');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
@@ -128,21 +125,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         month: 'long',
         day: 'numeric'
     }));
-
-    if (!isAdmin) {
-      const userId = getCookie('session-id');
-      if (userId) {
-        getUserById(userId).then(user => {
-          if (user) {
-            setCurrentUser(user);
-            form.setValue('userId', user.id);
-            form.setValue('customerName', user.name);
-            form.setValue('customerPhone', user.phone || '');
-          }
-        });
-      }
-    }
-  }, [isAdmin, form]);
+  }, []);
 
   const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
   const availableColors = selectedAbjourTypeData?.colors || [];
@@ -219,19 +202,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
-        let payload = {
+        const payload = {
           ...data,
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
         };
-
-        if (!isAdmin && currentUser) {
-            payload = {
-                ...payload,
-                userId: currentUser.id
-            }
-        }
         
         const result = await createOrderAction(payload, isAdmin);
         if (result?.success) {
@@ -244,9 +220,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 orderName: '',
                 mainAbjourType: '',
                 mainColor: '',
-                customerName: isAdmin ? '' : currentUser?.name || '',
-                customerPhone: isAdmin ? '' : currentUser?.phone || '',
-                userId: isAdmin ? '' : currentUser?.id || '',
+                customerName: isAdmin ? '' : 'Ahmed Ali', // Reset to mock
+                customerPhone: isAdmin ? '' : '555-1234', // Reset to mock
+                userId: '',
                 newUserName: '',
                 newUserEmail: '',
                 newUserPhone: '',
@@ -358,11 +334,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         <FormItem>
                           <FormLabel>اسم العميل</FormLabel>
                           <FormControl>
-                            <Input {...field} readOnly className="bg-muted/50" />
+                            <Input {...field} />
                           </FormControl>
-                          <FormDescription>
-                            يتم أخذ الاسم من حسابك.
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

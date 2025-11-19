@@ -33,23 +33,10 @@ export async function register(prevState: any, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-
-  const allUsers = await getAllUsers();
-  const existingUser = allUsers.find(u => u.email === validatedFields.data.email);
-
-  if (existingUser) {
-      return {
-          message: "هذا البريد الإلكتروني مسجل بالفعل.",
-      };
-  }
-
-  const newUserId = await addUserAndGetId({
-    name: validatedFields.data.name,
-    email: validatedFields.data.email,
-    role: 'user',
-  });
   
-  cookies().set('session-id', newUserId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  // In a real app, you would create the user in the database
+  // For now, we just simulate a successful registration
+  cookies().set('session-id', 'temp-session-id', { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
   redirect('/dashboard');
 }
 
@@ -64,25 +51,13 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email, password } = validatedFields.data;
+  const { email } = validatedFields.data;
 
-  // In a real app, you'd check a hashed password. Here we use a mock check.
-  if (password !== 'password') {
-    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-  }
-
-  const allUsers = await getAllUsers();
-  const user = allUsers.find(u => u.email === email);
-
-  if (!user) {
-    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-  }
-
-  // Set the session cookie
-  cookies().set('session-id', user.id, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
-
-  // Redirect to the correct dashboard
-  if (user.role === 'admin') {
+  // Set a generic session cookie
+  cookies().set('session-id', 'temp-session-id', { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  
+  // Redirect based on email for mock purposes
+  if (email === 'admin@abjour.com') {
     redirect('/admin/dashboard');
   } else {
     redirect('/dashboard');
@@ -139,7 +114,8 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       userId = formData.userId;
     }
   } else {
-     userId = formData.userId;
+     // For non-admins, we'll use a mock user ID for now
+     userId = '1';
   }
   
   if(!userId){

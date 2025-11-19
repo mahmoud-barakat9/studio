@@ -26,7 +26,6 @@ export function LoginForm() {
             type="email"
             placeholder="m@example.com"
             required
-            defaultValue="user@abjour.com"
           />
           {state?.errors?.email && (
             <p className="text-sm text-destructive">{state.errors.email}</p>
@@ -48,7 +47,6 @@ export function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               required
-              defaultValue="password"
               className="pr-10"
             />
             <Button
@@ -70,11 +68,8 @@ export function LoginForm() {
         {state?.message && (
           <p className="text-sm text-destructive">{state.message}</p>
         )}
-        <div className="text-xs text-muted-foreground text-center border p-2 rounded-md">
-            <p className="font-bold mb-1">معلومات لتسجيل الدخول:</p>
-            <p>كلمة المرور لجميع الحسابات هي: <code className="font-bold">password</code></p>
-            <p>استخدم <code className="font-bold">user@abjour.com</code> لتسجيل الدخول كمستخدم.</p>
-            <p>استخدم <code className="font-bold">admin@abjour.com</code> لتسجيل الدخول كمسؤول.</p>
+         <div className="text-xs text-muted-foreground text-center">
+            لأغراض العرض، استخدم <code className="font-bold">admin@abjour.com</code> للدخول كمسؤول.
         </div>
       </div>
     </form>

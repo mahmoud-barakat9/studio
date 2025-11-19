@@ -2,18 +2,15 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, LogOut, LayoutDashboard, User, UserCog } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { getCookie, deleteCookie } from 'cookies-next';
-import { getUserById } from "@/lib/firebase-actions";
-import type { User as UserType } from "@/lib/definitions";
-
 
 const guestLinks = [
   { href: "/welcome", label: "الرئيسية" },
@@ -29,36 +26,19 @@ const userLinks = [
 export function MainHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-
-  const isLoggedIn = !!currentUser;
-  const isAdmin = currentUser?.role === 'admin';
-
+  
   useEffect(() => {
     setIsClient(true);
-    const checkUser = async () => {
-        const userId = getCookie('session-id');
-        if (userId) {
-            try {
-                const user = await getUserById(userId as string);
-                setCurrentUser(user || null);
-            } catch (error) {
-                 deleteCookie('session-id');
-                 setCurrentUser(null);
-            }
-        } else {
-            setCurrentUser(null);
-        }
-    }
-    checkUser();
-  }, [pathname, searchParams]); // Re-check on any path change
+    const session = getCookie('session-id');
+    setIsLoggedIn(!!session);
+  }, [pathname]); // Re-check on any path change
 
   const handleLogout = () => {
     deleteCookie('session-id');
-    setCurrentUser(null);
+    setIsLoggedIn(false);
     handleLinkClick();
     router.push('/login');
   };
@@ -67,8 +47,8 @@ export function MainHeader() {
     setIsOpen(false);
   };
   
-  const links = isLoggedIn && !isAdmin ? userLinks : guestLinks;
-  const homeUrl = isLoggedIn && !isAdmin ? "/dashboard" : "/welcome";
+  const links = isLoggedIn ? userLinks : guestLinks;
+  const homeUrl = isLoggedIn ? "/dashboard" : "/welcome";
 
   if (!isClient) {
     // Return a placeholder or null to avoid hydration errors
@@ -106,30 +86,22 @@ export function MainHeader() {
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
-            {isLoggedIn && currentUser ? (
+            {isLoggedIn ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="secondary" size="icon" className="rounded-full">
                         <Avatar>
-                            <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser.email}`} />
-                            <AvatarFallback>{currentUser.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                            <AvatarImage src="https://i.pravatar.cc/150?u=a" />
+                            <AvatarFallback>U</AvatarFallback>
                         </Avatar>
                         <span className="sr-only">فتح قائمة المستخدم</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>
-                            {isAdmin ? 'حساب المسؤول' : 'حسابي'}
-                        </DropdownMenuLabel>
+                        <DropdownMenuLabel>حسابي</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {isAdmin ? (
-                             <DropdownMenuItem asChild><Link href="/admin/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة تحكم المسؤول</Link></DropdownMenuItem>
-                        ): (
-                            <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem asChild>
-                           <Link href={isAdmin ? "/admin/profile" : "/dashboard"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
+                        <DropdownMenuItem><User className="ml-2 h-4 w-4" />الملف الشخصي</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
@@ -175,36 +147,10 @@ export function MainHeader() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 w-full mt-4 items-center">
-               {isLoggedIn && currentUser ? (
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" className="w-full">
-                        <Avatar className="mr-2 h-6 w-6">
-                            <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser.email}`} />
-                            <AvatarFallback>{currentUser.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        {currentUser.name}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                            {isAdmin ? 'حساب المسؤول' : 'حسابي'}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {isAdmin ? (
-                             <DropdownMenuItem asChild onClick={handleLinkClick}><Link href="/admin/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة تحكم المسؤول</Link></DropdownMenuItem>
-                        ): (
-                            <DropdownMenuItem asChild onClick={handleLinkClick}><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
-                        )}
-                         <DropdownMenuItem asChild onClick={handleLinkClick}>
-                           <Link href={isAdmin ? "/admin/profile" : "/dashboard"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout}>
-                            <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+               {isLoggedIn ? (
+                    <Button className="w-full" onClick={handleLogout}>
+                        <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
+                    </Button>
                ) : (
                 <>
                     <Button asChild className="w-full" onClick={handleLinkClick} variant="outline">
