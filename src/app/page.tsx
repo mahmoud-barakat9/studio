@@ -1,29 +1,49 @@
 
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from 'cookies-next';
+import { getUserById } from "@/lib/firebase-actions";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This is a simplified check. A real app would verify the session server-side.
-    const sessionId = getCookie('session-id');
-    
-    if (sessionId) {
-      // In a real app, you'd fetch user role based on sessionId
-      // For this mock, we'll assume a specific ID for the admin.
-      if (sessionId === '4') { // Assuming '4' is the admin ID from data
-        router.replace('/admin/dashboard');
+    async function checkAuth() {
+      const sessionId = getCookie('session-id');
+      
+      if (sessionId) {
+        try {
+          const user = await getUserById(sessionId);
+          if (user) {
+            if (user.role === 'admin') {
+              router.replace('/admin/dashboard');
+            } else {
+              router.replace('/dashboard');
+            }
+          } else {
+            // Invalid session, clear cookie and go to welcome
+            router.replace('/welcome');
+          }
+        } catch (error) {
+          console.error("Auth check failed", error);
+          router.replace('/welcome');
+        }
       } else {
-        router.replace('/dashboard');
+        router.replace('/welcome');
       }
-    } else {
-      router.replace('/welcome');
+      // Note: setLoading(false) might not be reached due to router.replace, which is fine.
     }
+
+    checkAuth();
   }, [router]);
 
-  return null; // Return null while redirecting
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  );
 }
