@@ -126,7 +126,7 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>إضافة فتحة جديدة</CardTitle>
@@ -297,12 +297,12 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled }: AddOpen
                         </div>
                     </CardContent>
                     <CardFooter>
-                         <Button type="submit" className="w-full">
+                         <Button type="button" onClick={form.handleSubmit(onSubmit)} className="w-full">
                             <PlusCircle className="w-4 h-4 ml-2" /> إضافة الفتحة
                         </Button>
                     </CardFooter>
                 </Card>
-            </form>
+            </div>
         </Form>
     );
 }
