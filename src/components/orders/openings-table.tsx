@@ -9,24 +9,55 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { Opening } from "@/lib/definitions";
 import { Badge } from "../ui/badge";
+import { AddOpeningForm } from "./add-opening-form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface OpeningsTableProps {
     openings: Opening[];
-    onUpdateOpening: (index: number, opening: Opening) => void;
+    bladeWidth: number;
+    onUpdateOpening: (index: number, opening: Omit<Opening, 'serial'>) => void;
     onDeleteOpening: (index: number) => void;
 }
 
-export function OpeningsTable({ openings, onUpdateOpening, onDeleteOpening }: OpeningsTableProps) {
-    // For now, edit functionality is not implemented via modal, but the hook is here.
-    const handleEdit = (index: number) => {
-        // In a real scenario, you would open a dialog/modal with the opening data
-        // and then call onUpdateOpening with the new data.
-        console.log("Editing opening:", openings[index]);
-        alert("ميزة التعديل لم يتم تنفيذها بعد.");
-    };
+function DeleteOpeningAlert({ onDelete }: { onDelete: () => void }) {
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button size="icon" variant="destructive" className="h-8 w-8">
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">حذف</span>
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              هذا الإجراء لا يمكن التراجع عنه. سيؤدي هذا إلى حذف هذه الفتحة من الطلب.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={onDelete}>متابعة</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+}
+
+export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteOpening }: OpeningsTableProps) {
     
     const totalOpenings = openings.length;
     const totalCodeLength = openings.reduce((sum, op) => sum + (op.codeLength * op.numberOfCodes), 0);
@@ -61,14 +92,15 @@ export function OpeningsTable({ openings, onUpdateOpening, onDeleteOpening }: Op
                                 <TableCell className="max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
                                 <TableCell className="text-left">
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleEdit(index)} disabled>
-                                            <Pencil className="h-4 w-4" />
-                                            <span className="sr-only">تعديل</span>
-                                        </Button>
-                                        <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => onDeleteOpening(index)}>
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">حذف</span>
-                                        </Button>
+                                       <AddOpeningForm
+                                            isEditing={true}
+                                            openingToEdit={opening}
+                                            onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
+                                            bladeWidth={bladeWidth}
+                                            isDisabled={false}
+                                            openingsCount={0} // Not relevant for editing
+                                        />
+                                        <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
                                     </div>
                                 </TableCell>
                             </TableRow>

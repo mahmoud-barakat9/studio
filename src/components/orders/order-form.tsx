@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, PlusCircle } from 'lucide-react';
+import { Wand2, Loader2, Info } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -187,9 +187,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     form.setValue('openings', [...watchedOpenings, newOpening]);
   };
 
-  const handleUpdateOpening = (index: number, updatedOpening: Opening) => {
+  const handleUpdateOpening = (index: number, updatedOpeningData: Omit<Opening, 'serial'>) => {
     const newOpenings = [...watchedOpenings];
-    newOpenings[index] = updatedOpening;
+    newOpenings[index] = { ...newOpenings[index], ...updatedOpeningData };
     form.setValue('openings', newOpenings);
   };
 
@@ -442,7 +442,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
                         </div>
                         <AddOpeningForm 
-                            onAddOpening={handleAddOpening} 
+                            onSave={handleAddOpening} 
                             bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
                             isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
                             openingsCount={watchedOpenings.length}
@@ -453,6 +453,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     <CardContent>
                         <OpeningsTable 
                             openings={watchedOpenings}
+                            bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
                             onUpdateOpening={handleUpdateOpening}
                             onDeleteOpening={handleDeleteOpening}
                         />

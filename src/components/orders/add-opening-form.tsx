@@ -23,11 +23,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Pencil } from 'lucide-react';
 import type { Opening } from '@/lib/definitions';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Textarea } from '../ui/textarea';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 const openingSchema = z.object({
@@ -56,13 +56,15 @@ const openingSchema = z.object({
 type OpeningFormValues = z.infer<typeof openingSchema>;
 
 interface AddOpeningFormProps {
-    onAddOpening: (opening: Omit<Opening, 'serial'>) => void;
+    onSave: (opening: Omit<Opening, 'serial'>) => void;
     bladeWidth: number;
     isDisabled: boolean;
     openingsCount: number;
+    openingToEdit?: Opening | null;
+    isEditing?: boolean;
 }
 
-export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsCount }: AddOpeningFormProps) {
+export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, openingToEdit, isEditing = false }: AddOpeningFormProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
     const form = useForm<OpeningFormValues>({
@@ -73,6 +75,24 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsC
             hasAccessories: false,
         },
     });
+
+    useEffect(() => {
+        if (isEditing && openingToEdit && isOpen) {
+            form.reset({
+                method: (openingToEdit.width && openingToEdit.height) ? 'measure' : 'direct',
+                width: openingToEdit.width,
+                height: openingToEdit.height,
+                codeLength: (openingToEdit.width && openingToEdit.height) ? undefined : openingToEdit.codeLength,
+                numberOfCodes: (openingToEdit.width && openingToEdit.height) ? undefined : openingToEdit.numberOfCodes,
+                hasEndCap: openingToEdit.hasEndCap,
+                hasAccessories: openingToEdit.hasAccessories,
+                notes: openingToEdit.notes,
+            });
+        } else if (!isEditing) {
+            resetForm();
+        }
+    }, [isOpen, isEditing, openingToEdit, form]);
+
 
     const watchMethod = useWatch({ control: form.control, name: 'method'});
     const watchWidth = useWatch({ control: form.control, name: 'width'});
@@ -122,21 +142,29 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsC
             };
         }
         
-        onAddOpening({ ...finalOpeningData, abjourType: 'قياسي' }); // abjourType is hardcoded for now
+        onSave({ ...finalOpeningData, abjourType: 'قياسي' }); // abjourType is hardcoded for now
         toast({
-            title: `تمت إضافة الفتحة #${openingsCount + 1}`,
-            description: "يمكنك إضافة فتحة جديدة أو إغلاق النافذة.",
+            title: isEditing ? `تم تحديث الفتحة` : `تمت إضافة الفتحة #${openingsCount + 1}`,
+            description: "تم حفظ التغييرات بنجاح.",
         });
     };
 
-    const handleAddAndContinue = () => {
+    const handleSaveAndContinue = () => {
         form.handleSubmit(data => {
+            if (isEditing) {
+                 toast({
+                    variant: "destructive",
+                    title: "غير مسموح",
+                    description: "لا يمكن استخدام 'إضافة والمتابعة' في وضع التعديل.",
+                });
+                return;
+            }
             processSubmit(data);
             resetForm();
         })();
     }
     
-    const handleAddAndClose = () => {
+    const handleSaveAndClose = () => {
         form.handleSubmit(data => {
             processSubmit(data);
             setIsOpen(false);
@@ -145,7 +173,7 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsC
     }
 
 
-    if (isDisabled) {
+    if (isDisabled && !isEditing) {
         return (
             <Button type="button" disabled>
                 <PlusCircle className="w-4 h-4 ml-2" />
@@ -154,21 +182,30 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsC
         );
     }
 
+    const triggerButton = isEditing ? (
+        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setIsOpen(true)}>
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">تعديل</span>
+        </Button>
+    ) : (
+         <Button type="button" variant="outline">
+            <PlusCircle className="w-4 h-4 ml-2" />
+            أضف فتحة جديدة
+        </Button>
+    )
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                 <Button type="button" variant="outline">
-                    <PlusCircle className="w-4 h-4 ml-2" />
-                    أضف فتحة جديدة
-                </Button>
+                 {triggerButton}
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl">
                  <Form {...form}>
                     <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                         <DialogHeader>
-                            <DialogTitle>إضافة الفتحة رقم {openingsCount + 1}</DialogTitle>
+                            <DialogTitle>{isEditing ? 'تعديل الفتحة' : `إضافة الفتحة رقم ${openingsCount + 1}`}</DialogTitle>
                             <DialogDescription>
-                                أضف الفتحات واحدة تلو الأخرى. ستظهر في جدول بالأسفل.
+                                {isEditing ? 'قم بتعديل تفاصيل الفتحة أدناه.' : 'أضف الفتحات واحدة تلو الأخرى. ستظهر في جدول بالأسفل.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6 max-h-[70vh] overflow-y-auto p-1 pr-4">
@@ -334,12 +371,14 @@ export function AddOpeningForm({ onAddOpening, bladeWidth, isDisabled, openingsC
                             </div>
                         </div>
                         <DialogFooter className="gap-2 sm:justify-start pt-4 border-t">
-                            <Button type="button" onClick={handleAddAndClose}>
-                                إضافة وإغلاق
+                            <Button type="button" onClick={handleSaveAndClose}>
+                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
                             </Button>
-                            <Button type="button" variant="secondary" onClick={handleAddAndContinue}>
-                                إضافة والمتابعة
-                            </Button>
+                            {!isEditing && (
+                                <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
+                                    إضافة والمتابعة
+                                </Button>
+                            )}
                             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
                                 إلغاء
                             </Button>
