@@ -44,6 +44,7 @@ import type { User } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 
 const openingSchema = z.object({
+  serial: z.string(),
   abjourType: z.string().min(1, 'النوع مطلوب.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
@@ -242,9 +243,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
             {/* Customer/User Info Card */}
             <Card>
               <CardHeader>
-                <CardTitle>
-                  {isAdmin ? 'معلومات المستخدم' : 'تفاصيل العميل'}
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle>
+                    {isAdmin ? 'معلومات المستخدم' : 'تفاصيل العميل'}
+                    </CardTitle>
+                    {currentDate && (
+                        <div className="text-sm text-muted-foreground">
+                            تاريخ اليوم: <span className="font-medium text-foreground">{currentDate}</span>
+                        </div>
+                    )}
+                </div>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-4">
                 {isAdmin ? (
@@ -452,6 +460,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     className="w-full sm:w-auto"
                     onClick={() =>
                       append({
+                        serial: `OP${fields.length + 1}`,
                         abjourType: 'قياسي',
                         codeLength: 0,
                         numberOfCodes: 0,
@@ -674,12 +683,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 </div>
                 <Separator />
                 <div className="space-y-2 text-sm">
-                  {currentDate && (
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">تاريخ اليوم</span>
-                        <span className="font-medium">{currentDate}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
