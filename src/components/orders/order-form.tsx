@@ -130,7 +130,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const availableColors = selectedAbjourTypeData?.colors || [];
 
   const totalArea = watchedOpenings.reduce(
-    (acc, op) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0) / 100,
+    (acc, op) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0)) / 10000,
     0
   );
   const totalCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);

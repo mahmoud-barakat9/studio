@@ -60,7 +60,7 @@ function DeleteOpeningAlert({ onDelete }: { onDelete: () => void }) {
 export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteOpening }: OpeningsTableProps) {
     
     const totalOpenings = openings.length;
-    const totalCodeLength = openings.reduce((sum, op) => sum + (op.codeLength * op.numberOfCodes), 0);
+    const totalCodeLength = openings.reduce((sum, op) => sum + ((op.codeLength / 100) * op.numberOfCodes), 0);
     const totalNumberOfCodes = openings.reduce((sum, op) => sum + op.numberOfCodes, 0);
 
     return (
@@ -70,7 +70,7 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                     <TableHeader>
                         <TableRow>
                             <TableHead>#</TableHead>
-                            <TableHead>طول الشفرة (م)</TableHead>
+                            <TableHead>طول الشفرة (سم)</TableHead>
                             <TableHead>عدد الشفرات</TableHead>
                             <TableHead>إضافات</TableHead>
                             <TableHead>ملاحظات</TableHead>

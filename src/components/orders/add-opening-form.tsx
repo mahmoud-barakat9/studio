@@ -126,7 +126,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
             finalOpeningData = {
                 width: data.width,
                 height: data.height,
-                codeLength: calculatedCodeLength / 100, // Convert cm to m
+                codeLength: calculatedCodeLength,
                 numberOfCodes: calculatedNumberOfCodes,
                 hasEndCap: data.hasEndCap,
                 hasAccessories: data.hasAccessories,
@@ -249,7 +249,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
                             {/* Step 2: Input Fields */}
                             <div>
-                                <FormLabel>الخطوة 2: أدخل الأبعاد</FormLabel>
+                                <FormLabel>الخطوة 2: أدخل الأبعاد (بالسنتيمتر)</FormLabel>
                                 <div className="p-4 border rounded-lg mt-2">
                                     {watchMethod === 'direct' ? (
                                         <div className="grid md:grid-cols-2 gap-4">
@@ -258,9 +258,9 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                                 name="codeLength"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel>طول الشفرة (م)</FormLabel>
+                                                        <FormLabel>طول الشفرة (سم)</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.01" {...field} value={field.value ?? ''} />
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -313,9 +313,9 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                             {(watchWidth || 0) > 0 && (watchHeight || 0) > 0 && bladeWidth > 0 && (
                                                 <div className="p-3 bg-muted/50 rounded-md text-sm space-y-2">
                                                     <h4 className="font-semibold text-center">الحسابات التلقائية</h4>
-                                                    <div className="flex justify-between"><span>العرض النهائي:</span> <span className="font-mono">{(finalWidth / 100).toFixed(2)} م</span></div>
-                                                    <div className="flex justify-between"><span>الارتفاع النهائي:</span> <span className="font-mono">{(finalHeight / 100).toFixed(2)} م</span></div>
-                                                    <div className="flex justify-between font-bold text-primary"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{(calculatedCodeLength / 100).toFixed(2)} م</span></div>
+                                                    <div className="flex justify-between"><span>العرض النهائي:</span> <span className="font-mono">{finalWidth.toFixed(2)} سم</span></div>
+                                                    <div className="flex justify-between"><span>الارتفاع النهائي:</span> <span className="font-mono">{finalHeight.toFixed(2)} سم</span></div>
+                                                    <div className="flex justify-between font-bold text-primary"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{calculatedCodeLength.toFixed(2)} سم</span></div>
                                                     <div className="flex justify-between font-bold text-primary"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes}</span></div>
                                                 </div>
                                             )}
@@ -352,7 +352,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                                     {watchHasAccessories && watchMethod === 'measure' && channelLength > 0 && (
                                         <div className="p-3 bg-muted/50 rounded-md text-sm space-y-2">
-                                            <div className="flex justify-between font-bold"><span>طول المجرى المحسوب:</span> <span className="font-mono">{(channelLength / 100).toFixed(2)} م</span></div>
+                                            <div className="flex justify-between font-bold"><span>طول المجرى الإجمالي (قطعتين):</span> <span className="font-mono">{channelLength.toFixed(2)} سم</span></div>
                                         </div>
                                     )}
                                     <FormField
@@ -362,7 +362,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                             <FormItem>
                                                 <FormLabel>ملاحظات (اختياري)</FormLabel>
                                                 <FormControl>
-                                                    <Textarea placeholder="أضف أي ملاحظات خاصة لهذه الفتحة..." {...field} />
+                                                    <Textarea placeholder="أضف أي ملاحظات خاصة لهذه الفتحة..." {...field} value={field.value ?? ''} />
                                                 </FormControl>
                                             </FormItem>
                                         )}
