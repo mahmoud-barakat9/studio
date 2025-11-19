@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -38,12 +39,12 @@ export function Dashboard() {
   useEffect(() => {
     const userId = getCookie('session-id');
     if (userId) {
-      getUserById(userId).then(user => {
+      getUserById(userId as string).then(user => {
         if (user) {
           setCurrentUser(user);
         }
       });
-      getOrdersByUserId(userId).then(setUserOrders);
+      getOrdersByUserId(userId as string).then(setUserOrders);
     }
   }, []);
 
@@ -72,7 +73,7 @@ export function Dashboard() {
             handleTabChange("overview");
         }
     }
-  }, [viewOrderId, userOrders]);
+  }, [viewOrderId, userOrders, activeTab, handleTabChange]);
 
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

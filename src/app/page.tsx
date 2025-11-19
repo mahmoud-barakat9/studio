@@ -17,7 +17,7 @@ export default function Home() {
       
       if (sessionId) {
         try {
-          const user = await getUserById(sessionId);
+          const user = await getUserById(sessionId as string);
           if (user) {
             if (user.role === 'admin') {
               router.replace('/admin/dashboard');

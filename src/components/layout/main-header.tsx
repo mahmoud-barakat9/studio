@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -37,25 +38,35 @@ export function MainHeader() {
 
   useEffect(() => {
     setIsClient(true);
-    const userId = getCookie('session-id');
-    if (userId) {
-        getUserById(userId).then(user => {
-            if (user) {
-                setCurrentUser(user);
-            } else {
-                // Clear cookie if user not found
-                deleteCookie('session-id');
-                setCurrentUser(null);
+    const checkUser = async () => {
+        const userId = getCookie('session-id');
+        if (userId) {
+            try {
+                const user = await getUserById(userId as string);
+                if (user) {
+                    setCurrentUser(user);
+                } else {
+                    // Clear cookie if user not found
+                    deleteCookie('session-id');
+                    setCurrentUser(null);
+                }
+            } catch (error) {
+                 deleteCookie('session-id');
+                 setCurrentUser(null);
             }
-        });
+        } else {
+            setCurrentUser(null);
+        }
     }
-  }, []);
+    checkUser();
+  }, [pathname]); // Re-check on path change
 
   const handleLogout = () => {
     deleteCookie('session-id');
     setCurrentUser(null);
     handleLinkClick();
     router.push('/login');
+    router.refresh();
   };
 
   const handleLinkClick = () => {
@@ -101,7 +112,7 @@ export function MainHeader() {
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
-            {isLoggedIn ? (
+            {isLoggedIn && currentUser ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="secondary" size="icon" className="rounded-full">
@@ -123,7 +134,7 @@ export function MainHeader() {
                             <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
                         )}
                         <DropdownMenuItem asChild>
-                           <Link href={isAdmin ? "/admin/profile" : "/"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
+                           <Link href={isAdmin ? "/admin/profile" : "/dashboard"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
@@ -192,7 +203,7 @@ export function MainHeader() {
                             <DropdownMenuItem asChild onClick={handleLinkClick}><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
                         )}
                          <DropdownMenuItem asChild onClick={handleLinkClick}>
-                           <Link href={isAdmin ? "/admin/profile" : "/"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
+                           <Link href={isAdmin ? "/admin/profile" : "/dashboard"}><User className="ml-2 h-4 w-4" />الملف الشخصي</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
