@@ -445,26 +445,19 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
             />
 
             {watchedOpenings.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>الفتحات المضافة</CardTitle>
-                        <CardDescription>
-                            هنا قائمة بجميع الفتحات التي أضفتها إلى هذا الطلب.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       <OpeningsTable 
-                          openings={watchedOpenings}
-                          onUpdateOpening={handleUpdateOpening}
-                          onDeleteOpening={handleDeleteOpening}
-                       />
-                       {form.formState.errors.openings && (
-                        <p className="text-sm font-medium text-destructive mt-2">
-                          {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                        </p>
-                      )}
-                    </CardContent>
-                </Card>
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold">الفتحات المضافة</h3>
+                   <OpeningsTable 
+                      openings={watchedOpenings}
+                      onUpdateOpening={handleUpdateOpening}
+                      onDeleteOpening={handleDeleteOpening}
+                   />
+                   {form.formState.errors.openings && (
+                    <p className="text-sm font-medium text-destructive mt-2">
+                      {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
+                    </p>
+                  )}
+                </div>
             )}
             
           </div>
