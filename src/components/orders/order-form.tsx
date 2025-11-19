@@ -34,8 +34,7 @@ import {
   generateOrderName,
   createOrder as createOrderAction,
 } from '@/lib/actions';
-import { useFormState } from 'react-dom';
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useActionState, useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
@@ -109,7 +108,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
   const { toast } = useToast();
 
-  const [nameState, generateNameAction] = useFormState(generateOrderName, null);
+  const [nameState, generateNameAction] = useActionState(generateOrderName, null);
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [currentDate, setCurrentDate] = useState('');
