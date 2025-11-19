@@ -7,6 +7,7 @@ export type Opening = {
   numberOfCodes: number;
   hasEndCap: boolean;
   hasAccessories: boolean;
+  notes?: string;
 };
 
 export type Order = {

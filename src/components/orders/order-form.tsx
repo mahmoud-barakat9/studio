@@ -1,12 +1,11 @@
 'use client';
 
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,19 +28,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { PlusCircle, Trash2, Wand2, Loader2, Info } from 'lucide-react';
+import { Wand2, Loader2, Info } from 'lucide-react';
 import {
-  calculateAbjourDimensions,
   generateOrderName,
   createOrder as createOrderAction,
 } from '@/lib/actions';
 import { useFormState } from 'react-dom';
 import React, { useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/lib/definitions';
+import type { User, Opening } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
+import { AddOpeningForm } from './add-opening-form';
+import { OpeningsTable } from './openings-table';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -52,6 +51,7 @@ const openingSchema = z.object({
   numberOfCodes: z.coerce.number().int().min(1, 'عدد الأكواد مطلوب.'),
   hasEndCap: z.boolean().default(false),
   hasAccessories: z.boolean().default(false),
+  notes: z.string().optional(),
 });
 
 const baseOrderSchema = z.object({
@@ -88,8 +88,6 @@ const adminOrderSchema = baseOrderSchema.extend({
 
 type OrderFormValues = z.infer<typeof userOrderSchema & typeof adminOrderSchema>;
 
-const openingAbjourTypes = ['قياسي', 'ضيق', 'عريض'];
-
 export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?: boolean, users?: User[] }) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
   
@@ -109,18 +107,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'openings',
-  });
-
   const { toast } = useToast();
 
   const [nameState, generateNameAction] = useFormState(generateOrderName, null);
   const [isNamePending, startNameTransition] = useTransition();
-  const [isDimPending, startDimTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [currentDate, setCurrentDate] = useState('');
+
+  const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
+  const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
+  const watchUserId = useWatch({ control: form.control, name: 'userId'});
 
   useEffect(() => {
     setCurrentDate(new Date().toLocaleDateString('ar-EG', {
@@ -129,10 +125,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         day: 'numeric'
     }));
   }, []);
-
-  const watchUserId = form.watch('userId');
-  const watchedOpenings = form.watch('openings');
-  const watchMainAbjourType = form.watch('mainAbjourType');
 
   const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
   const availableColors = selectedAbjourTypeData?.colors || [];
@@ -187,35 +179,29 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     });
   };
 
-  const handleCalculateDims = (index: number) => {
-    const opening = form.getValues(`openings.${index}`);
-    if (!opening.width || !opening.abjourType) {
-      toast({
-        variant: 'destructive',
-        title: 'خطأ',
-        description: 'الرجاء توفير العرض ونوع الأباجور للحساب.',
-      });
-      return;
-    }
-
-    startDimTransition(async () => {
-      const result = await calculateAbjourDimensions(null, {
-        width: opening.width!,
-        abjourType: opening.abjourType,
-      });
-      if (result.data) {
-        form.setValue(`openings.${index}.codeLength`, result.data.codeLength);
-        form.setValue(`openings.${index}.numberOfCodes`, result.data.numberOfCodes);
-        toast({
-          title: 'تم حساب الأبعاد!',
-          description: 'تم تحديث طول الكود وعدد الأكواد.',
-        });
-      }
-      if (result.error) {
-        toast({ variant: 'destructive', title: 'خطأ', description: result.error });
-      }
-    });
+  const handleAddOpening = (openingData: Omit<Opening, 'serial'>) => {
+    const newOpening = {
+      ...openingData,
+      serial: `OP${watchedOpenings.length + 1}`,
+    };
+    form.setValue('openings', [...watchedOpenings, newOpening]);
+    toast({
+        title: "تمت إضافة الفتحة",
+        description: `الفتحة رقم ${watchedOpenings.length + 1} أضيفت إلى الجدول.`,
+      })
   };
+
+  const handleUpdateOpening = (index: number, updatedOpening: Opening) => {
+    const newOpenings = [...watchedOpenings];
+    newOpenings[index] = updatedOpening;
+    form.setValue('openings', newOpenings);
+  };
+
+  const handleDeleteOpening = (index: number) => {
+    const newOpenings = watchedOpenings.filter((_, i) => i !== index);
+    form.setValue('openings', newOpenings);
+  };
+
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
@@ -230,7 +216,18 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 title: 'تم إرسال الطلب بنجاح!',
                 description: `تم إنشاء طلبك "${data.orderName}".`,
             });
-            form.reset();
+            form.reset({
+                openings: [],
+                orderName: '',
+                mainAbjourType: '',
+                mainColor: '',
+                customerName: isAdmin ? '' : 'فاطمة الزهراء',
+                customerPhone: isAdmin ? '' : '555-5678',
+                userId: '',
+                newUserName: '',
+                newUserEmail: '',
+                newUserPhone: '',
+            });
         }
      });
   };
@@ -240,7 +237,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Customer/User Info Card */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -363,7 +359,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
-            {/* Main Abjour Type Card */}
             <Card>
               <CardHeader>
                 <CardTitle>النوع الرئيسي للطلب</CardTitle>
@@ -443,202 +438,35 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
-            {/* Openings Card */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div>
-                    <CardTitle>فتحات الطلب</CardTitle>
-                    <CardDescription>
-                      أضف فتحة واحدة أو أكثر لهذا الطلب.
-                    </CardDescription>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    onClick={() =>
-                      append({
-                        serial: `OP${fields.length + 1}`,
-                        abjourType: 'قياسي',
-                        codeLength: 0,
-                        numberOfCodes: 0,
-                        hasEndCap: false,
-                        hasAccessories: false,
-                        width: undefined,
-                        height: undefined
-                      })
-                    }
-                    disabled={!watchMainAbjourType || !form.watch('mainColor')}
-                  >
-                    <PlusCircle className="w-4 h-4 ml-2" /> إضافة فتحة
-                  </Button>
-                </div>
-                 {!watchMainAbjourType || !form.watch('mainColor') ? (
-                    <FormDescription className="text-destructive pt-2">
-                      يجب اختيار نوع الأباجور واللون الرئيسيين أولاً قبل إضافة الفتحات.
-                    </FormDescription>
-                 ): null}
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="p-4 border rounded-lg relative space-y-4"
-                  >
-                    <div className="absolute top-2 right-2 font-bold text-lg text-muted-foreground">
-                        {index + 1}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 left-2 w-6 h-6"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    <div className="grid md:grid-cols-2 gap-4 pt-4">
-                      
-                      <FormField
-                        control={form.control}
-                        name={`openings.${index}.abjourType`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>نوع التركيب</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="قياسي، ضيق..."/>
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {openingAbjourTypes.map((t) => (
-                                  <SelectItem key={t} value={t}>
-                                    {t}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                             <FormDescription>نوع التركيب وليس نوع الأباجور</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <Separator />
-                    <div className="grid md:grid-cols-2 gap-4 items-end">
-                      <div>
-                        <p className="text-sm font-medium mb-2">
-                          الأبعاد اليدوية
+            <AddOpeningForm 
+                onAddOpening={handleAddOpening} 
+                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
+            />
+
+            {watchedOpenings.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>الفتحات المضافة</CardTitle>
+                        <CardDescription>
+                            هنا قائمة بجميع الفتحات التي أضفتها إلى هذا الطلب.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       <OpeningsTable 
+                          openings={watchedOpenings}
+                          onUpdateOpening={handleUpdateOpening}
+                          onDeleteOpening={handleDeleteOpening}
+                       />
+                       {form.formState.errors.openings && (
+                        <p className="text-sm font-medium text-destructive mt-2">
+                          {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
                         </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name={`openings.${index}.codeLength`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>طول الكود (م)</FormLabel>
-                                <FormControl>
-                                  <Input type="number" step="0.01" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`openings.${index}.numberOfCodes`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>عدد الأكواد</FormLabel>
-                                <FormControl>
-                                  <Input type="number" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <p className="text-sm font-medium">
-                          حساب تلقائي باستخدام الذكاء الاصطناعي
-                        </p>
-                        <div className="grid grid-cols-2 gap-4 items-end">
-                          <FormField
-                            control={form.control}
-                            name={`openings.${index}.width`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>عرض الفتحة (سم)</FormLabel>
-                                <FormControl>
-                                  <Input type="number" {...field} value={field.value ?? ''} />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            onClick={() => handleCalculateDims(index)}
-                            disabled={isDimPending}
-                          >
-                            {isDimPending ? (
-                              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <Wand2 className="ml-2 h-4 w-4" />
-                            )}
-                            احسب
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                      <FormField
-                        control={form.control}
-                        name={`openings.${index}.hasEndCap`}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row-reverse items-center gap-2 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel className="!mt-0">إضافة غطاء طرفي</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`openings.${index}.hasAccessories`}
-                        render={({ field }) => (
-                           <FormItem className="flex flex-row-reverse items-center gap-2 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel className="!mt-0">إضافة إكسسوارات</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                ))}
-                {form.formState.errors.openings && (
-                    <p className="text-sm font-medium text-destructive">
-                      {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                    </p>
-                  )}
-              </CardContent>
-            </Card>
+                      )}
+                    </CardContent>
+                </Card>
+            )}
+            
           </div>
 
           <div className="lg:col-span-1 space-y-8">
@@ -683,6 +511,10 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 </div>
                 <Separator />
                 <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">إجمالي عدد الفتحات</span>
+                    <span className="font-medium">{watchedOpenings.length}</span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
