@@ -66,6 +66,7 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
 
+  // In a real app, you'd check a hashed password. Here we use a mock check.
   if (password !== 'password') {
     return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
   }
@@ -77,8 +78,10 @@ export async function login(prevState: any, formData: FormData) {
     return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
   }
 
+  // Set the session cookie
   cookies().set('session-id', user.id, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
 
+  // Redirect to the correct dashboard
   if (user.role === 'admin') {
     redirect('/admin/dashboard');
   } else {

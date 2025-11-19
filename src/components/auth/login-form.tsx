@@ -49,13 +49,13 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               required
               defaultValue="password"
-              className="pl-10"
+              className="pr-10"
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
               onClick={() => setShowPassword((prev) => !prev)}
             >
               {showPassword ? <EyeOff /> : <Eye />}
@@ -70,7 +70,8 @@ export function LoginForm() {
         {state?.message && (
           <p className="text-sm text-destructive">{state.message}</p>
         )}
-        <div className="text-xs text-muted-foreground text-center">
+        <div className="text-xs text-muted-foreground text-center border p-2 rounded-md">
+            <p className="font-bold mb-1">معلومات لتسجيل الدخول:</p>
             <p>كلمة المرور لجميع الحسابات هي: <code className="font-bold">password</code></p>
             <p>استخدم <code className="font-bold">user@abjour.com</code> لتسجيل الدخول كمستخدم.</p>
             <p>استخدم <code className="font-bold">admin@abjour.com</code> لتسجيل الدخول كمسؤول.</p>

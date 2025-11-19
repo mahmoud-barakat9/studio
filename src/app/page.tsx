@@ -24,7 +24,7 @@ export default function Home() {
               router.replace('/dashboard');
             }
           } else {
-            // User ID in cookie is invalid
+            // User ID in cookie is invalid, treat as logged out
             router.replace('/welcome');
           }
         } catch (error) {
