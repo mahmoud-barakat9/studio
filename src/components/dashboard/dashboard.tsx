@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
+import { getCookie } from 'cookies-next';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,14 +14,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { getOrdersByUserId } from "@/lib/firebase-actions";
+import { getOrdersByUserId, getUserById } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 
 export function Dashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
   
@@ -34,7 +36,15 @@ export function Dashboard() {
 
 
   useEffect(() => {
-    getOrdersByUserId("2").then(setUserOrders);
+    const userId = getCookie('session-id');
+    if (userId) {
+      getUserById(userId).then(user => {
+        if (user) {
+          setCurrentUser(user);
+        }
+      });
+      getOrdersByUserId(userId).then(setUserOrders);
+    }
   }, []);
 
   const handleTabChange = (value: string) => {
@@ -76,7 +86,7 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            أهلاً بكِ، فاطمة!
+            {currentUser ? `أهلاً بكِ، ${currentUser.name}!` : "أهلاً بك!"}
           </h1>
           <p className="text-muted-foreground">
             هذا هو مركز التحكم الخاص بطلباتك.

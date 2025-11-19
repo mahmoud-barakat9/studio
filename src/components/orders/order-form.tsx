@@ -15,8 +15,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -41,6 +39,9 @@ import type { User, Opening } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
+import { CardFooter } from '../ui/card';
+import { getCookie } from 'cookies-next';
+import { getUserById } from '@/lib/firebase-actions';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -62,7 +63,7 @@ const baseOrderSchema = z.object({
 });
 
 const userOrderSchema = baseOrderSchema.extend({
-  customerName: z.string(), // No longer needs validation from user input
+  customerName: z.string(),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
 
@@ -94,8 +95,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      customerName: 'فاطمة الزهراء',
-      customerPhone: '555-5678',
+      customerName: '',
+      customerPhone: '',
       orderName: '',
       mainAbjourType: '',
       mainColor: '',
@@ -113,6 +114,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [currentDate, setCurrentDate] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
@@ -124,7 +126,20 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         month: 'long',
         day: 'numeric'
     }));
-  }, []);
+
+    if (!isAdmin) {
+      const userId = getCookie('session-id');
+      if (userId) {
+        getUserById(userId).then(user => {
+          if (user) {
+            setCurrentUser(user);
+            form.setValue('customerName', user.name);
+            form.setValue('customerPhone', user.phone || '');
+          }
+        });
+      }
+    }
+  }, [isAdmin, form]);
 
   const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
   const availableColors = selectedAbjourTypeData?.colors || [];
@@ -218,8 +233,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 orderName: '',
                 mainAbjourType: '',
                 mainColor: '',
-                customerName: isAdmin ? '' : 'فاطمة الزهراء',
-                customerPhone: isAdmin ? '' : '555-5678',
+                customerName: isAdmin ? '' : currentUser?.name || '',
+                customerPhone: isAdmin ? '' : currentUser?.phone || '',
                 userId: '',
                 newUserName: '',
                 newUserEmail: '',
@@ -438,7 +453,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
-            <div>
+            <div className="space-y-4">
                 <Card>
                     <CardHeader>
                         <div className='flex items-center justify-between'>

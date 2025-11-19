@@ -70,6 +70,7 @@ export function LoginForm() {
           <p className="text-sm text-destructive">{state.message}</p>
         )}
         <div className="text-xs text-muted-foreground text-center">
+            <p>كلمة المرور لجميع الحسابات هي: <code className="font-bold">password</code></p>
             <p>استخدم <code className="font-bold">user@abjour.com</code> لتسجيل الدخول كمستخدم.</p>
             <p>استخدم <code className="font-bold">admin@abjour.com</code> لتسجيل الدخول كمسؤول.</p>
         </div>

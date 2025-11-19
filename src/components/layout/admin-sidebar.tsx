@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Users,
   ClipboardList,
@@ -29,6 +29,7 @@ import {
 import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { deleteCookie } from "cookies-next";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -40,6 +41,12 @@ const links = [
 
 export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    deleteCookie('session-id');
+    router.push('/login');
+  }
 
   return (
     <Sidebar side="right">
@@ -76,7 +83,7 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-3 justify-start p-2 w-full h-auto">
                         <Avatar>
-                            <AvatarImage src="https://i.pravatar.cc/150?u=admin" />
+                            <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
                             <AvatarFallback>A</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col items-start">
@@ -91,8 +98,8 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                     <DropdownMenuItem asChild>
                         <Link href="/admin/profile"><UserCog className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href="/login"><LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج</Link>
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

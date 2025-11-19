@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/icons";
 import { useState, useEffect } from "react";
+import { getCookie } from 'cookies-next';
 
 export function MainFooter() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -12,8 +13,8 @@ export function MainFooter() {
   useEffect(() => {
     setIsClient(true);
     setCurrentYear(new Date().getFullYear());
-    const session = document.cookie.includes('session');
-    setIsLoggedIn(session);
+    const session = getCookie('session-id');
+    setIsLoggedIn(!!session);
   }, []);
 
   const homeUrl = isLoggedIn ? '/dashboard' : '/welcome';

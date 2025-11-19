@@ -6,7 +6,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData } from './definitions';
@@ -32,17 +32,23 @@ export async function register(prevState: any, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  
-  // In a real app, you would also check if the user already exists.
-  // For this mock, we'll just create a new user.
+
+  const allUsers = await getAllUsers();
+  const existingUser = allUsers.find(u => u.email === validatedFields.data.email);
+
+  if (existingUser) {
+      return {
+          message: "هذا البريد الإلكتروني مسجل بالفعل.",
+      };
+  }
+
   const newUserId = await addUserAndGetId({
     name: validatedFields.data.name,
     email: validatedFields.data.email,
     role: 'user',
   });
   
-  cookies().set('session', 'user-session', { httpOnly: true });
-  cookies().set('userId', newUserId, { httpOnly: true });
+  cookies().set('session-id', newUserId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
   redirect('/dashboard');
 }
 
@@ -57,18 +63,26 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email } = validatedFields.data;
+  const { email, password } = validatedFields.data;
 
-  if (email === 'admin@abjour.com') {
-    cookies().set('session', 'admin-session', { httpOnly: true });
+  // This is a mock authentication. In a real app, you'd verify hashed passwords.
+  // For this mock, we assume the password is always 'password'.
+  if (password !== 'password') {
+    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+  }
+
+  const allUsers = await getAllUsers();
+  const user = allUsers.find(u => u.email === email);
+
+  if (!user) {
+    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+  }
+
+  cookies().set('session-id', user.id, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+
+  if (user.role === 'admin') {
     redirect('/admin/dashboard');
-  } else if (email === 'user@abjour.com') {
-    cookies().set('session', 'user-session', { httpOnly: true });
-    redirect('/dashboard?tab=overview');
   } else {
-    // This part is a mock. In a real app you'd query your users DB.
-    // For now we'll treat any other valid email as a new user session.
-    cookies().set('session', 'user-session', { httpOnly: true });
     redirect('/dashboard');
   }
 }
@@ -106,7 +120,13 @@ export async function generateOrderName(
 }
 
 export async function createOrder(formData: any, asAdmin: boolean) {
-  let userId = '2'; // Mock user Fatima Zahra
+  let userId = cookies().get('session-id')?.value;
+
+  if(!userId && !asAdmin){
+    // Should not happen if user is logged in
+    throw new Error("User not authenticated");
+  }
+
   if (asAdmin) {
     if (formData.userId === 'new') {
       if (!formData.newUserName || !formData.newUserEmail) {
