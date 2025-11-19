@@ -62,7 +62,7 @@ const baseOrderSchema = z.object({
 });
 
 const userOrderSchema = baseOrderSchema.extend({
-  customerName: z.string().min(1, 'اسم العميل مطلوب.'),
+  customerName: z.string(), // No longer needs validation from user input
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
 
@@ -332,8 +332,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         <FormItem>
                           <FormLabel>اسم العميل</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} readOnly className="bg-muted/50" />
                           </FormControl>
+                          <FormDescription>
+                            يتم أخذ الاسم من حسابك.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -435,23 +438,25 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
               </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <div className='flex items-center justify-between'>
-                        <div>
-                            <CardTitle>فتحات الطلب</CardTitle>
-                            <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
+            <div>
+                <Card>
+                    <CardHeader>
+                        <div className='flex items-center justify-between'>
+                            <div>
+                                <CardTitle>فتحات الطلب</CardTitle>
+                                <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
+                            </div>
+                            <AddOpeningForm 
+                                onSave={handleAddOpening} 
+                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                                isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
+                                openingsCount={watchedOpenings.length}
+                            />
                         </div>
-                        <AddOpeningForm 
-                            onSave={handleAddOpening} 
-                            bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                            isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
-                            openingsCount={watchedOpenings.length}
-                        />
-                    </div>
-                </CardHeader>
+                    </CardHeader>
+                </Card>
                 {watchedOpenings.length > 0 && (
-                    <CardContent>
+                    <div className="mt-6">
                         <OpeningsTable 
                             openings={watchedOpenings}
                             bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
@@ -463,9 +468,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                             {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
                             </p>
                         )}
-                    </CardContent>
+                    </div>
                 )}
-            </Card>
+            </div>
             
           </div>
 
