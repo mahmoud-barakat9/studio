@@ -43,14 +43,19 @@ export function Dashboard() {
       setIsLoading(true);
       const userId = getCookie('session-id');
       if (userId) {
-        const user = await getUserById(userId as string);
-        if (user) {
-          setCurrentUser(user);
-          const orders = await getOrdersByUserId(userId as string);
-          setUserOrders(orders);
-        } else {
-          // If user not found, maybe session is invalid
-          router.push('/login');
+        try {
+            const user = await getUserById(userId as string);
+            if (user) {
+              setCurrentUser(user);
+              const orders = await getOrdersByUserId(userId as string);
+              setUserOrders(orders);
+            } else {
+              // If user not found, maybe session is invalid
+              router.push('/login');
+            }
+        } catch(e) {
+            console.error("Failed to fetch user data", e);
+            router.push('/login');
         }
       } else {
         router.push('/login');
