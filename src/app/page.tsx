@@ -24,18 +24,15 @@ export default function Home() {
             } else {
               router.replace('/dashboard');
             }
-          } else {
-            // Invalid session, clear cookie and go to welcome
-            router.replace('/welcome');
+            return; 
           }
         } catch (error) {
           console.error("Auth check failed", error);
-          router.replace('/welcome');
         }
-      } else {
-        router.replace('/welcome');
       }
-      // Note: setLoading(false) might not be reached due to router.replace, which is fine.
+      
+      // If no session, no user, or an error occurred, go to welcome
+      router.replace('/welcome');
     }
 
     checkAuth();

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getCookie } from 'cookies-next';
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { getOrdersByUserId, getUserById } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import type { Order, User } from "@/lib/definitions";
+import { Skeleton } from "../ui/skeleton";
 
 export function Dashboard() {
   const searchParams = useSearchParams();
@@ -26,29 +27,40 @@ export function Dashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
+  const [isLoading, setIsLoading] = useState(true);
   
   const viewOrderId = searchParams.get('view_order');
 
-  const getDefaultTab = () => {
+  const getDefaultTab = useCallback(() => {
     if (viewOrderId) return 'track-order';
     return 'overview';
-  }
+  }, [viewOrderId]);
+
   const [activeTab, setActiveTab] = useState(getDefaultTab());
 
-
   useEffect(() => {
-    const userId = getCookie('session-id');
-    if (userId) {
-      getUserById(userId as string).then(user => {
+    async function fetchUserData() {
+      setIsLoading(true);
+      const userId = getCookie('session-id');
+      if (userId) {
+        const user = await getUserById(userId as string);
         if (user) {
           setCurrentUser(user);
+          const orders = await getOrdersByUserId(userId as string);
+          setUserOrders(orders);
+        } else {
+          // If user not found, maybe session is invalid
+          router.push('/login');
         }
-      });
-      getOrdersByUserId(userId as string).then(setUserOrders);
+      } else {
+        router.push('/login');
+      }
+      setIsLoading(false);
     }
-  }, []);
+    fetchUserData();
+  }, [router]);
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
     const newParams = new URLSearchParams(searchParams.toString());
     if (value !== 'track-order') {
@@ -58,7 +70,7 @@ export function Dashboard() {
     // Add a hash to navigate to the dashboard section
     const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '');
     router.replace(newUrl, {scroll: false});
-  }
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (viewOrderId && userOrders.length > 0) {
@@ -69,7 +81,6 @@ export function Dashboard() {
       }
     } else {
         if(activeTab === 'track-order' && !viewOrderId){
-            // If we are on track tab without an order, switch to overview
             handleTabChange("overview");
         }
     }
@@ -79,6 +90,33 @@ export function Dashboard() {
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     handleTabChange('all-orders');
+  }
+
+  if (isLoading) {
+    return (
+      <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-64 mb-2" />
+            <Skeleton className="h-5 w-80" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
 

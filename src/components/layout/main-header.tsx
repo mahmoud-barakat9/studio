@@ -6,7 +6,7 @@ import { Menu, X, LogOut, LayoutDashboard, User, UserCog } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -29,6 +29,7 @@ const userLinks = [
 export function MainHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -43,13 +44,7 @@ export function MainHeader() {
         if (userId) {
             try {
                 const user = await getUserById(userId as string);
-                if (user) {
-                    setCurrentUser(user);
-                } else {
-                    // Clear cookie if user not found
-                    deleteCookie('session-id');
-                    setCurrentUser(null);
-                }
+                setCurrentUser(user || null);
             } catch (error) {
                  deleteCookie('session-id');
                  setCurrentUser(null);
@@ -59,14 +54,13 @@ export function MainHeader() {
         }
     }
     checkUser();
-  }, [pathname]); // Re-check on path change
+  }, [pathname, searchParams]); // Re-check on any path change
 
   const handleLogout = () => {
     deleteCookie('session-id');
     setCurrentUser(null);
     handleLinkClick();
     router.push('/login');
-    router.refresh();
   };
 
   const handleLinkClick = () => {
