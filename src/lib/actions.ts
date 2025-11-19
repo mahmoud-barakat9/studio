@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -65,8 +66,6 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
 
-  // This is a mock authentication. In a real app, you'd verify hashed passwords.
-  // For this mock, we assume the password is always 'password'.
   if (password !== 'password') {
     return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
   }
@@ -137,7 +136,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       userId = formData.userId;
     }
   } else {
-    userId = formData.userId || cookies().get('session-id')?.value;
+     userId = formData.userId;
   }
   
   if(!userId){

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from 'cookies-next';
 import { getUserById } from "@/lib/firebase-actions";
@@ -16,10 +16,8 @@ export default function Home() {
       
       if (sessionId) {
         try {
-          // It's important to await the user data
           const user = await getUserById(sessionId as string);
           if (user) {
-            // Check user role and redirect
             if (user.role === 'admin') {
               router.replace('/admin/dashboard');
             } else {
@@ -42,7 +40,6 @@ export default function Home() {
     checkAuth();
   }, [router]);
 
-  // Display a loading indicator while checking authentication.
   return (
     <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
