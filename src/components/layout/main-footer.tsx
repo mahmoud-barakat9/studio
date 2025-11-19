@@ -18,7 +18,7 @@ export function MainFooter() {
 
   const homeUrl = isLoggedIn ? '/dashboard' : '/welcome';
   const dashboardUrl = isLoggedIn ? '/dashboard' : '/login';
-  const newOrderUrl = isLoggedIn ? '/dashboard?create_order=true' : '/login';
+  const newOrderUrl = isLoggedIn ? '/orders/new' : '/login';
 
   return (
     <footer className="bg-muted text-muted-foreground">

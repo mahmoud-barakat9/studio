@@ -15,7 +15,6 @@ import {
 import { OrdersTable } from "@/components/orders/orders-table";
 import { getOrdersByUserId } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OrderForm } from "@/components/orders/order-form";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import type { Order } from "@/lib/definitions";
 
@@ -26,11 +25,9 @@ export function Dashboard() {
   const [orderToView, setOrderToView] = useState<Order | undefined>();
   
   const viewOrderId = searchParams.get('view_order');
-  const createOrder = searchParams.get('create_order');
 
   const getDefaultTab = () => {
     if (viewOrderId) return 'track-order';
-    if (createOrder) return 'create-order';
     return 'overview';
   }
   const [activeTab, setActiveTab] = useState(getDefaultTab());
@@ -45,9 +42,6 @@ export function Dashboard() {
     const newParams = new URLSearchParams(searchParams.toString());
     if (value !== 'track-order') {
         newParams.delete('view_order');
-    }
-    if (value !== 'create-order') {
-        newParams.delete('create_order');
     }
     
     // Add a hash to navigate to the dashboard section
@@ -70,21 +64,12 @@ export function Dashboard() {
     }
   }, [viewOrderId, userOrders]);
 
-  useEffect(() => {
-    if (createOrder) {
-      setActiveTab('create-order');
-    }
-  }, [createOrder]);
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     handleTabChange('all-orders');
   }
 
-  const handleCreateOrderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    handleTabChange('create-order');
-  }
 
   return (
     <div id="dashboard" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8 bg-muted/40">
@@ -97,17 +82,16 @@ export function Dashboard() {
             هذا هو مركز التحكم الخاص بطلباتك.
           </p>
         </div>
-         <a href="#create-order" onClick={handleCreateOrderClick}>
+         <Link href="/orders/new">
             <Button>
                 إنشاء طلب جديد
             </Button>
-        </a>
+        </Link>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-          <TabsTrigger value="create-order">إنشاء طلب جديد</TabsTrigger>
           <TabsTrigger value="all-orders">كل طلباتي</TabsTrigger>
           <TabsTrigger value="track-order" disabled={!viewOrderId && activeTab !== 'track-order'}>تتبع الطلب</TabsTrigger>
         </TabsList>
@@ -130,9 +114,6 @@ export function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent value="create-order">
-           <OrderForm />
         </TabsContent>
         <TabsContent value="all-orders" id="all-orders-tab">
              <Card>

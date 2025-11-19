@@ -29,7 +29,7 @@ export function Hero() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/dashboard?create_order=true">
+            <Link href="/orders/new">
               ابدأ طلبك الآن <ArrowLeft className="mr-2 h-5 w-5" />
             </Link>
           </Button>
