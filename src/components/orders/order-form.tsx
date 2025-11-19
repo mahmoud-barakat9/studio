@@ -64,6 +64,7 @@ const baseOrderSchema = z.object({
 });
 
 const userOrderSchema = baseOrderSchema.extend({
+  userId: z.string().min(1, "معرف المستخدم مطلوب."),
   customerName: z.string(),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
@@ -134,6 +135,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         getUserById(userId).then(user => {
           if (user) {
             setCurrentUser(user);
+            form.setValue('userId', user.id);
             form.setValue('customerName', user.name);
             form.setValue('customerPhone', user.phone || '');
           }
@@ -217,12 +219,20 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
-        const payload = {
+        let payload = {
           ...data,
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
         };
+
+        if (!isAdmin && currentUser) {
+            payload = {
+                ...payload,
+                userId: currentUser.id
+            }
+        }
+        
         const result = await createOrderAction(payload, isAdmin);
         if (result?.success) {
             toast({
@@ -236,7 +246,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 mainColor: '',
                 customerName: isAdmin ? '' : currentUser?.name || '',
                 customerPhone: isAdmin ? '' : currentUser?.phone || '',
-                userId: '',
+                userId: isAdmin ? '' : currentUser?.id || '',
                 newUserName: '',
                 newUserEmail: '',
                 newUserPhone: '',

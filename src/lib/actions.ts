@@ -120,17 +120,11 @@ export async function generateOrderName(
 }
 
 export async function createOrder(formData: any, asAdmin: boolean) {
-  let userId = cookies().get('session-id')?.value;
-
-  if(!userId && !asAdmin){
-    // Should not happen if user is logged in
-    throw new Error("User not authenticated");
-  }
+  let userId;
 
   if (asAdmin) {
     if (formData.userId === 'new') {
       if (!formData.newUserName || !formData.newUserEmail) {
-        // This case should be prevented by frontend validation, but as a safeguard:
         throw new Error("New user name and email are required.");
       }
       userId = await addUserAndGetId({
@@ -142,6 +136,12 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     } else {
       userId = formData.userId;
     }
+  } else {
+    userId = formData.userId || cookies().get('session-id')?.value;
+  }
+  
+  if(!userId){
+    throw new Error("User not authenticated");
   }
 
   const orderData = {
@@ -159,6 +159,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   } else {
     revalidatePath('/dashboard');
     revalidatePath('/admin/orders');
+    redirect('/dashboard');
   }
   
   return { success: true };
