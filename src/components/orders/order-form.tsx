@@ -44,7 +44,6 @@ import type { User } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 
 const openingSchema = z.object({
-  serial: z.string(), // This will be managed internally now
   abjourType: z.string().min(1, 'النوع مطلوب.'),
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
@@ -120,6 +119,15 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const [isNamePending, startNameTransition] = useTransition();
   const [isDimPending, startDimTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }));
+  }, []);
 
   const watchUserId = form.watch('userId');
   const watchedOpenings = form.watch('openings');
@@ -444,7 +452,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                     className="w-full sm:w-auto"
                     onClick={() =>
                       append({
-                        serial: `OP${fields.length + 1}`, // Temporary internal ID
                         abjourType: 'قياسي',
                         codeLength: 0,
                         numberOfCodes: 0,
@@ -667,6 +674,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 </div>
                 <Separator />
                 <div className="space-y-2 text-sm">
+                  {currentDate && (
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">تاريخ اليوم</span>
+                        <span className="font-medium">{currentDate}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
