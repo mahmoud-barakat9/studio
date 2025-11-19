@@ -55,7 +55,7 @@ const openingSchema = z.object({
 });
 
 const baseOrderSchema = z.object({
-  orderName: z.string().min(1, 'اسم الطلب مطلوب.'),
+  orderName: z.string().optional(),
   mainAbjourType: z.string({ required_error: "نوع الأباجور الرئيسي مطلوب."}).min(1, "نوع الأباجور الرئيسي مطلوب."),
   mainColor: z.string({ required_error: "اللون الرئيسي مطلوب."}).min(1, "اللون الرئيسي مطلوب."),
   openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
@@ -203,6 +203,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
      startSubmitTransition(async () => {
         const payload = {
           ...data,
+          orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
         };
@@ -210,7 +211,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         if (result?.success) {
             toast({
                 title: 'تم إرسال الطلب بنجاح!',
-                description: `تم إنشاء طلبك "${data.orderName}".`,
+                description: `تم إنشاء طلبك "${payload.orderName}".`,
             });
             form.reset({
                 openings: [],
