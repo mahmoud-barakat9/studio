@@ -69,7 +69,6 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
         hasDelivery: orderData.hasDelivery,
         deliveryCost: orderData.deliveryCost,
         deliveryAddress: orderData.deliveryAddress,
-        attachments: orderData.attachments || {},
     };
     
     orders.unshift(newOrder); // Add to the beginning of the array
@@ -78,19 +77,12 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
 };
 
 
-export const updateOrderStatus = async (orderId: string, status: Order['status'], attachmentUrl?: string): Promise<Order> => {
+export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
     const orderIndex = orders.findIndex(o => o.id === orderId);
     if (orderIndex === -1) throw new Error("Order not found");
     
     orders[orderIndex].status = status;
-    if (attachmentUrl) {
-        if (!orders[orderIndex].attachments) {
-            orders[orderIndex].attachments = {};
-        }
-        orders[orderIndex].attachments[status] = attachmentUrl;
-        console.log(`Added attachment for order ${orderId} at stage ${status} (mock)`);
-    }
-
+    
     console.log(`Updated order ${orderId} status to ${status} (mock)`);
     revalidatePath('/admin/orders');
     revalidatePath('/');

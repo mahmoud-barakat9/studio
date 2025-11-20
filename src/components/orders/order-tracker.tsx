@@ -4,8 +4,7 @@
 import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
 import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import Image from 'next/image';
+import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
     { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
@@ -26,7 +25,7 @@ const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType
 
 
 export function OrderTracker({ order }: { order: Order }) {
-  const { status: currentStatus, hasDelivery, attachments } = order;
+  const { status: currentStatus, hasDelivery } = order;
   
   // Choose the correct set of stages based on the delivery option
   const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES.filter(stage => STAGES.some(s => s.name === stage.name));
@@ -50,14 +49,11 @@ export function OrderTracker({ order }: { order: Order }) {
   return (
     <div className="space-y-8">
       {stagesToShow.map((stage, index) => {
-        // Find the original index from the main STAGES array to handle completion status correctly
         const originalIndex = STAGES.findIndex(s => s.name === stage.name);
         const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
         
         const isCompleted = originalIndex < mainFlowCurrentIndex;
         const isCurrent = originalIndex === mainFlowCurrentIndex;
-
-        const attachmentUrl = attachments?.[stage.name];
 
         return (
             <div key={stage.name} className="flex items-start gap-4 md:gap-6">
@@ -91,14 +87,6 @@ export function OrderTracker({ order }: { order: Order }) {
                         {isCurrent && "طلبك في هذه المرحلة حاليًا."}
                         {!isCompleted && !isCurrent && "مرحلة قادمة."}
                     </p>
-                    {attachmentUrl && (isCurrent || isCompleted) && (
-                         <div className="mt-4">
-                             <p className="text-sm font-medium mb-2 text-foreground">الصورة المرفقة:</p>
-                             <div className="relative aspect-video max-w-xs rounded-md overflow-hidden border-2 border-primary/20">
-                                <Image src={attachmentUrl} alt={`صورة مرحلة ${stage.label}`} fill className="object-cover" />
-                             </div>
-                         </div>
-                    )}
                  </div>
             </div>
         );

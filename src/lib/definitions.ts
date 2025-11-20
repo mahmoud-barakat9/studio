@@ -32,7 +32,6 @@ export type Order = {
   hasDelivery: boolean;
   deliveryCost: number;
   deliveryAddress: string;
-  attachments: Partial<Record<OrderStatus, string>>;
 };
 
 export type User = {

@@ -4,8 +4,7 @@
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, Upload, Image as ImageIcon, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2 } from "lucide-react";
-import Image from "next/image";
+import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2 } from "lucide-react";
 import { updateOrderStatus } from "@/lib/actions";
 import type { OrderStatus } from "@/lib/definitions";
 import React from "react";
@@ -21,24 +20,15 @@ const icons = {
 export type StageIconName = keyof typeof icons;
 
 
-export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, hasAttachment, attachmentUrl, showRejectButton = false } : { 
+export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, showRejectButton = false } : { 
     stage: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } },
     isCompleted: boolean, 
     isCurrent: boolean, 
     isFuture: boolean, 
     orderId: string,
-    hasAttachment: boolean,
-    attachmentUrl?: string | null,
     showRejectButton?: boolean
 }) {
     
-    // This is a mock action. In a real app, this would trigger a file upload.
-    const handleAttachImage = async () => {
-        // We create a dummy FormData because the server action expects it, even though we don't use it here.
-        const formData = new FormData(); 
-        await updateOrderStatus(orderId, stage.name, `https://picsum.photos/seed/${orderId}-${stage.name}/600/400`, formData);
-    };
-
     const IconComponent = icons[stage.icon];
 
     return (
@@ -82,29 +72,6 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, ha
                     </div>
                 )}
             </CardHeader>
-            {(isCurrent || isCompleted) && (
-                <CardContent className="border-t pt-4">
-                    {attachmentUrl && typeof attachmentUrl === 'string' && attachmentUrl.length > 0 ? (
-                         <div>
-                            <p className="text-sm font-medium mb-2">الصورة المرفقة:</p>
-                             <div className="relative aspect-video max-w-sm rounded-md overflow-hidden border">
-                                <Image src={attachmentUrl} alt={`صورة مرحلة ${stage.label}`} fill className="object-cover" />
-                             </div>
-                         </div>
-                    ) : (
-                        <div className="text-center py-4 px-6 border-2 border-dashed rounded-lg">
-                           <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-                           <p className="mt-2 text-sm text-muted-foreground">لم يتم إرفاق صورة لهذه المرحلة.</p>
-                           {isCurrent && (
-                               <Button type="button" onClick={handleAttachImage} variant="outline" className="mt-4">
-                                   <Upload className="ml-2 h-4 w-4" />
-                                   إرفاق صورة (وهمي)
-                               </Button>
-                           )}
-                        </div>
-                    )}
-                </CardContent>
-            )}
         </Card>
     );
 }

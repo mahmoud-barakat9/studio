@@ -111,7 +111,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     totalArea,
     totalCost: productsCost,
     deliveryCost,
-    attachments: {},
   };
   
   const newOrder = await addOrder(orderData);
@@ -176,8 +175,8 @@ export async function rejectOrder(orderId: string) {
 }
 
 // The formData parameter is kept for compatibility with form actions, even if not used.
-export async function updateOrderStatus(orderId: string, status: Order['status'], attachmentUrl?: string, formData?: FormData) {
-    await updateOrderStatusDB(orderId, status, attachmentUrl);
+export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
+    await updateOrderStatusDB(orderId, status);
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath('/admin/orders');
 }

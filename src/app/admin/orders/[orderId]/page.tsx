@@ -137,7 +137,7 @@ export default function AdminOrderDetailPage({
            <Card>
                 <CardHeader>
                     <CardTitle>مراحل تتبع الطلب</CardTitle>
-                    <CardDescription>تتبع حالة الطلب وأضف صورًا لكل مرحلة.</CardDescription>
+                    <CardDescription>تتبع حالة الطلب وقم بتحديثها.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {order.status === 'Rejected' ? (
@@ -169,8 +169,6 @@ export default function AdminOrderDetailPage({
                                             isCurrent={isPickupCurrent}
                                             isFuture={!isPickupCurrent}
                                             orderId={order.id}
-                                            hasAttachment={!!order.attachments?.[readyForPickupStage.name]}
-                                            attachmentUrl={order.attachments?.[readyForPickupStage.name]}
                                         />
                                     )
                                 }
@@ -184,8 +182,6 @@ export default function AdminOrderDetailPage({
                                             isCurrent={true}
                                             isFuture={false}
                                             orderId={order.id}
-                                            hasAttachment={!!order.attachments?.[deliveredStage.name]}
-                                            attachmentUrl={order.attachments?.[deliveredStage.name]}
                                         />
                                     )
                                  }
@@ -201,8 +197,6 @@ export default function AdminOrderDetailPage({
                                     isCurrent={isCurrent}
                                     isFuture={isFuture}
                                     orderId={order.id}
-                                    hasAttachment={!!order.attachments?.[stage.name]}
-                                    attachmentUrl={order.attachments?.[stage.name]}
                                     showRejectButton={stage.name === 'Pending'}
                                 />
                             )
@@ -332,5 +326,3 @@ export default function AdminOrderDetailPage({
     </main>
   );
 }
-
-    
