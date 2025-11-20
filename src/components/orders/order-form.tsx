@@ -96,7 +96,6 @@ interface OrderFormProps {
   isAdmin?: boolean;
   users?: User[];
   currentUser?: User | null;
-  userOrders?: Order[];
   isLoading?: boolean;
   currentDate?: string;
 }
