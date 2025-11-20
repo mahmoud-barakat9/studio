@@ -20,6 +20,8 @@ const guestLinks = [
 
 const userLinks = [
     { href: "/dashboard", label: "لوحة التحكم" },
+    { href: "/dashboard#all-orders-tab", label: "كل طلباتي" },
+    { href: "/orders/new", label: "إنشاء طلب جديد" },
 ]
 
 
@@ -101,7 +103,7 @@ export function MainHeader() {
                         <DropdownMenuLabel>حسابي</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
-                        <DropdownMenuItem><User className="ml-2 h-4 w-4" />الملف الشخصي</DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/admin/profile"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
