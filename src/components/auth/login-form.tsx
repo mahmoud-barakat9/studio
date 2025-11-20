@@ -68,8 +68,11 @@ export function LoginForm() {
         {state?.message && (
           <p className="text-sm text-destructive">{state.message}</p>
         )}
-         <div className="text-xs text-muted-foreground text-center">
-            لأغراض العرض، استخدم <code className="font-bold">admin@abjour.com</code> للدخول كمسؤول.
+         <div className="text-xs text-muted-foreground text-center space-y-1">
+            <p>لأغراض العرض، استخدم الحسابات التالية:</p>
+            <p><span className="font-bold">مسؤول:</span> <code className="font-mono">admin@abjour.com</code></p>
+            <p><span className="font-bold">مستخدم:</span> <code className="font-mono">user@abjour.com</code></p>
+            <p><span className="font-bold">كلمة المرور للجميع:</span> <code className="font-mono">123456</code></p>
         </div>
       </div>
     </form>
