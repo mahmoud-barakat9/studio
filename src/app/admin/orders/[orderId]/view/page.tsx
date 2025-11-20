@@ -9,22 +9,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 import type { Order, User } from "@/lib/definitions";
 import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default function OrderInvoicesPage({
-  params,
-}: {
-  params: { orderId: string };
-}) {
+export default function OrderInvoicesPage() {
+  const params = useParams();
+  const orderId = params.orderId as string;
+
   const [order, setOrder] = useState<Order | null | undefined>(undefined);
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     async function fetchData() {
-        const orderData = await getOrderById(params.orderId);
+        if (!orderId) return;
+        const orderData = await getOrderById(orderId);
         setOrder(orderData);
         if (orderData) {
             const usersData = await getUsers();
@@ -32,7 +33,7 @@ export default function OrderInvoicesPage({
         }
     }
     fetchData();
-  }, [params.orderId]);
+  }, [orderId]);
 
   if (order === undefined) {
     return (
