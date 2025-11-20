@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, ensureUserExistsInFirestore } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User, Order } from './definitions';
@@ -86,26 +86,22 @@ export async function login(prevState: any, formData: FormData) {
   
   // This is a mock authentication. We can't use Firebase client SDK on the server.
   // We'll just check against our known test users and users in DB.
+  const allUsers = await getAllUsers(true);
+  const user = allUsers.find(u => u.email === email); // Simplified check without password for mock
 
-  try {
-     const user = await ensureUserExistsInFirestore({ email, password });
+  if (!user) {
+      return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+  }
 
-    if (!user) {
-        return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-    }
+  // Set mock session cookie
+  cookies().set('session-id', user.id, { httpOnly: true, path: '/' });
+  cookies().set('session-role', user.role, { httpOnly: true, path: '/' });
 
-    // Set mock session cookie
-    cookies().set('session-id', user.id);
-    cookies().set('session-role', user.role);
 
-    if (user.role === 'admin') {
-        redirect('/admin/dashboard');
-    } else {
-        redirect('/dashboard');
-    }
-  } catch (error: any) {
-      console.error("Login error:", error);
-      return { message: error.message || 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
+  if (user.role === 'admin') {
+      redirect('/admin/dashboard');
+  } else {
+      redirect('/dashboard');
   }
 }
 

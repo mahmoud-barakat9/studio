@@ -10,59 +10,39 @@ import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, 
 
 
 // --- Data Initialization ---
-const ensureUserExistsInFirestore = async (auth: { email: string, password?: string, uid?: string, name?: string }): Promise<User> => {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", auth.email));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-        const existingUser = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() } as User;
-        console.log(`User ${auth.email} already exists in Firestore.`);
-        return existingUser;
-    }
-    
-    console.log(`User ${auth.email} not found in Firestore, creating...`);
-
-    // This is a simplified logic for a mock environment
-    let role: "admin" | "user" = "user";
-    if (auth.email === 'admin@abjour.com') {
-        role = 'admin';
-    }
-
-    const userId = auth.uid || `mock-${Date.now()}`;
-    
-    const newUser: User = {
-        id: userId,
-        name: auth.name || auth.email.split('@')[0],
-        email: auth.email,
-        role: role,
-    };
-    
-    await setDoc(doc(db, "users", userId), newUser);
-    console.log(`Created new user in Firestore: ${auth.email}`);
-    return newUser;
-};
-
-
-// This is a mock function to simulate Firebase Auth on the server
-// In a real app, you would use Firebase Admin SDK
-const mockFirebaseAuth = async (email: string, password?: string) => {
-    const testUsers = [
-        { email: 'admin@abjour.com', password: '123456', role: 'admin', id: 'admin-mock-uid' },
-        { email: 'user@abjour.com', password: '123456', role: 'user', id: 'user-mock-uid' }
-    ];
-
-    const user = testUsers.find(u => u.email === email && u.password === password);
-    if(user) {
-        return user;
-    }
-    // For any other user, we'll just assume login is successful if they exist in DB
+const initializeData = async () => {
     const usersSnapshot = await getDocs(collection(db, "users"));
-    const dbUser = usersSnapshot.docs.map(d => ({id: d.id, ...d.data()})).find(u => u.email === email);
-    if(dbUser) return dbUser;
+    if (usersSnapshot.empty) {
+        console.log("No users found, populating with default data...");
+        const usersToCreate = [
+            { id: 'admin-mock-uid', name: 'Adminstrator', email: 'admin@abjour.com', phone: '555-4444', role: 'admin' as const },
+            { id: 'user-mock-uid', name: 'User', email: 'user@abjour.com', phone: '555-5555', role: 'user' as const }
+        ];
+        const batch = writeBatch(db);
+        usersToCreate.forEach(user => {
+            const userRef = doc(db, "users", user.id);
+            batch.set(userRef, user);
+        });
+        await batch.commit();
+        console.log("Default users created.");
+    }
 
-    return null;
+    const materialsSnapshot = await getDocs(collection(db, "materials"));
+    if (materialsSnapshot.empty) {
+        console.log("No materials found, populating from default data...");
+        const batch = writeBatch(db);
+        abjourTypesData.forEach(material => {
+            const materialRef = doc(db, "materials", material.name);
+            batch.set(materialRef, material);
+        });
+        await batch.commit();
+        console.log("Default materials created.");
+    }
 }
+
+// Call initialization
+initializeData().catch(console.error);
+
 
 
 // --- Orders ---
@@ -300,7 +280,3 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
-
-
-// Re-export for server actions
-export { ensureUserExistsInFirestore };
