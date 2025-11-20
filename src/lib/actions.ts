@@ -8,11 +8,11 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, getUserById } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, getUserById, ensureUserExistsInFirestore } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User } from './definitions';
-import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 
 const loginSchema = z.object({
@@ -37,31 +37,80 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
   
-  const allUsers = await getAllUsers();
-  const existingUser = allUsers.find(u => u.email === validatedFields.data.email);
-  if (existingUser) {
-    return {
-      message: 'هذا البريد الإلكتروني مسجل بالفعل.',
-    };
-  }
-  
+  const {name, email, password} = validatedFields.data;
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, validatedFields.data.email, validatedFields.data.password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: name });
+    }
+    
     await addUserAndGetId({
       id: userCredential.user.uid,
-      name: validatedFields.data.name,
-      email: validatedFields.data.email,
+      name: name,
+      email: email,
       role: 'user',
       phone: '', // Phone can be added later
     });
+
   } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+        return { message: 'هذا البريد الإلكتروني مسجل بالفعل.' };
+    }
+    console.error("Registration Error:", error);
     return {
-      message: error.message,
+      message: "حدث خطأ أثناء إنشاء الحساب. " + error.message,
     };
   }
 
   redirect('/dashboard');
 }
+
+async function ensureTestUsers() {
+    const testUsers = [
+        {
+            email: 'admin@abjour.com',
+            password: '123456',
+            name: 'Adminstrator',
+            phone: '555-4444',
+            role: 'admin' as const,
+        },
+        {
+            email: 'user@abjour.com',
+            password: '123456',
+            name: 'User',
+            phone: '555-5555',
+            role: 'user' as const,
+        }
+    ];
+
+    for (const testUser of testUsers) {
+        try {
+            // Check if user exists in Auth, if not, create it
+            const userCredential = await createUserWithEmailAndPassword(auth, testUser.email, testUser.password);
+            await updateProfile(userCredential.user, { displayName: testUser.name });
+            await ensureUserExistsInFirestore({
+                id: userCredential.user.uid,
+                ...testUser
+            });
+             console.log(`Test user ${testUser.email} created successfully.`);
+        } catch (error: any) {
+            if (error.code === 'auth/email-already-in-use') {
+                // User already exists in Auth, ensure they exist in Firestore
+                const userSnap = await signInWithEmailAndPassword(auth, testUser.email, testUser.password);
+                await ensureUserExistsInFirestore({
+                    id: userSnap.user.uid,
+                    ...testUser
+                });
+            } else {
+                console.error(`Failed to ensure test user ${testUser.email}:`, error);
+            }
+        }
+    }
+     // Sign out after ensuring users to not affect the current login flow
+    await signOut(auth);
+}
+
 
 export async function login(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse(
@@ -77,12 +126,30 @@ export async function login(prevState: any, formData: FormData) {
   const { email, password } = validatedFields.data;
   
   try {
+     // Ensure test users exist before attempting login
+    if (email === 'admin@abjour.com' || email === 'user@abjour.com') {
+      await ensureTestUsers();
+    }
+
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = await getUserById(userCredential.user.uid);
 
     if (!user) {
-        // This case can happen if auth succeeds but firestore doc is missing
-         return { message: 'لم يتم العثور على بيانات المستخدم.' };
+        // This can happen if auth succeeds but firestore doc is missing
+        const firestoreUser = await ensureUserExistsInFirestore({
+            id: userCredential.user.uid,
+            name: userCredential.user.displayName || email,
+            email: email,
+            role: 'user',
+            phone: userCredential.user.phoneNumber || ''
+        });
+
+        if (firestoreUser.role === 'admin') {
+            redirect('/admin/dashboard');
+        } else {
+            redirect('/dashboard');
+        }
+        return;
     }
 
     if (user.role === 'admin') {
