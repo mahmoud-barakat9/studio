@@ -7,41 +7,29 @@ import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/firebase/config';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch, setDoc } from 'firebase/firestore';
+import type { User as FirebaseAuthUser } from 'firebase/auth';
 
 
-// --- Data Initialization ---
-const initializeData = async () => {
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    if (usersSnapshot.empty) {
-        console.log("No users found, populating with default data...");
-        const usersToCreate = [
-            { id: 'admin-mock-uid', name: 'Adminstrator', email: 'admin@abjour.com', phone: '555-4444', role: 'admin' as const },
-            { id: 'user-mock-uid', name: 'User', email: 'user@abjour.com', phone: '555-5555', role: 'user' as const }
-        ];
-        const batch = writeBatch(db);
-        usersToCreate.forEach(user => {
-            const userRef = doc(db, "users", user.id);
-            batch.set(userRef, user);
-        });
-        await batch.commit();
-        console.log("Default users created.");
-    }
+export const ensureUserExistsInFirestore = async (firebaseUser: FirebaseAuthUser): Promise<User> => {
+  const userRef = doc(db, 'users', firebaseUser.uid);
+  let userSnap = await getDoc(userRef);
 
-    const materialsSnapshot = await getDocs(collection(db, "materials"));
-    if (materialsSnapshot.empty) {
-        console.log("No materials found, populating from default data...");
-        const batch = writeBatch(db);
-        abjourTypesData.forEach(material => {
-            const materialRef = doc(db, "materials", material.name);
-            batch.set(materialRef, material);
-        });
-        await batch.commit();
-        console.log("Default materials created.");
-    }
-}
-
-// Call initialization
-initializeData().catch(console.error);
+  if (!userSnap.exists()) {
+    // This is a test user, create them in Firestore
+    const isTestAdmin = firebaseUser.email === 'admin@abjour.com';
+    const newUser: User = {
+      id: firebaseUser.uid,
+      name: isTestAdmin ? 'Adminstrator' : (firebaseUser.displayName || 'User'),
+      email: firebaseUser.email!,
+      role: isTestAdmin ? 'admin' : 'user',
+      phone: firebaseUser.phoneNumber || (isTestAdmin ? '555-4444' : '555-5555'),
+    };
+    await setDoc(userRef, newUser);
+    userSnap = await getDoc(userRef);
+  }
+  
+  return { id: userSnap.id, ...userSnap.data() } as User;
+};
 
 
 
@@ -191,14 +179,15 @@ export const addUserAndGetId = async (userData: Partial<User> & { email: string 
     if (!querySnapshot.empty) {
         return querySnapshot.docs[0].id;
     }
-
-    const newUserRef = doc(collection(db, 'users'));
-    const finalUserData = { ...userData, id: newUserRef.id };
-    await setDoc(newUserRef, finalUserData);
+    
+    // if an id is provided, use it, otherwise generate one
+    const userRef = userData.id ? doc(db, 'users', userData.id) : doc(collection(db, 'users'));
+    const finalUserData = { ...userData, id: userRef.id };
+    await setDoc(userRef, finalUserData, { merge: true });
 
     revalidatePath('/admin/orders/new');
-    console.log("Added user", userData);
-    return newUserRef.id;
+    console.log("Added/updated user", userData);
+    return userRef.id;
 };
 
 
@@ -287,5 +276,3 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
-
-    
