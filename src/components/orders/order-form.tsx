@@ -17,6 +17,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -30,18 +31,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info } from 'lucide-react';
+import { Wand2, Loader2, Info, Ruler } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
 } from '@/lib/actions';
 import React, { useActionState, useEffect, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { User, Opening } from '@/lib/definitions';
+import type { User, Opening, Order } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
-import { CardFooter } from '../ui/card';
+import { getCookie } from 'cookies-next';
+import { getOrdersByUserId, getUserById } from '@/lib/firebase-actions';
+import { Skeleton } from '../ui/skeleton';
+
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -63,6 +67,7 @@ const baseOrderSchema = z.object({
 });
 
 const userOrderSchema = baseOrderSchema.extend({
+  userId: z.string().min(1, "معرف المستخدم مطلوب."),
   customerName: z.string().min(1, 'اسم العميل مطلوب.'),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
 });
@@ -95,8 +100,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      customerName: 'Ahmed Ali', // Mock data
-      customerPhone: '555-1234', // Mock data
       orderName: '',
       mainAbjourType: '',
       mainColor: '',
@@ -114,6 +117,10 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [currentDate, setCurrentDate] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(!isAdmin);
+
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
@@ -125,7 +132,27 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
         month: 'long',
         day: 'numeric'
     }));
-  }, []);
+
+    if (!isAdmin) {
+      const fetchUserData = async () => {
+        setIsLoading(true);
+        const sessionId = getCookie('session-id');
+        if (sessionId) {
+          const user = await getUserById(sessionId);
+          if (user) {
+            setCurrentUser(user);
+            form.setValue('userId', user.id);
+            form.setValue('customerName', user.name);
+            form.setValue('customerPhone', user.phone || '');
+            const orders = await getOrdersByUserId(user.id);
+            setUserOrders(orders);
+          }
+        }
+        setIsLoading(false);
+      };
+      fetchUserData();
+    }
+  }, [isAdmin, form]);
 
   const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
   const availableColors = selectedAbjourTypeData?.colors || [];
@@ -135,6 +162,10 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     0
   );
   const totalCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
+
+  const totalApprovedMeters = userOrders
+    .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
+    .reduce((sum, order) => sum + order.totalArea, 0);
 
   useEffect(() => {
     if (nameState?.data?.orderName) {
@@ -220,13 +251,18 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                 orderName: '',
                 mainAbjourType: '',
                 mainColor: '',
-                customerName: isAdmin ? '' : 'Ahmed Ali', // Reset to mock
-                customerPhone: isAdmin ? '' : '555-1234', // Reset to mock
-                userId: '',
+                userId: isAdmin ? '' : currentUser?.id,
+                customerName: isAdmin ? '' : currentUser?.name,
+                customerPhone: isAdmin ? '' : currentUser?.phone,
                 newUserName: '',
                 newUserEmail: '',
                 newUserPhone: '',
             });
+            // Refetch orders for the user to update the meter count
+            if (!isAdmin && currentUser) {
+                const orders = await getOrdersByUserId(currentUser.id);
+                setUserOrders(orders);
+            }
         }
      });
   };
@@ -334,7 +370,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
                         <FormItem>
                           <FormLabel>اسم العميل</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} readOnly />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -474,6 +510,22 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
           </div>
 
           <div className="lg:col-span-1 space-y-8">
+             {!isAdmin && (
+               <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>إجمالي الأمتار المعتمدة حتى الآن</CardDescription>
+                    <CardTitle className="text-3xl flex items-center gap-2">
+                    {isLoading ? <Skeleton className="h-8 w-32" /> : `${totalApprovedMeters.toFixed(2)} م²`}
+                    <Ruler className="h-7 w-7 text-primary" />
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-xs text-muted-foreground">
+                        واصل العمل الرائع!
+                    </div>
+                </CardContent>
+              </Card>
+            )}
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -548,3 +600,5 @@ export function OrderForm({ isAdmin = false, users: allUsers = [] }: { isAdmin?:
     </Form>
   );
 }
+
+    
