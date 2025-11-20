@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useFirebase } from "@/firebase/provider";
@@ -6,32 +7,28 @@ import { useEffect, useState } from "react";
 import { getUserById } from "@/lib/firebase-actions";
 import type { User } from "@/lib/definitions";
 import { usePathname } from "next/navigation";
-import { getCookie, hasCookie } from 'cookies-next';
 
 
 export const useUser = () => {
+    const { user: authUser, loading: authLoading } = useFirebase();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const pathname = usePathname();
 
     useEffect(() => {
         const fetchUser = async () => {
-            if (hasCookie('session-id')) {
-                const userId = getCookie('session-id') as string;
-                const userRole = getCookie('session-role') as string;
-                
-                // This is a mock user object based on cookie
-                // In a real app, you might fetch full user details from an API
-                const fetchedUser = await getUserById(userId);
-                if (fetchedUser) {
-                    setUser(fetchedUser);
+            if (authLoading) {
+                setLoading(true);
+                return;
+            }
+
+            if (authUser) {
+                const dbUser = await getUserById(authUser.uid);
+                if (dbUser) {
+                    setUser(dbUser);
                 } else {
-                     setUser({
-                        id: userId,
-                        role: userRole as "admin" | "user",
-                        name: userRole === 'admin' ? 'Admin' : 'User',
-                        email: userRole === 'admin' ? 'admin@abjour.com' : 'user@abjour.com'
-                    });
+                    // This might happen if user exists in Auth but not in Firestore DB yet.
+                    // For now, we set it to null, but you might want to handle this case.
+                    setUser(null);
                 }
             } else {
                 setUser(null);
@@ -40,7 +37,7 @@ export const useUser = () => {
         };
 
         fetchUser();
-    }, [pathname]); // Refetch on path change to ensure session is fresh
+    }, [authUser, authLoading]);
 
     return { user, loading };
 };

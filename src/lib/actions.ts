@@ -8,10 +8,13 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, ensureUserExistsInFirestore } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import type { AbjourTypeData, User } from './definitions';
+import type { AbjourTypeData, User, Order } from './definitions';
+import { auth } from '@/firebase/config';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -36,29 +39,36 @@ export async function register(prevState: any, formData: FormData) {
   }
   
   const {name, email, password} = validatedFields.data;
-  const allUsers = await getAllUsers();
   
-  if (allUsers.find(u => u.email === email)) {
+  try {
+    // This part runs on the server, but Firebase Auth SDK is client-side.
+    // This will not work as expected on the server.
+    // We will simulate it and the real creation will happen on the client.
+    // The proper way is to use Firebase Admin SDK for server-side auth actions.
+    
+    // Simulate check if user exists
+    const allUsers = await getAllUsers();
+    if (allUsers.find(u => u.email === email)) {
+      return {
+        message: 'هذا البريد الإلكتروني مسجل بالفعل.',
+      };
+    }
+
+    // In a real app, you would create user with Admin SDK.
+    // For this mock-up, we redirect and let client-side handle it.
+    // The action here is mostly for validation.
+    
+    // The `addUserAndGetId` should be called after client-side creation.
+    // We can't do it here directly.
+
+  } catch (error: any) {
     return {
-      message: 'هذا البريد الإلكتروني مسجل بالفعل.',
+      message: error.message || 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.',
     };
   }
   
-  const newUser = {
-    id: `user-${Date.now()}`,
-    name,
-    email,
-    role: 'user' as const,
-    phone: ''
-  };
-
-  await addUserAndGetId(newUser);
-  
-  // Mock session cookie
-  cookies().set('session-id', newUser.id);
-  cookies().set('session-role', newUser.role);
-  
-  redirect('/dashboard');
+  // Redirect to login, maybe with a success message.
+  redirect('/login?registered=true');
 }
 
 export async function login(prevState: any, formData: FormData) {
@@ -74,41 +84,28 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
   
-  // This is a mock authentication. In a real app, you'd verify against a database.
-  const testUsers = [
-      { email: 'admin@abjour.com', password: '123456', role: 'admin', id: 'admin-id' },
-      { email: 'user@abjour.com', password: '123456', role: 'user', id: 'user-id' }
-  ];
+  // This is a mock authentication. We can't use Firebase client SDK on the server.
+  // We'll just check against our known test users and users in DB.
 
-  const matchedUser = testUsers.find(u => u.email === email);
-  
-  if (!matchedUser || (matchedUser.password !== password)) {
-    // If not a test user, let's check our dynamically created users
-    const allUsers = await getAllUsers();
-    const dynamicUser = allUsers.find(u => u.email === email);
-    if(dynamicUser){
-        // In a real app, you would check the password here. For this mock, we assume it's correct.
-        cookies().set('session-id', dynamicUser.id);
-        cookies().set('session-role', dynamicUser.role);
-        if (dynamicUser.role === 'admin') {
-            redirect('/admin/dashboard');
-        } else {
-            redirect('/dashboard');
-        }
-        return; // exit
+  try {
+     const user = await ensureUserExistsInFirestore({ email, password });
+
+    if (!user) {
+        return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
     }
 
-    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-  }
-  
-  // Set mock session cookie
-  cookies().set('session-id', matchedUser.id);
-  cookies().set('session-role', matchedUser.role);
+    // Set mock session cookie
+    cookies().set('session-id', user.id);
+    cookies().set('session-role', user.role);
 
-  if (matchedUser.role === 'admin') {
-    redirect('/admin/dashboard');
-  } else {
-    redirect('/dashboard');
+    if (user.role === 'admin') {
+        redirect('/admin/dashboard');
+    } else {
+        redirect('/dashboard');
+    }
+  } catch (error: any) {
+      console.error("Login error:", error);
+      return { message: error.message || 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
   }
 }
 
@@ -116,7 +113,7 @@ export async function login(prevState: any, formData: FormData) {
 export async function logout() {
   cookies().delete('session-id');
   cookies().delete('session-role');
-  redirect('/login');
+  redirect('/welcome');
 }
 
 
@@ -164,26 +161,26 @@ export async function createOrder(formData: any, asAdmin: boolean) {
         throw new Error("New user name and email are required.");
       }
       const newUserData = {
-        id: `user-${Date.now()}`,
         name: formData.newUserName,
         email: formData.newUserEmail,
         phone: formData.newUserPhone,
         role: 'user' as const,
       };
-      userId = await addUserAndGetId(newUserData);
+      const createdUserId = await addUserAndGetId(newUserData);
+      userId = createdUserId;
       finalCustomerData = newUserData;
 
     } else {
       userId = formData.userId;
-      const allUsers = await getAllUsers();
-      const existingUser = allUsers.find(u => u.id === userId);
+      const existingUser = await getUserById(userId);
       if (existingUser) {
         finalCustomerData = { name: existingUser.name, phone: existingUser.phone };
       }
     }
   } else {
      userId = sessionUserId;
-     finalCustomerData = { name: formData.customerName, phone: formData.customerPhone };
+     const currentUser = await getUserById(userId!);
+     finalCustomerData = { name: currentUser?.name, phone: currentUser?.phone };
   }
   
   if(!userId){
