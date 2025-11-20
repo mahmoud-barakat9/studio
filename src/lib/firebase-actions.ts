@@ -56,6 +56,7 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     if(!userId) return [];
+    await initializeTestUsers();
     const q = query(collection(db, "orders"), where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -286,3 +287,5 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
+
+    

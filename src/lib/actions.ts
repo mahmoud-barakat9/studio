@@ -61,6 +61,8 @@ export async function login(prevState: any, formData: FormData) {
     return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
   }
   
+  await initializeTestUsers();
+
   const role = isAdmin ? 'admin' : 'user';
   const users = await getAllUsers(true);
   const user = users.find(u => u.email === email);
@@ -342,3 +344,5 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+
+    
