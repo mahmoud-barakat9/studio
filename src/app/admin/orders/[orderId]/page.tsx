@@ -35,23 +35,6 @@ const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: 
     { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
 
-function ShareInvoiceButton({ order, customer }: { order: Order, customer?: User }) {
-    if (!customer?.phone) return null;
-
-    const invoiceUrl = `${window.location.origin}/admin/orders/${order.id}/view`;
-    const message = encodeURIComponent(`مرحبًا ${customer.name}،\n\nيمكنك عرض فاتورة طلبك "${order.orderName}" عبر الرابط التالي:\n${invoiceUrl}\n\nشكرًا لك!`);
-    const whatsappUrl = `https://wa.me/${customer.phone.replace(/\D/g, '')}?text=${message}`;
-
-    return (
-        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" className="w-full">
-                <Share2 className="ml-2 h-4 w-4" />
-                عرض الفاتورة ومشاركتها
-            </Button>
-        </a>
-    );
-}
-
 export default function AdminOrderDetailPage({
   params,
 }: {
@@ -121,7 +104,12 @@ export default function AdminOrderDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                 <ShareInvoiceButton order={order} customer={customer} />
+                 <Link href={`/admin/orders/${order.id}/view`} className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full">
+                        <FileText className="ml-2 h-4 w-4" />
+                        عرض وتنزيل الفواتير
+                    </Button>
+                </Link>
                 <Link href="/admin/orders" className="w-full sm:w-auto">
                     <Button variant="outline" className="w-full">
                         <ArrowRight className="ml-2 h-4 w-4" />
