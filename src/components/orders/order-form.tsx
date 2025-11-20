@@ -260,7 +260,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 newUserEmail: '',
                 newUserPhone: '',
             });
-            // Re-fetching orders is handled by the parent page now.
         }
      });
   };
@@ -637,9 +636,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitPending}
+                  disabled={isSubmitPending || form.formState.isSubmitting}
                 >
-                  {isSubmitPending && (
+                  {(isSubmitPending || form.formState.isSubmitting) && (
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
                   إرسال الطلب

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -520,9 +521,9 @@ export function EditOrderForm({ order, users }: { order: Order, users: User[] })
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitPending}
+                  disabled={isSubmitPending || form.formState.isSubmitting}
                 >
-                  {isSubmitPending && (
+                  {(isSubmitPending || form.formState.isSubmitting) && (
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
                   حفظ التغييرات

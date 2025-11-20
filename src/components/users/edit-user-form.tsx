@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -155,9 +156,9 @@ export function EditUserForm({ user }: { user: User }) {
           <CardFooter>
             <Button
               type="submit"
-              disabled={isSubmitPending}
+              disabled={isSubmitPending || form.formState.isSubmitting}
             >
-              {isSubmitPending && (
+              {(isSubmitPending || form.formState.isSubmitting) && (
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               )}
               حفظ التغييرات
