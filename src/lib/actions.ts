@@ -114,7 +114,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     attachments: {},
   };
   
-  await addOrder(orderData);
+  const newOrder = await addOrder(orderData);
 
   if (asAdmin) {
     revalidatePath('/admin/orders');
@@ -122,7 +122,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   } else {
     revalidatePath('/dashboard');
     revalidatePath('/admin/orders'); // also revalidate admin page so they see the new order
-    redirect('/dashboard');
+    redirect(`/admin/orders/${newOrder.id}/view`);
   }
   
   return { success: true };
