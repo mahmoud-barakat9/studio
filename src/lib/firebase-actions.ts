@@ -4,6 +4,7 @@ import { abjourTypesData } from '@/lib/abjour-data';
 import { orders, users } from '@/lib/data';
 import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 // This is a mock implementation. In a real app, you would use Firebase.
 
@@ -30,12 +31,13 @@ export async function getUsers(includeAdmins = false): Promise<User[]> {
   return Promise.resolve(users.filter(u => u.role === 'user' && u.email !== 'user@abjour.com'));
 }
 
-export async function getAllUsers(): Promise<User[]> {
-    return Promise.resolve(users);
+export async function getUserById(id: string): Promise<User | undefined> {
+    const allUsers = await getAllUsers();
+    return Promise.resolve(allUsers.find((u) => u.id === id));
 }
 
-export async function getUserById(id: string): Promise<User | undefined> {
-    return Promise.resolve(users.find((u) => u.id === id));
+export async function getAllUsers(): Promise<User[]> {
+    return Promise.resolve(users);
 }
 
 
@@ -53,19 +55,20 @@ export async function addUserAndGetId(userData: Omit<User, 'id'>): Promise<strin
 
 export async function addOrder(orderData: any) {
     const totalArea = orderData.openings.reduce(
-      (acc: number, op: any) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0) / 100,
+      (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
       0
     );
     const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
 
-    const selectedUser = users.find(u => u.id === orderData.userId);
+    const allUsers = await getAllUsers();
+    const selectedUser = allUsers.find(u => u.id === orderData.userId);
 
     const newOrder: Order = {
         id: `ORD${String(orders.length + 1).padStart(3, '0')}`,
         userId: orderData.userId,
         orderName: orderData.orderName,
-        customerName: selectedUser?.name || orderData.customerName,
-        customerPhone: selectedUser?.phone || orderData.customerPhone || '555-5678',
+        customerName: selectedUser?.name || orderData.customerName || orderData.newUserName,
+        customerPhone: selectedUser?.phone || orderData.customerPhone || orderData.newUserPhone || '555-5678',
         mainAbjourType: orderData.mainAbjourType,
         mainColor: orderData.mainColor,
         bladeWidth: orderData.bladeWidth,
@@ -115,7 +118,7 @@ export async function updateOrder(orderId: string, orderData: Partial<Order>): P
     }
 
     const totalArea = (orderData.openings || orders[orderIndex].openings).reduce(
-      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || orders[orderIndex].bladeWidth) / 100,
+      (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || orders[orderIndex].bladeWidth) / 10000,
       0
     );
     const totalCost = totalArea * (orderData.pricePerSquareMeter || orders[orderIndex].pricePerSquareMeter);
