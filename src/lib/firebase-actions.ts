@@ -69,6 +69,7 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
         hasDelivery: orderData.hasDelivery,
         deliveryCost: orderData.deliveryCost,
         deliveryAddress: orderData.deliveryAddress,
+        attachments: orderData.attachments || {},
     };
     
     orders.unshift(newOrder); // Add to the beginning of the array
@@ -77,11 +78,19 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
 };
 
 
-export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
+export const updateOrderStatus = async (orderId: string, status: Order['status'], attachmentUrl?: string): Promise<Order> => {
     const orderIndex = orders.findIndex(o => o.id === orderId);
     if (orderIndex === -1) throw new Error("Order not found");
     
     orders[orderIndex].status = status;
+    if (attachmentUrl) {
+        if (!orders[orderIndex].attachments) {
+            orders[orderIndex].attachments = {};
+        }
+        orders[orderIndex].attachments[status] = attachmentUrl;
+        console.log(`Added attachment for order ${orderId} at stage ${status} (mock)`);
+    }
+
     console.log(`Updated order ${orderId} status to ${status} (mock)`);
     revalidatePath('/admin/orders');
     revalidatePath('/');
@@ -109,13 +118,25 @@ export const updateOrder = async (orderId: string, orderData: Partial<Order>): P
       (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || originalOrder.bladeWidth) / 10000,
       0
     );
-    const totalCost = totalArea * (orderData.pricePerSquareMeter || originalOrder.pricePerSquareMeter);
+    
+    let deliveryCost = originalOrder.deliveryCost;
+    if (orderData.hasDelivery) {
+        const baseDeliveryFee = 5;
+        const perMeterFee = 0.5;
+        deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
+    } else if (orderData.hasDelivery === false) {
+        deliveryCost = 0;
+    }
 
-    const updatedData = {
+
+    const productsCost = totalArea * (orderData.pricePerSquareMeter || originalOrder.pricePerSquareMeter);
+
+    const updatedData: Order = {
         ...originalOrder,
         ...orderData,
         totalArea,
-        totalCost,
+        totalCost: productsCost,
+        deliveryCost: deliveryCost,
     };
     
     orders[orderIndex] = updatedData;

@@ -45,6 +45,7 @@ export const orders: Order[] = [
     hasDelivery: false,
     deliveryCost: 0,
     deliveryAddress: '',
+    attachments: {},
   },
   {
     id: "ORD002",
@@ -90,6 +91,10 @@ export const orders: Order[] = [
     hasDelivery: true,
     deliveryCost: 20,
     deliveryAddress: '123 Main St, Anytown, USA',
+    attachments: {
+        Pending: 'https://picsum.photos/seed/ORD002-Pending/600/400',
+        FactoryOrdered: 'https://picsum.photos/seed/ORD002-FactoryOrdered/600/400',
+    },
   },
   {
     id: "ORD003",
@@ -119,6 +124,7 @@ export const orders: Order[] = [
     hasDelivery: false,
     deliveryCost: 0,
     deliveryAddress: '',
+    attachments: {},
   },
   {
     id: "ORD004",
@@ -143,6 +149,7 @@ export const orders: Order[] = [
     hasDelivery: false,
     deliveryCost: 0,
     deliveryAddress: '',
+    attachments: {},
   },
     {
     id: "ORD005",
@@ -165,5 +172,6 @@ export const orders: Order[] = [
     hasDelivery: false,
     deliveryCost: 0,
     deliveryAddress: '',
+    attachments: {},
   },
 ];

@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, initializeTestUsers } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -100,7 +100,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   }
 
   const productsCost = totalArea * (formData.pricePerSquareMeter || 0);
-  const totalCost = productsCost + deliveryCost;
 
   const orderData = {
     ...formData,
@@ -110,8 +109,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     status: asAdmin ? 'FactoryOrdered' : 'Pending',
     date: new Date().toISOString().split('T')[0],
     totalArea,
-    totalCost,
+    totalCost: productsCost,
     deliveryCost,
+    attachments: {},
   };
   
   await addOrder(orderData);
@@ -153,7 +153,7 @@ export async function approveOrder(orderId: string) {
   const order = await getOrderById(orderId);
   if (!order) throw new Error('Order not found');
 
-  await updateOrderStatus(orderId, 'FactoryOrdered');
+  await updateOrderStatusDB(orderId, 'FactoryOrdered');
   revalidatePath('/admin/orders');
 
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
@@ -166,13 +166,19 @@ export async function rejectOrder(orderId: string) {
   const order = await getOrderById(orderId);
   if (!order) throw new Error('Order not found');
 
-  await updateOrderStatus(orderId, 'Rejected');
+  await updateOrderStatusDB(orderId, 'Rejected');
   revalidatePath('/admin/orders');
   
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
   const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
   redirect(whatsappUrl);
+}
+
+export async function updateOrderStatus(orderId: string, status: Order['status'], attachmentUrl?: string) {
+    await updateOrderStatusDB(orderId, status, attachmentUrl);
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath('/admin/orders');
 }
 
 

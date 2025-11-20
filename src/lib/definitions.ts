@@ -10,6 +10,9 @@ export type Opening = {
   notes?: string;
 };
 
+export type OrderStatus = "Pending" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
+
+
 export type Order = {
   id: string;
   userId: string;
@@ -20,7 +23,7 @@ export type Order = {
   mainColor: string;
   bladeWidth: number;
   pricePerSquareMeter: number;
-  status: "Pending" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
+  status: OrderStatus;
   date: string;
   totalArea: number;
   totalCost: number;
@@ -29,6 +32,7 @@ export type Order = {
   hasDelivery: boolean;
   deliveryCost: number;
   deliveryAddress: string;
+  attachments: Partial<Record<OrderStatus, string>>;
 };
 
 export type User = {
