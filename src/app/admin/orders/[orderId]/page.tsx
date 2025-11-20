@@ -57,43 +57,39 @@ export default async function AdminOrderDetailPage({
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
-        <div className="flex items-center mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
-            <Link href="/admin/orders" className="mr-auto">
-                <Button variant="outline">
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                    العودة إلى كل الطلبات
-                </Button>
-            </Link>
-        </div>
-
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {order.status === 'Pending' && (
-                <>
-                 <form action={approveOrder.bind(null, order.id)}>
-                    <Button>
-                        <Check className="ml-2 h-4 w-4" />
-                        موافقة وإرسال إشعار
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                {order.status === 'Pending' && (
+                    <>
+                     <form action={approveOrder.bind(null, order.id)}>
+                        <Button className="w-full">
+                            <Check className="ml-2 h-4 w-4" />
+                            موافقة وإرسال إشعار
+                        </Button>
+                     </form>
+                     <form action={rejectOrder.bind(null, order.id)}>
+                        <Button variant="destructive" className="w-full">
+                            <X className="ml-2 h-4 w-4" />
+                            رفض وإرسال إشعار
+                        </Button>
+                     </form>
+                    </>
+                )}
+                <PrintOrder order={order} customer={customer} />
+                <WhatsappShare order={order} customer={customer} />
+                <Link href="/admin/orders" className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full">
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                        كل الطلبات
                     </Button>
-                 </form>
-                 <form action={rejectOrder.bind(null, order.id)}>
-                    <Button variant="destructive">
-                        <X className="ml-2 h-4 w-4" />
-                        رفض وإرسال إشعار
-                    </Button>
-                 </form>
-                </>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <PrintOrder order={order} customer={customer} />
-            <WhatsappShare order={order} customer={customer} />
-          </div>
+                </Link>
+            </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <div className="lg:col-span-2 xl:col-span-3 grid auto-rows-max gap-4">
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-grow flex flex-col gap-8">
            <Card>
             <CardHeader>
                 <CardTitle>تتبع حالة الطلب</CardTitle>
@@ -139,7 +135,7 @@ export default async function AdminOrderDetailPage({
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-1 xl:col-span-1 grid auto-rows-max gap-4">
+        <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 flex flex-col gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle>{order.orderName}</CardTitle>
