@@ -27,6 +27,7 @@ export function LoginForm() {
             type="email"
             placeholder="m@example.com"
             required
+            defaultValue="user@abjour.com"
           />
           {state?.errors?.email && (
             <p className="text-sm text-destructive">{state.errors.email}</p>
@@ -49,6 +50,7 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               required
               className="pr-10"
+              defaultValue="123456"
             />
             <Button
               type="button"
@@ -69,11 +71,11 @@ export function LoginForm() {
         {state?.message && (
           <p className="text-sm text-destructive text-center">{state.message}</p>
         )}
-         <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>لأغراض العرض، استخدم الحسابات التالية:</p>
-            <p><span className="font-bold">مسؤول:</span> <code className="font-mono">admin@abjour.com</code></p>
-            <p><span className="font-bold">مستخدم:</span> <code className="font-mono">user@abjour.com</code></p>
-            <p><span className="font-bold">كلمة المرور للجميع:</span> <code className="font-mono">123456</code></p>
+         <div className="text-xs text-muted-foreground text-center space-y-1 border-t pt-4 mt-2">
+            <p className="font-bold">بيانات الدخول التجريبية:</p>
+            <p><span className="font-semibold">مسؤول:</span> <code className="font-mono bg-muted px-1 py-0.5 rounded">admin@abjour.com</code></p>
+            <p><span className="font-semibold">مستخدم:</span> <code className="font-mono bg-muted px-1 py-0.5 rounded">user@abjour.com</code></p>
+            <p><span className="font-semibold">كلمة المرور للجميع:</span> <code className="font-mono bg-muted px-1 py-0.5 rounded">123456</code></p>
         </div>
       </div>
     </form>
@@ -88,5 +90,3 @@ function LoginButton() {
         </Button>
     )
 }
-
-    
