@@ -177,8 +177,8 @@ export async function rejectOrder(orderId: string) {
 // The formData parameter is kept for compatibility with form actions, even if not used.
 export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
     await updateOrderStatusDB(orderId, status);
-    revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath('/admin/orders');
+    redirect(`/admin/orders/${orderId}`);
 }
 
 

@@ -1,13 +1,14 @@
 
+
 'use client';
 
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2 } from "lucide-react";
 import { updateOrderStatus } from "@/lib/actions";
 import type { OrderStatus } from "@/lib/definitions";
-import React, { useTransition } from "react";
+import React from "react";
 
 const icons = {
     FileQuestion,
@@ -30,13 +31,6 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
 }) {
     
     const IconComponent = icons[stage.icon];
-    const [isPending, startTransition] = useTransition();
-
-    const handleUpdate = (newStatus: OrderStatus) => {
-        startTransition(() => {
-            updateOrderStatus(orderId, newStatus);
-        });
-    }
 
     return (
         <Card className={cn(
@@ -61,18 +55,18 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
                     </div>
                 </div>
                  {isCurrent && stage.action && (
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <form action={updateOrderStatus.bind(null, orderId, stage.action!.nextStatus)} className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         {showRejectButton && (
-                            <Button variant="destructive" className="w-full" onClick={() => handleUpdate('Rejected')}>
+                             <Button variant="destructive" className="w-full" formAction={updateOrderStatus.bind(null, orderId, 'Rejected')}>
                                 <X className="ml-2 h-4 w-4" />
                                 رفض الطلب
                             </Button>
                         )}
-                        <Button className="w-full" onClick={() => handleUpdate(stage.action!.nextStatus)}>
+                        <Button type="submit" className="w-full">
                              <Check className="ml-2 h-4 w-4" />
                             {stage.action.label}
                         </Button>
-                    </div>
+                    </form>
                 )}
             </CardHeader>
         </Card>
