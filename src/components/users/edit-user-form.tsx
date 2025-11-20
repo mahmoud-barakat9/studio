@@ -57,10 +57,10 @@ export function EditUserForm({ user }: { user: User }) {
   });
 
   const { toast } = useToast();
-  const [isSubmitPending, startSubmitTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const onSubmit = (data: UserFormValues) => {
-     startSubmitTransition(async () => {
+     startTransition(async () => {
         const result = await updateUser(user.id, data);
         if (result?.success) {
             toast({
@@ -156,9 +156,9 @@ export function EditUserForm({ user }: { user: User }) {
           <CardFooter>
             <Button
               type="submit"
-              disabled={isSubmitPending || form.formState.isSubmitting}
+              disabled={isPending}
             >
-              {(isSubmitPending || form.formState.isSubmitting) && (
+              {isPending && (
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               )}
               حفظ التغييرات

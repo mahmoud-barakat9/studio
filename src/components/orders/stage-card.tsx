@@ -63,13 +63,13 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
                  {isCurrent && stage.action && (
                     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         {showRejectButton && (
-                            <Button variant="destructive" className="w-full" onClick={() => handleUpdate('Rejected')} disabled={isPending}>
-                                {isPending ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <X className="ml-2 h-4 w-4" />}
+                            <Button variant="destructive" className="w-full" onClick={() => handleUpdate('Rejected')}>
+                                <X className="ml-2 h-4 w-4" />
                                 رفض الطلب
                             </Button>
                         )}
-                        <Button className="w-full" onClick={() => handleUpdate(stage.action!.nextStatus)} disabled={isPending}>
-                             {isPending ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Check className="ml-2 h-4 w-4" />}
+                        <Button className="w-full" onClick={() => handleUpdate(stage.action!.nextStatus)}>
+                             <Check className="ml-2 h-4 w-4" />
                             {stage.action.label}
                         </Button>
                     </div>

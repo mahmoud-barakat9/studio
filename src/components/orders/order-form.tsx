@@ -636,9 +636,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitPending || form.formState.isSubmitting}
+                  disabled={isSubmitPending}
                 >
-                  {(isSubmitPending || form.formState.isSubmitting) && (
+                  {isSubmitPending && (
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
                   إرسال الطلب

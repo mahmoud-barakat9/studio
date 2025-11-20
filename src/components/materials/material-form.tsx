@@ -22,13 +22,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { createMaterial, updateMaterial } from '@/lib/actions';
 import React, { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AbjourTypeData } from '@/lib/definitions';
-import { Badge } from '../ui/badge';
-import { Separator } from '../ui/separator';
 
 const materialSchema = z.object({
   name: z.string().min(2, 'الاسم مطلوب ويجب أن يكون حرفين على الأقل.'),
@@ -55,12 +53,12 @@ export function MaterialForm({ material }: MaterialFormProps) {
   });
 
   const { toast } = useToast();
-  const [isSubmitPending, startSubmitTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const isEditing = !!material;
 
   const onSubmit = (data: MaterialFormValues) => {
-     startSubmitTransition(async () => {
+     startTransition(async () => {
         const action = isEditing ? updateMaterial : createMaterial;
         const result = await action(data);
         if (result?.success) {
@@ -148,9 +146,9 @@ export function MaterialForm({ material }: MaterialFormProps) {
           <CardFooter>
             <Button
               type="submit"
-              disabled={isSubmitPending || form.formState.isSubmitting}
+              disabled={isPending}
             >
-              {(isSubmitPending || form.formState.isSubmitting) && (
+              {isPending && (
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               )}
               {isEditing ? 'حفظ التغييرات' : 'إنشاء مادة'}
