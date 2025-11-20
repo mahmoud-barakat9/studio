@@ -22,11 +22,13 @@ export default function NewOrderPage() {
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
+    // This will only run on the client
     setCurrentDate(new Date().toLocaleDateString('ar-EG', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     }));
+
     const fetchUserData = async () => {
       setIsLoading(true);
       const sessionId = getCookie('session-id');

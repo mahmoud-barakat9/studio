@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowUpRight, Ruler } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from "react";
-import { getCookie } from 'cookies-next';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,19 +14,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { getOrdersByUserId, getUserById } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import type { Order, User } from "@/lib/definitions";
 import { Skeleton } from "../ui/skeleton";
 
-export function Dashboard() {
+interface DashboardProps {
+    currentUser: User | null;
+    userOrders: Order[];
+    isLoading: boolean;
+}
+
+export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   
   const viewOrderId = searchParams.get('view_order');
   
@@ -37,24 +38,7 @@ export function Dashboard() {
   }, [viewOrderId]);
 
   const [activeTab, setActiveTab] = useState(getDefaultTab());
-
-  useEffect(() => {
-    async function fetchUserData() {
-      setIsLoading(true);
-      const sessionId = getCookie('session-id');
-      if (sessionId) {
-        const user = await getUserById(sessionId);
-        if (user) {
-          setCurrentUser(user);
-          const orders = await getOrdersByUserId(user.id);
-          setUserOrders(orders);
-        }
-      }
-      setIsLoading(false);
-    }
-    fetchUserData();
-  }, []);
-
+  
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
     const newParams = new URLSearchParams(searchParams.toString());

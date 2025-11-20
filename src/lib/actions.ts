@@ -10,7 +10,7 @@ import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-or
 import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import type { AbjourTypeData } from './definitions';
+import type { AbjourTypeData, User } from './definitions';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -71,13 +71,16 @@ export async function login(prevState: any, formData: FormData) {
   const user = allUsers.find(u => u.email === email);
 
   // This is a mock authentication check. In a real app, you'd use hashed passwords.
-  if (!user || (user.email !== 'admin@abjour.com' && user.email !== 'user@abjour.com' && password !== 'password123')) {
-    if (user && (user.email === 'admin@abjour.com' || user.email === 'user@abjour.com') && password !== '123456') {
-       return { message: 'كلمة المرور غير صحيحة.' };
-    }
-    if (!user) {
-       return { message: 'المستخدم غير موجود.' };
-    }
+  if (!user) {
+    return { message: 'المستخدم غير موجود.' };
+  }
+  
+  // Specific check for demo users
+  if (user.email === 'admin@abjour.com' && password !== '123456') {
+      return { message: 'كلمة المرور غير صحيحة.' };
+  }
+  if (user.email === 'user@abjour.com' && password !== '123456') {
+    return { message: 'كلمة المرور غير صحيحة.' };
   }
 
 
@@ -124,6 +127,7 @@ export async function generateOrderName(
 
 export async function createOrder(formData: any, asAdmin: boolean) {
   let userId;
+  let finalCustomerData: Partial<User> = {};
   const cookieStore = cookies();
   const session = cookieStore.get('session-id');
 
@@ -132,17 +136,26 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       if (!formData.newUserName || !formData.newUserEmail) {
         throw new Error("New user name and email are required.");
       }
-      userId = await addUserAndGetId({
+      const newUserData = {
         name: formData.newUserName,
         email: formData.newUserEmail,
         phone: formData.newUserPhone,
-        role: 'user',
-      });
+        role: 'user' as const,
+      };
+      userId = await addUserAndGetId(newUserData);
+      finalCustomerData = newUserData;
+
     } else {
       userId = formData.userId;
+      const allUsers = await getAllUsers();
+      const existingUser = allUsers.find(u => u.id === userId);
+      if (existingUser) {
+        finalCustomerData = { name: existingUser.name, phone: existingUser.phone };
+      }
     }
   } else {
      userId = session?.value;
+     finalCustomerData = { name: formData.customerName, phone: formData.customerPhone };
   }
   
   if(!userId){
@@ -152,6 +165,8 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   const orderData = {
     ...formData,
     userId,
+    customerName: finalCustomerData.name,
+    customerPhone: finalCustomerData.phone,
     status: asAdmin ? 'FactoryOrdered' : 'Pending',
     date: new Date().toISOString().split('T')[0],
   };
