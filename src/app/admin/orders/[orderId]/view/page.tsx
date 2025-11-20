@@ -1,4 +1,5 @@
 
+
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import { BrandLogo } from "@/components/icons";
 import {
@@ -17,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Order, Opening } from "@/lib/definitions";
+import { Separator } from "@/components/ui/separator";
 
 export default async function OrderViewPage({
   params,
@@ -43,6 +45,7 @@ export default async function OrderViewPage({
 
   const customer = users.find((u) => u.id === order.userId);
   const customerName = customer?.name || order.customerName;
+  const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
 
   return (
     <div className="bg-background min-h-screen">
@@ -74,7 +77,7 @@ export default async function OrderViewPage({
                     </div>
                 </section>
 
-                <section>
+                <section className="mb-8">
                     <h3 className="text-xl font-bold text-center mb-4 border-t pt-4">تفاصيل القطع للمعمل</h3>
                     <div className="overflow-x-auto">
                         <Table className="w-full border-collapse text-sm text-center">
@@ -110,6 +113,26 @@ export default async function OrderViewPage({
                     <div className="mt-4 p-4 bg-muted rounded-lg font-bold flex justify-between items-center">
                         <span>المجموع الإجمالي</span>
                         <span>{order.totalArea.toFixed(2)} م²</span>
+                    </div>
+                </section>
+
+                {order.hasDelivery && (
+                <section className="mb-8">
+                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-4">معلومات التوصيل</h3>
+                     <div className="p-4 border rounded-lg bg-muted/50 space-y-2">
+                        <div><span className="font-bold">عنوان التوصيل:</span> {order.deliveryAddress}</div>
+                        <div><span className="font-bold">تكلفة التوصيل:</span> ${order.deliveryCost.toFixed(2)}</div>
+                    </div>
+                </section>
+                )}
+
+                <section>
+                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-4">ملخص مالي</h3>
+                    <div className="p-4 border rounded-lg bg-muted/50 space-y-2 max-w-sm mx-auto">
+                        <div className="flex justify-between"><span>تكلفة المنتجات:</span> <span>${order.totalCost.toFixed(2)}</span></div>
+                        {order.hasDelivery && <div className="flex justify-between"><span>تكلفة التوصيل:</span> <span>${order.deliveryCost.toFixed(2)}</span></div>}
+                        <Separator />
+                        <div className="flex justify-between font-bold text-lg"><span>الإجمالي المطلوب:</span> <span>${finalTotalCost.toFixed(2)}</span></div>
                     </div>
                 </section>
             </main>

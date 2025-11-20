@@ -1,4 +1,5 @@
 
+
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import {
   Card,
@@ -19,7 +20,7 @@ import { OrderTracker } from "@/components/orders/order-tracker";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, X, Share2 } from "lucide-react";
+import { ArrowRight, Check, X, Share2, Truck, Home } from "lucide-react";
 import { approveOrder, rejectOrder } from "@/lib/actions";
 
 export default async function AdminOrderDetailPage({
@@ -52,6 +53,7 @@ export default async function AdminOrderDetailPage({
   }
 
   const customer = users.find((u) => u.id === order.userId);
+  const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
@@ -167,11 +169,37 @@ export default async function AdminOrderDetailPage({
                         <span>{order.date}</span>
                     </div>
                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">التكلفة الإجمالية</span>
+                        <span className="text-muted-foreground">تكلفة المنتجات</span>
                         <span className="font-semibold">${order.totalCost.toFixed(2)}</span>
+                    </div>
+                    {order.hasDelivery && (
+                         <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">تكلفة التوصيل</span>
+                            <span className="font-semibold">${order.deliveryCost.toFixed(2)}</span>
+                        </div>
+                    )}
+                     <div className="flex items-center justify-between font-bold text-lg border-t pt-2">
+                        <span className="text-muted-foreground">التكلفة الإجمالية</span>
+                        <span className="font-extrabold">${finalTotalCost.toFixed(2)}</span>
                     </div>
                 </CardContent>
             </Card>
+             {order.hasDelivery && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Truck className="h-5 w-5" />
+                           تفاصيل التوصيل
+                        </CardTitle>
+                    </CardHeader>
+                     <CardContent className="grid gap-4">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground text-sm">عنوان التوصيل</span>
+                            <p className="text-sm font-medium">{order.deliveryAddress}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+             )}
             <Card>
                 <CardHeader>
                     <CardTitle>معلومات العميل</CardTitle>

@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -43,6 +43,8 @@ import { abjourTypesData } from '@/lib/abjour-data';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
 import { Skeleton } from '../ui/skeleton';
+import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
 
 
 const openingSchema = z.object({
@@ -62,12 +64,17 @@ const baseOrderSchema = z.object({
   mainAbjourType: z.string({ required_error: "نوع الأباجور الرئيسي مطلوب."}).min(1, "نوع الأباجور الرئيسي مطلوب."),
   mainColor: z.string({ required_error: "اللون الرئيسي مطلوب."}).min(1, "اللون الرئيسي مطلوب."),
   openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
+  hasDelivery: z.boolean().default(false),
+  deliveryAddress: z.string().optional(),
 });
 
 const userOrderSchema = baseOrderSchema.extend({
   userId: z.string().min(1, "معرف المستخدم مطلوب."),
   customerName: z.string().min(1, 'اسم العميل مطلوب.'),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
+}).refine(data => !data.hasDelivery || (data.hasDelivery && data.deliveryAddress && data.deliveryAddress.length > 0), {
+    message: 'عنوان التوصيل مطلوب عند تفعيل خيار التوصيل.',
+    path: ['deliveryAddress'],
 });
 
 const adminOrderSchema = baseOrderSchema.extend({
@@ -87,7 +94,10 @@ const adminOrderSchema = baseOrderSchema.extend({
       message: 'يجب اختيار مستخدم حالي أو إدخال تفاصيل مستخدم جديد كاملة (الاسم، البريد الإلكتروني، ورقم الهاتف).',
       path: ['userId'],
     }
-  );
+  ).refine(data => !data.hasDelivery || (data.hasDelivery && data.deliveryAddress && data.deliveryAddress.length > 0), {
+    message: 'عنوان التوصيل مطلوب عند تفعيل خيار التوصيل.',
+    path: ['deliveryAddress'],
+});
 
 
 type OrderFormValues = z.infer<typeof userOrderSchema & typeof adminOrderSchema>;
@@ -110,6 +120,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
       mainAbjourType: '',
       mainColor: '',
       openings: [],
+      hasDelivery: false,
+      deliveryAddress: '',
       userId: currentUser?.id || '',
       customerName: currentUser?.name || '',
       customerPhone: currentUser?.phone || '',
@@ -129,6 +141,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
   const watchUserId = useWatch({ control: form.control, name: 'userId'});
+  const watchHasDelivery = useWatch({ control: form.control, name: 'hasDelivery' });
 
 
   useEffect(() => {
@@ -149,7 +162,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     (acc, op) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0)) / 10000,
     0
   );
-  const totalCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
+  
+  const productsCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
+
+  const deliveryCost = watchHasDelivery ? (5 + (totalArea * 0.5)) : 0;
+  const totalCost = productsCost + deliveryCost;
 
   useEffect(() => {
     if (nameState?.data?.orderName) {
@@ -234,6 +251,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 orderName: '',
                 mainAbjourType: '',
                 mainColor: '',
+                hasDelivery: false,
+                deliveryAddress: '',
                 userId: isAdmin ? '' : currentUser?.id,
                 customerName: isAdmin ? '' : currentUser?.name,
                 customerPhone: isAdmin ? '' : currentUser?.phone,
@@ -499,7 +518,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             
           </div>
 
-          <div className="lg:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-8 sticky top-4">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -539,6 +558,56 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                     )}
                   />
                 </div>
+
+                <Card>
+                    <CardHeader className="p-4">
+                        <FormField
+                        control={form.control}
+                        name="hasDelivery"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                    <Truck className="h-5 w-5"/>
+                                    إضافة خدمة توصيل
+                                    </FormLabel>
+                                    <FormDescription>
+                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </CardHeader>
+                    {watchHasDelivery && (
+                    <CardContent className="p-4 pt-0">
+                         <FormField
+                            control={form.control}
+                            name="deliveryAddress"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>عنوان التوصيل</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </CardContent>
+                    )}
+                </Card>
+
+
                 <Separator />
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -549,6 +618,15 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">تكلفة المنتجات</span>
+                    <span className="font-medium">${productsCost.toFixed(2)}</span>
+                  </div>
+                  <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
+                    <span className="text-muted-foreground">تكلفة التوصيل</span>
+                    <span className="font-medium">${deliveryCost.toFixed(2)}</span>
+                  </div>
+                  <Separator />
                   <div className="flex justify-between font-semibold text-base">
                     <span className="text-muted-foreground">التكلفة الإجمالية</span>
                     <span className="font-bold">${totalCost.toFixed(2)}</span>

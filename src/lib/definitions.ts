@@ -26,6 +26,9 @@ export type Order = {
   totalCost: number;
   openings: Opening[];
   isArchived: boolean;
+  hasDelivery: boolean;
+  deliveryCost: number;
+  deliveryAddress: string;
 };
 
 export type User = {

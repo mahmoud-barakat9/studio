@@ -189,6 +189,19 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   if(!userId){
     throw new Error("User not authenticated");
   }
+  
+  const totalArea = formData.openings.reduce(
+      (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (formData.bladeWidth || 0)) / 10000,
+      0
+    );
+
+  let deliveryCost = 0;
+  if (formData.hasDelivery) {
+    const baseDeliveryFee = 5; // Base fee
+    const perMeterFee = 0.5; // $0.5 per square meter
+    deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
+  }
+
 
   const orderData = {
     ...formData,
@@ -197,6 +210,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     customerPhone: finalCustomerData.phone,
     status: asAdmin ? 'FactoryOrdered' : 'Pending',
     date: new Date().toISOString().split('T')[0],
+    deliveryCost,
   };
 
   await addOrder(orderData);
