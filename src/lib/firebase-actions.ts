@@ -11,10 +11,23 @@ let orders: Order[] = [...mockOrders];
 let users: User[] = [...mockUsers];
 let abjourTypesData: AbjourTypeData[] = [...defaultAbjourTypesData];
 
+let testUsersInitialized = false;
 
 export async function initializeTestUsers() {
-    // This function is now a placeholder as we are using mock data.
-    console.log("Using mock data. No need to initialize test users in Firestore.");
+    if (testUsersInitialized) return;
+
+    const testUser = users.find(u => u.id === '5');
+    if (!testUser) {
+        users.push({ id: '5', name: 'User', email: 'user@abjour.com', phone: '555-5555', role: 'user' });
+    }
+
+    const adminUser = users.find(u => u.id === '4');
+    if (!adminUser) {
+        users.push({ id: '4', name: 'Adminstrator', email: 'admin@abjour.com', phone: '555-4444', role: 'admin' });
+    }
+    
+    testUsersInitialized = true;
+    console.log("Mock test users initialized.");
 }
 
 
@@ -41,7 +54,8 @@ export const addOrder = async (orderData: any) => {
       (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
       0
     );
-    const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
+    const productsCost = totalArea * (orderData.pricePerSquareMeter || 0);
+    const totalCost = productsCost + (orderData.deliveryCost || 0);
 
     const newOrder: Order = {
         id: newId,
@@ -51,10 +65,8 @@ export const addOrder = async (orderData: any) => {
         isArchived: false,
     };
     
-    orders.push(newOrder);
+    orders.unshift(newOrder); // Add to the beginning of the array
     console.log("Added new order (mock)", newOrder);
-    revalidatePath('/admin/orders');
-    revalidatePath('/');
     return Promise.resolve(newOrder);
 };
 
@@ -123,6 +135,7 @@ export const deleteOrder = async (orderId: string): Promise<{ success: boolean }
 
 // --- Users ---
 export const getUsers = async (includeAdmins = false): Promise<User[]> => {
+  await initializeTestUsers(); // Ensure users exist
   if (includeAdmins) {
       return Promise.resolve(users);
   }
@@ -131,6 +144,7 @@ export const getUsers = async (includeAdmins = false): Promise<User[]> => {
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
     if (!id) return Promise.resolve(undefined);
+    await initializeTestUsers(); // Ensure users exist
     return Promise.resolve(users.find(u => u.id === id));
 };
 

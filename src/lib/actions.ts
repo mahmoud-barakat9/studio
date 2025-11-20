@@ -62,6 +62,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
         phone: formData.newUserPhone,
         role: 'user' as const,
       };
+      // In a real scenario, you'd properly await this. Since it's mock, it's synchronous.
       const createdUserId = await addUserAndGetId(newUserData);
       userId = createdUserId;
       finalCustomerData = newUserData;
@@ -76,7 +77,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   } else {
      userId = sessionUserId;
      const currentUser = await getUserById(userId!);
-     finalCustomerData = { name: currentUser?.name, phone: currentUser?.phone };
+     if(currentUser) {
+        finalCustomerData = { name: currentUser.name, phone: currentUser.phone };
+     }
   }
   
   if(!userId){
@@ -95,7 +98,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
   }
 
-
   const orderData = {
     ...formData,
     userId,
@@ -106,6 +108,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     deliveryCost,
   };
   
+  // This ensures our mock users exist before we create an order that might need them
   await initializeTestUsers();
   await addOrder(orderData);
 
@@ -114,7 +117,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     redirect('/admin/orders');
   } else {
     revalidatePath('/dashboard');
-    revalidatePath('/admin/orders');
+    revalidatePath('/admin/orders'); // also revalidate admin page so they see the new order
     redirect('/dashboard');
   }
   
