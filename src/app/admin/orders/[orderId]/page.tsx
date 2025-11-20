@@ -19,9 +19,7 @@ import { OrderTracker } from "@/components/orders/order-tracker";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, X } from "lucide-react";
-import { WhatsappShare } from "@/components/orders/whatsapp-share";
-import { PrintOrder } from "@/components/orders/print-order";
+import { ArrowRight, Check, X, Share2 } from "lucide-react";
 import { approveOrder, rejectOrder } from "@/lib/actions";
 
 export default async function AdminOrderDetailPage({
@@ -76,8 +74,12 @@ export default async function AdminOrderDetailPage({
                      </form>
                     </>
                 )}
-                <PrintOrder order={order} customer={customer} />
-                <WhatsappShare order={order} customer={customer} />
+                 <Link href={`/admin/orders/${order.id}/view`} target="_blank">
+                    <Button variant="outline" className="w-full">
+                        <Share2 className="ml-2 h-4 w-4" />
+                        عرض ومشاركة
+                    </Button>
+                </Link>
                 <Link href="/admin/orders" className="w-full sm:w-auto">
                     <Button variant="outline" className="w-full">
                         <ArrowRight className="ml-2 h-4 w-4" />
