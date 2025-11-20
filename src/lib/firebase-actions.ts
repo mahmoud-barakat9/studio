@@ -2,113 +2,90 @@
 
 'use server';
 
-import { abjourTypesData } from '@/lib/abjour-data';
+import { abjourTypesData as defaultAbjourTypesData } from '@/lib/abjour-data';
 import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/firebase/config';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch, setDoc } from 'firebase/firestore';
-import type { User as FirebaseAuthUser } from 'firebase/auth';
+import { users as mockUsers, orders as mockOrders } from './data';
 
+let orders: Order[] = [...mockOrders];
+let users: User[] = [...mockUsers];
+let abjourTypesData: AbjourTypeData[] = [...defaultAbjourTypesData];
 
-const testUsers = [
-    { id: "4", name: "Adminstrator", email: "admin@abjour.com", phone: "555-4444", role: "admin" as const },
-    { id: "5", name: "User", email: "user@abjour.com", phone: "555-5555", role: "user" as const },
-];
 
 export async function initializeTestUsers() {
-    const usersRef = collection(db, "users");
-    const batch = writeBatch(db);
-    let usersCreated = false;
-
-    for (const user of testUsers) {
-        const userDocRef = doc(usersRef, user.id);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-            batch.set(userDocRef, user);
-            usersCreated = true;
-            console.log(`Creating test user: ${user.email}`);
-        }
-    }
-
-    if (usersCreated) {
-        await batch.commit();
-        console.log("Test users initialization complete.");
-    }
+    // This function is now a placeholder as we are using mock data.
+    console.log("Using mock data. No need to initialize test users in Firestore.");
 }
-
 
 
 // --- Orders ---
 export const getOrders = async (): Promise<Order[]> => {
-  const ordersSnapshot = await getDocs(collection(db, "orders"));
-  return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return Promise.resolve(orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 };
 
 export const getOrderById = async (id: string): Promise<Order | undefined> => {
-  const docRef = doc(db, "orders", id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Order;
-  }
-  return undefined;
+  return Promise.resolve(orders.find(o => o.id === id));
 };
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
-    if(!userId) return [];
-    const q = query(collection(db, "orders"), where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if(!userId) return Promise.resolve([]);
+    const userOrders = orders.filter(o => o.userId === userId);
+    return Promise.resolve(userOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 };
 
 
 export const addOrder = async (orderData: any) => {
+    const newId = `ORD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`;
+    
     const totalArea = orderData.openings.reduce(
       (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
       0
     );
     const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
 
-    const newOrderData = {
+    const newOrder: Order = {
+        id: newId,
         ...orderData,
         totalArea,
         totalCost,
         isArchived: false,
     };
     
-    const docRef = await addDoc(collection(db, "orders"), newOrderData);
-    console.log("Added new order", {id: docRef.id, ...newOrderData});
+    orders.push(newOrder);
+    console.log("Added new order (mock)", newOrder);
     revalidatePath('/admin/orders');
     revalidatePath('/');
-    return {id: docRef.id, ...newOrderData};
+    return Promise.resolve(newOrder);
 };
 
 
 export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
-    const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, { status });
-    console.log(`Updated order ${orderId} status to ${status}`);
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) throw new Error("Order not found");
+    
+    orders[orderIndex].status = status;
+    console.log(`Updated order ${orderId} status to ${status} (mock)`);
     revalidatePath('/admin/orders');
     revalidatePath('/');
-    const updatedOrder = await getOrderById(orderId);
-    if (!updatedOrder) throw new Error("Order not found after update");
-    return updatedOrder;
+    return Promise.resolve(orders[orderIndex]);
 };
 
 export const updateOrderArchivedStatus = async (orderId: string, isArchived: boolean): Promise<Order> => {
-    const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, { isArchived });
-    console.log(`Updated order ${orderId} archived status to ${isArchived}`);
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) throw new Error("Order not found");
+    
+    orders[orderIndex].isArchived = isArchived;
+    console.log(`Updated order ${orderId} archived status to ${isArchived} (mock)`);
     revalidatePath('/admin/orders');
-    const updatedOrder = await getOrderById(orderId);
-    if (!updatedOrder) throw new Error("Order not found after update");
-    return updatedOrder;
+    return Promise.resolve(orders[orderIndex]);
 };
 
 
 export const updateOrder = async (orderId: string, orderData: Partial<Order>): Promise<Order> => {
-    const orderRef = doc(db, "orders", orderId);
-    const originalOrder = await getOrderById(orderId);
-    if (!originalOrder) throw new Error("Order not found");
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) throw new Error("Order not found");
+
+    const originalOrder = orders[orderIndex];
 
     const totalArea = (orderData.openings || originalOrder.openings).reduce(
       (acc: number, op: Opening) => acc + (op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || originalOrder.bladeWidth) / 10000,
@@ -117,169 +94,127 @@ export const updateOrder = async (orderId: string, orderData: Partial<Order>): P
     const totalCost = totalArea * (orderData.pricePerSquareMeter || originalOrder.pricePerSquareMeter);
 
     const updatedData = {
+        ...originalOrder,
         ...orderData,
         totalArea,
         totalCost,
     };
     
-    await updateDoc(orderRef, updatedData);
+    orders[orderIndex] = updatedData;
 
-    console.log(`Updated order ${orderId}`, updatedData);
+    console.log(`Updated order ${orderId} (mock)`, updatedData);
     revalidatePath('/admin/orders');
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath(`/admin/orders/${orderId}/edit`);
     revalidatePath('/');
     
-    const updatedOrder = await getOrderById(orderId);
-    if (!updatedOrder) throw new Error("Order not found after update");
-    return updatedOrder;
+    return Promise.resolve(updatedData);
 };
 
 
 export const deleteOrder = async (orderId: string): Promise<{ success: boolean }> => {
-    const orderRef = doc(db, "orders", orderId);
-    await deleteDoc(orderRef);
-    console.log(`Deleted order ${orderId}`);
+    orders = orders.filter(o => o.id !== orderId);
+    console.log(`Deleted order ${orderId} (mock)`);
     revalidatePath('/admin/orders');
     revalidatePath('/');
-    return { success: true };
+    return Promise.resolve({ success: true });
 };
 
 
 // --- Users ---
 export const getUsers = async (includeAdmins = false): Promise<User[]> => {
-  let q = query(collection(db, "users"));
-  if (!includeAdmins) {
-      q = query(q, where("role", "==", "user"));
+  if (includeAdmins) {
+      return Promise.resolve(users);
   }
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+  return Promise.resolve(users.filter(u => u.role === 'user'));
 };
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
-    if (!id) return undefined;
-    const docRef = doc(db, "users", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as User;
-    }
-    return undefined;
+    if (!id) return Promise.resolve(undefined);
+    return Promise.resolve(users.find(u => u.id === id));
 };
 
 export const getAllUsers = async (includeAdmins = false): Promise<User[]> => {
-    let q = query(collection(db, "users"));
-    if (!includeAdmins) {
-        q = query(q, where("role", "==", "user"));
-    }
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    return getUsers(includeAdmins);
 };
 
 export const addUserAndGetId = async (userData: Partial<User> & { email: string }): Promise<string> => {
-    
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", userData.email));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].id;
+    let existingUser = users.find(u => u.email === userData.email);
+    if (existingUser) {
+        return Promise.resolve(existingUser.id);
     }
     
-    // if an id is provided, use it, otherwise generate one
-    const userRef = userData.id ? doc(db, 'users', userData.id) : doc(collection(db, 'users'));
-    const finalUserData = { ...userData, id: userRef.id };
-    await setDoc(userRef, finalUserData, { merge: true });
+    const newId = `${users.length + 1}`;
+    const newUser: User = {
+        id: newId,
+        name: userData.name || 'New User',
+        email: userData.email,
+        phone: userData.phone || '',
+        role: 'user',
+    };
+    users.push(newUser);
 
     revalidatePath('/admin/orders/new');
-    console.log("Added/updated user", userData);
-    return userRef.id;
+    console.log("Added new user (mock)", newUser);
+    return Promise.resolve(newId);
 };
 
 
 export const updateUser = async (userId: string, userData: Partial<User>): Promise<User> => {
-    const userRef = doc(db, "users", userId);
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) throw new Error("User not found");
+
+    const updatedUser = { ...users[userIndex], ...userData };
+    users[userIndex] = updatedUser;
     
-    const dataToUpdate = { ...userData };
-    delete (dataToUpdate as any).password; // Never save password to Firestore
-    
-    await setDoc(userRef, dataToUpdate, { merge: true });
-    
-    console.log(`Updated user ${userId}`, dataToUpdate);
+    console.log(`Updated user ${userId} (mock)`, updatedUser);
     revalidatePath('/admin/users');
     revalidatePath(`/admin/users/${userId}/edit`);
 
-    const updatedUser = await getUserById(userId);
-    if (!updatedUser) throw new Error("User not found after update");
-    return updatedUser;
+    return Promise.resolve(updatedUser);
 };
 
 export const deleteUser = async (userId: string): Promise<{ success: boolean }> => {
-    const userRef = doc(db, "users", userId);
-    await deleteDoc(userRef);
+    users = users.filter(u => u.id !== userId);
+    orders = orders.filter(o => o.userId !== userId);
 
-    const ordersQuery = query(collection(db, "orders"), where("userId", "==", userId));
-    const ordersSnapshot = await getDocs(ordersQuery);
-    const batch = writeBatch(db);
-    ordersSnapshot.forEach(doc => {
-        batch.delete(doc.ref);
-    });
-    await batch.commit();
-
-    console.log(`Deleted user ${userId} and their orders`);
+    console.log(`Deleted user ${userId} and their orders (mock)`);
     revalidatePath('/admin/users');
-    return { success: true };
+    return Promise.resolve({ success: true });
 };
 
 
 // --- Materials ---
 export const getMaterials = async (): Promise<AbjourTypeData[]> => {
-    const materialsSnapshot = await getDocs(collection(db, "materials"));
-    if (materialsSnapshot.empty) {
-        console.log("No materials found, populating from default data...");
-        const batch = writeBatch(db);
-        abjourTypesData.forEach(material => {
-            const materialRef = doc(db, "materials", material.name);
-            batch.set(materialRef, material);
-        });
-        await batch.commit();
-        return abjourTypesData;
-    }
-    return materialsSnapshot.docs.map(doc => doc.data() as AbjourTypeData);
+    return Promise.resolve(abjourTypesData);
 };
 
 export const getMaterialByName = async (name: string): Promise<AbjourTypeData | undefined> => {
-    const q = query(collection(db, "materials"), where("name", "==", name));
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].data() as AbjourTypeData;
-    }
-    return undefined;
+    return Promise.resolve(abjourTypesData.find(m => m.name === name));
 };
 
 export const addMaterial = async (materialData: AbjourTypeData): Promise<AbjourTypeData> => {
-    const existing = await getMaterialByName(materialData.name);
+    const existing = abjourTypesData.find(m => m.name === materialData.name);
     if (existing) {
         throw new Error("مادة بهذا الاسم موجودة بالفعل.");
     }
-    const materialRef = doc(db, "materials", materialData.name);
-    await setDoc(materialRef, materialData);
+    abjourTypesData.push(materialData);
     revalidatePath('/admin/materials');
-    return materialData;
+    return Promise.resolve(materialData);
 };
 
 export const updateMaterial = async (materialData: AbjourTypeData): Promise<AbjourTypeData> => {
-    const materialRef = doc(db, "materials", materialData.name);
-    await updateDoc(materialRef, materialData);
+    const materialIndex = abjourTypesData.findIndex(m => m.name === materialData.name);
+    if (materialIndex === -1) throw new Error("Material not found");
+    
+    abjourTypesData[materialIndex] = materialData;
     revalidatePath('/admin/materials');
     revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
-    return materialData;
+    return Promise.resolve(materialData);
 };
 
 export const deleteMaterial = async (materialName: string): Promise<{ success: boolean }> => {
-    const materialRef = doc(db, "materials", materialName);
-    await deleteDoc(materialRef);
+    abjourTypesData = abjourTypesData.filter(m => m.name !== materialName);
     revalidatePath('/admin/materials');
-    return { success: true };
+    return Promise.resolve({ success: true });
 };
-
-    

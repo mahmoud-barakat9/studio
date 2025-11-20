@@ -42,6 +42,9 @@ export const orders: Order[] = [
       },
     ],
     isArchived: true,
+    hasDelivery: false,
+    deliveryCost: 0,
+    deliveryAddress: '',
   },
   {
     id: "ORD002",
@@ -84,6 +87,9 @@ export const orders: Order[] = [
       },
     ],
     isArchived: false,
+    hasDelivery: true,
+    deliveryCost: 20,
+    deliveryAddress: '123 Main St, Anytown, USA',
   },
   {
     id: "ORD003",
@@ -110,6 +116,9 @@ export const orders: Order[] = [
       },
     ],
     isArchived: false,
+    hasDelivery: false,
+    deliveryCost: 0,
+    deliveryAddress: '',
   },
   {
     id: "ORD004",
@@ -131,6 +140,9 @@ export const orders: Order[] = [
         { serial: "D03", abjourType: "Narrow", codeLength: 1.5, numberOfCodes: 30, hasEndCap: false, hasAccessories: false },
     ],
     isArchived: false,
+    hasDelivery: false,
+    deliveryCost: 0,
+    deliveryAddress: '',
   },
     {
     id: "ORD005",
@@ -150,5 +162,8 @@ export const orders: Order[] = [
         { serial: "E01", abjourType: "Standard", codeLength: 3.0, numberOfCodes: 50, hasEndCap: true, hasAccessories: true },
     ],
     isArchived: false,
+    hasDelivery: false,
+    deliveryCost: 0,
+    deliveryAddress: '',
   },
 ];
