@@ -3,13 +3,25 @@
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, Upload, Image as ImageIcon } from "lucide-react";
+import { Check, X, Upload, Image as ImageIcon, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { updateOrderStatus } from "@/lib/actions";
 import type { OrderStatus } from "@/lib/definitions";
+import React from "react";
+
+const icons = {
+    FileQuestion,
+    Factory,
+    Cog,
+    Truck,
+    PackageCheck,
+    CheckCircle2,
+}
+export type StageIconName = keyof typeof icons;
+
 
 export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, hasAttachment, attachmentUrl, showRejectButton = false } : { 
-    stage: { name: OrderStatus; label: string; icon: React.ElementType, action?: { label: string, nextStatus: OrderStatus } },
+    stage: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } },
     isCompleted: boolean, 
     isCurrent: boolean, 
     isFuture: boolean, 
@@ -26,6 +38,8 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, ha
         await updateOrderStatus(orderId, stage.name, `https://picsum.photos/seed/${orderId}-${stage.name}/600/400`, formData);
     };
 
+    const IconComponent = icons[stage.icon];
+
     return (
         <Card className={cn(
             isFuture && "bg-muted/50",
@@ -39,7 +53,7 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, ha
                         isCurrent && "bg-accent text-accent-foreground",
                         isFuture && "bg-secondary text-secondary-foreground",
                     )}>
-                        <stage.icon className="w-5 h-5" />
+                        <IconComponent className="w-5 h-5" />
                     </div>
                     <div>
                         <CardTitle className="text-lg">{stage.label}</CardTitle>

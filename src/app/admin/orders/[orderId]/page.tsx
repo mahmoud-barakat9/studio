@@ -1,5 +1,6 @@
 
 
+
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import {
   Card,
@@ -19,17 +20,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Share2, Truck, FileQuestion, Factory, Cog, PackageCheck, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowRight, Share2, Truck, XCircle } from "lucide-react";
 import type { OrderStatus, Order } from "@/lib/definitions";
-import { StageCard } from "@/components/orders/stage-card";
+import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 
-const STAGES: { name: OrderStatus; label: string; icon: React.ElementType, action?: { label: string, nextStatus: OrderStatus } }[] = [
-    { name: "Pending", label: "تم الاستلام", icon: FileQuestion, action: { label: "موافقة وبدء الطلب", nextStatus: "FactoryOrdered" } },
-    { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory, action: { label: "نقل إلى التجهيز", nextStatus: "Processing" } },
-    { name: "Processing", label: "قيد التجهيز", icon: Cog, action: { label: "شحن من المعمل", nextStatus: "FactoryShipped" } },
-    { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: Truck, action: { label: "تأكيد الاستلام وجاهزية التوصيل", nextStatus: "ReadyForDelivery" } },
-    { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: PackageCheck, action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
-    { name: "Delivered", label: "تم التوصيل", icon: CheckCircle2 },
+const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } }[] = [
+    { name: "Pending", label: "تم الاستلام", icon: 'FileQuestion', action: { label: "موافقة وبدء الطلب", nextStatus: "FactoryOrdered" } },
+    { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: 'Factory', action: { label: "نقل إلى التجهيز", nextStatus: "Processing" } },
+    { name: "Processing", label: "قيد التجهيز", icon: 'Cog', action: { label: "شحن من المعمل", nextStatus: "FactoryShipped" } },
+    { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: 'Truck', action: { label: "تأكيد الاستلام وجاهزية التوصيل", nextStatus: "ReadyForDelivery" } },
+    { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: 'PackageCheck', action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
+    { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
 
 
@@ -115,7 +116,7 @@ export default async function AdminOrderDetailPage({
                             // Don't show delivery stages if hasDelivery is false
                             if (!order.hasDelivery && (stage.name === 'ReadyForDelivery' || stage.name === 'FactoryShipped')) {
                                 if(stage.name === 'FactoryShipped') {
-                                    const readyForPickupStage = { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: PackageCheck, action: { label: "تأكيد الاستلام", nextStatus: "Delivered" } } as const;
+                                    const readyForPickupStage = { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: 'PackageCheck', action: { label: "تأكيد الاستلام", nextStatus: "Delivered" } } as const;
                                     return (
                                         <StageCard 
                                             key={readyForPickupStage.name} 
