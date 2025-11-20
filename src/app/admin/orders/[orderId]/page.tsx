@@ -89,7 +89,7 @@ export default function AdminOrderDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                 <Link href={`/admin/orders/${order.id}/view`} target="_blank">
+                 <Link href={`/admin/orders/${order.id}/view`}>
                     <Button variant="outline" className="w-full">
                         <FileText className="ml-2 h-4 w-4" />
                         عرض وتنزيل الفواتير

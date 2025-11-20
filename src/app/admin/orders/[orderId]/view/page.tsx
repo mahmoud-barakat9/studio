@@ -10,7 +10,9 @@ import { DownloadInvoiceButton } from "@/components/orders/download-invoice-butt
 import type { Order, User } from "@/lib/definitions";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function OrderInvoicesPage({
   params,
@@ -34,85 +36,90 @@ export default function OrderInvoicesPage({
 
   if (order === undefined) {
     return (
-      <div className="bg-muted min-h-screen p-8 flex items-center justify-center">
-        <div className="max-w-4xl w-full space-y-4">
-            <Skeleton className="h-10 w-1/3" />
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <div className="flex items-center justify-between mb-8">
+                <Skeleton className="h-10 w-1/3" />
+                <Skeleton className="h-10 w-24" />
+            </div>
             <Skeleton className="h-96 w-full" />
-        </div>
-      </div>
+      </main>
     );
   }
   
   if (!order) {
     return (
-      <main className="flex h-screen items-center justify-center bg-muted">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>لم يتم العثور على الطلب</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>لم نتمكن من العثور على الطلب الذي تبحث عنه.</p>
-          </CardContent>
-        </Card>
-      </main>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>لم يتم العثور على الطلب</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>لم نتمكن من العثور على الطلب الذي تبحث عنه.</p>
+                     <Link href="/admin/orders">
+                        <Button variant="link" className="p-0 mt-4">
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                            العودة إلى كل الطلبات
+                        </Button>
+                    </Link>
+                </CardContent>
+            </Card>
+        </main>
     );
   }
 
   const customer = users.find((u) => u.id === order.userId);
 
   return (
-    <div className="bg-muted min-h-screen py-8 sm:py-12" dir="rtl">
-        <div className="container mx-auto px-4">
-            <Tabs defaultValue="customer" className="max-w-5xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                    <div className="flex-grow">
-                        <h1 className="text-2xl font-bold">فواتير الطلب: {order.orderName}</h1>
-                        <p className="text-muted-foreground">اختر الفاتورة المطلوبة لعرضها أو تنزيلها كصورة.</p>
-                    </div>
-                     <TabsList className="grid w-full sm:w-auto grid-cols-3">
-                        <TabsTrigger value="customer">فاتورة العميل</TabsTrigger>
-                        <TabsTrigger value="factory">فاتورة المعمل</TabsTrigger>
-                        <TabsTrigger value="delivery" disabled={!order.hasDelivery}>فاتورة التوصيل</TabsTrigger>
-                    </TabsList>
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        <Tabs defaultValue="customer" className="w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <div className="flex-grow">
+                    <h1 className="text-2xl font-bold">فواتير الطلب: {order.orderName}</h1>
+                    <p className="text-muted-foreground">اختر الفاتورة المطلوبة لعرضها أو تنزيلها كصورة.</p>
                 </div>
-                
-                <TabsContent value="customer">
-                     <Card>
-                        <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle>فاتورة العميل النهائية</CardTitle>
-                            <DownloadInvoiceButton invoiceId="customer-invoice" orderId={order.id} type="customer" />
-                        </CardHeader>
-                        <CardContent>
-                            <CustomerInvoice order={order} customer={customer} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                 <TabsList className="grid w-full sm:w-auto grid-cols-3">
+                    <TabsTrigger value="customer">فاتورة العميل</TabsTrigger>
+                    <TabsTrigger value="factory">فاتورة المعمل</TabsTrigger>
+                    <TabsTrigger value="delivery" disabled={!order.hasDelivery}>فاتورة التوصيل</TabsTrigger>
+                </TabsList>
+            </div>
+            
+            <TabsContent value="customer">
+                 <Card>
+                    <CardHeader className="flex-row items-center justify-between">
+                        <CardTitle>فاتورة العميل النهائية</CardTitle>
+                        <DownloadInvoiceButton invoiceId="customer-invoice" orderId={order.id} type="customer" />
+                    </CardHeader>
+                    <CardContent>
+                        <CustomerInvoice order={order} customer={customer} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
 
-                <TabsContent value="factory">
-                    <Card>
-                        <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle>فاتورة المعمل الفنية</CardTitle>
-                            <DownloadInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
-                        </CardHeader>
-                        <CardContent>
-                             <FactoryInvoice order={order} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="delivery">
-                    <Card>
-                         <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle>فاتورة مسؤول التوصيل</CardTitle>
-                            <DownloadInvoiceButton invoiceId="delivery-invoice" orderId={order.id} type="delivery" />
-                        </CardHeader>
-                        <CardContent>
-                           <DeliveryInvoice order={order} customer={customer} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-        </div>
-    </div>
+            <TabsContent value="factory">
+                <Card>
+                    <CardHeader className="flex-row items-center justify-between">
+                        <CardTitle>فاتورة المعمل الفنية</CardTitle>
+                        <DownloadInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
+                    </CardHeader>
+                    <CardContent>
+                         <FactoryInvoice order={order} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="delivery">
+                <Card>
+                     <CardHeader className="flex-row items-center justify-between">
+                        <CardTitle>فاتورة مسؤول التوصيل</CardTitle>
+                        <DownloadInvoiceButton invoiceId="delivery-invoice" orderId={order.id} type="delivery" />
+                    </CardHeader>
+                    <CardContent>
+                       <DeliveryInvoice order={order} customer={customer} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
+    </main>
   );
 }
