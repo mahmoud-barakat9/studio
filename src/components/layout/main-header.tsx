@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X, Shield, Home } from "lucide-react";
 import { useState } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,12 @@ export function MainHeader() {
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
+           <Button variant="outline" size="sm" asChild>
+              <Link href="/welcome">
+                <Home className="ml-2 h-4 w-4" />
+                الرئيسية
+              </Link>
+           </Button>
            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="icon" className="rounded-full">
@@ -74,6 +80,7 @@ export function MainHeader() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/welcome">
+                      <Home className="ml-2 h-4 w-4" />
                       العودة للرئيسية
                     </Link>
                   </DropdownMenuItem>
@@ -112,7 +119,7 @@ export function MainHeader() {
                   <Link href="/admin/dashboard"><Shield className="ml-2 h-4 w-4" />تبديل للمسؤول</Link>
                </Button>
                <Button asChild className="w-full" onClick={handleLinkClick}>
-                  <Link href="/welcome">العودة للرئيسية</Link>
+                  <Link href="/welcome"><Home className="ml-2 h-4 w-4" />العودة للرئيسية</Link>
                </Button>
             </div>
           </div>
