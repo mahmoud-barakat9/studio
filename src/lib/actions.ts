@@ -178,7 +178,7 @@ export async function rejectOrder(orderId: string) {
 export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
     await updateOrderStatusDB(orderId, status);
     revalidatePath('/admin/orders');
-    redirect(`/admin/orders/${orderId}`);
+    revalidatePath(`/admin/orders/${orderId}`);
 }
 
 
@@ -281,3 +281,5 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+
+    

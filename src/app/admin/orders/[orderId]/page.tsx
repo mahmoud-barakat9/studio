@@ -24,6 +24,7 @@ import { ArrowRight, FileText, Truck, XCircle } from "lucide-react";
 import type { OrderStatus, Order, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { useEffect, useState } from "react";
+import { updateOrderStatus } from "@/lib/actions";
 
 const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } }[] = [
     { name: "Pending", label: "تم الاستلام", icon: 'FileQuestion', action: { label: "موافقة وبدء الطلب", nextStatus: "FactoryOrdered" } },
@@ -51,6 +52,20 @@ export default function AdminOrderDetailPage({
     }
     fetchData();
   }, [params.orderId]);
+
+  const handleStatusUpdate = async (newStatus: OrderStatus) => {
+    if (!order) return;
+
+    // Optimistic UI update
+    setOrder(prevOrder => prevOrder ? { ...prevOrder, status: newStatus } : null);
+
+    // Call server action
+    await updateOrderStatus(order.id, newStatus);
+    
+    // Optionally re-fetch to confirm, though revalidatePath should handle it
+    const updatedOrder = await getOrderById(params.orderId);
+    setOrder(updatedOrder);
+  };
 
 
   if (order === undefined) {
@@ -141,6 +156,7 @@ export default function AdminOrderDetailPage({
                                             isCurrent={isPickupCurrent}
                                             isFuture={!isPickupCurrent}
                                             orderId={order.id}
+                                            onStatusUpdate={handleStatusUpdate}
                                         />
                                     )
                                 }
@@ -154,6 +170,7 @@ export default function AdminOrderDetailPage({
                                             isCurrent={true}
                                             isFuture={false}
                                             orderId={order.id}
+                                            onStatusUpdate={handleStatusUpdate}
                                         />
                                     )
                                  }
@@ -170,6 +187,7 @@ export default function AdminOrderDetailPage({
                                     isFuture={isFuture}
                                     orderId={order.id}
                                     showRejectButton={stage.name === 'Pending'}
+                                    onStatusUpdate={handleStatusUpdate}
                                 />
                             )
                         })
@@ -298,3 +316,5 @@ export default function AdminOrderDetailPage({
     </main>
   );
 }
+
+    
