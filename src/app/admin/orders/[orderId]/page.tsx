@@ -1,6 +1,7 @@
 
 
 
+
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import {
   Card,
@@ -115,21 +116,37 @@ export default async function AdminOrderDetailPage({
                             
                             // Don't show delivery stages if hasDelivery is false
                             if (!order.hasDelivery && (stage.name === 'ReadyForDelivery' || stage.name === 'FactoryShipped')) {
-                                if(stage.name === 'FactoryShipped') {
+                                if(stage.name === 'FactoryShipped' && order.status === 'Processing') {
                                     const readyForPickupStage = { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: 'PackageCheck', action: { label: "تأكيد الاستلام", nextStatus: "Delivered" } } as const;
+                                    const isPickupCurrent = order.status === 'Processing'; // It becomes current when main flow is processing
                                     return (
                                         <StageCard 
                                             key={readyForPickupStage.name} 
-                                            stage={readyForPickupStage} 
-                                            isCompleted={index < currentStatusIndex}
-                                            isCurrent={index === currentStatusIndex}
-                                            isFuture={index > currentStatusIndex}
+                                            stage={{...readyForPickupStage, action: {label: "تأكيد الاستلام من قبل العميل", nextStatus: 'Delivered'}}} 
+                                            isCompleted={false}
+                                            isCurrent={isPickupCurrent}
+                                            isFuture={!isPickupCurrent}
                                             orderId={order.id}
                                             hasAttachment={!!order.attachments?.[readyForPickupStage.name]}
                                             attachmentUrl={order.attachments?.[readyForPickupStage.name]}
                                         />
                                     )
                                 }
+                                 if (stage.name === 'ReadyForDelivery' && order.status === 'ReadyForDelivery') {
+                                     const deliveredStage = STAGES.find(s => s.name === 'Delivered')!;
+                                     return (
+                                        <StageCard 
+                                            key={deliveredStage.name} 
+                                            stage={{...deliveredStage, label: "تم الاستلام من قبل العميل"}} 
+                                            isCompleted={false}
+                                            isCurrent={true}
+                                            isFuture={false}
+                                            orderId={order.id}
+                                            hasAttachment={!!order.attachments?.[deliveredStage.name]}
+                                            attachmentUrl={order.attachments?.[deliveredStage.name]}
+                                        />
+                                    )
+                                 }
                                 return null;
                             }
 

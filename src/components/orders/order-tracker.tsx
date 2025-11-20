@@ -27,7 +27,9 @@ const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType
 
 export function OrderTracker({ order }: { order: Order }) {
   const { status: currentStatus, hasDelivery, attachments } = order;
-  const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES;
+  
+  // Choose the correct set of stages based on the delivery option
+  const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES.filter(stage => STAGES.some(s => s.name === stage.name));
   
   const currentStatusIndex = stagesToShow.findIndex(s => s.name === currentStatus);
 
@@ -48,8 +50,13 @@ export function OrderTracker({ order }: { order: Order }) {
   return (
     <div className="space-y-8">
       {stagesToShow.map((stage, index) => {
-        const isCompleted = index < currentStatusIndex;
-        const isCurrent = index === currentStatusIndex;
+        // Find the original index from the main STAGES array to handle completion status correctly
+        const originalIndex = STAGES.findIndex(s => s.name === stage.name);
+        const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
+        
+        const isCompleted = originalIndex < mainFlowCurrentIndex;
+        const isCurrent = originalIndex === mainFlowCurrentIndex;
+
         const attachmentUrl = attachments?.[stage.name];
 
         return (

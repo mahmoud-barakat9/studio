@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   LineChart,
   Home,
-  UserCog,
   Boxes,
   User,
 } from "lucide-react";
@@ -90,6 +89,9 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                 <DropdownMenuContent align="end" side="top" className="mb-2">
                     <DropdownMenuLabel>حسابي</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                     <DropdownMenuItem asChild>
+                        <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
                     </DropdownMenuItem>

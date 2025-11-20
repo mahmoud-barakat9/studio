@@ -6,16 +6,21 @@ import {
   SidebarProvider,
   SidebarInset,
 } from "@/components/ui/sidebar";
+import { getOrders } from "@/lib/firebase-actions";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
 
+  const orders = await getOrders();
+  const pendingOrdersCount = orders.filter(o => o.status === 'Pending' && !o.isArchived).length;
+
+
   return (
     <SidebarProvider>
-      <AdminSidebar pendingOrdersCount={0} />
+      <AdminSidebar pendingOrdersCount={pendingOrdersCount} />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
