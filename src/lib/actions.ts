@@ -50,6 +50,8 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   
   const DUMMY_USER_ID = '5';
   const sessionUserId = DUMMY_USER_ID;
+  
+  await initializeTestUsers(); // Ensure users exist before we do anything
 
   if (asAdmin) {
     if (formData.userId === 'new') {
@@ -62,7 +64,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
         phone: formData.newUserPhone,
         role: 'user' as const,
       };
-      // In a real scenario, you'd properly await this. Since it's mock, it's synchronous.
       const createdUserId = await addUserAndGetId(newUserData);
       userId = createdUserId;
       finalCustomerData = newUserData;
@@ -78,7 +79,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
      userId = sessionUserId;
      const currentUser = await getUserById(userId!);
      if(currentUser) {
-        finalCustomerData = { name: currentUser.name, phone: currentUser.phone };
+        finalCustomerData = { name: currentUser.name, phone: formData.customerPhone || currentUser.phone };
      }
   }
   
@@ -98,6 +99,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
   }
 
+  const productsCost = totalArea * (formData.pricePerSquareMeter || 0);
+  const totalCost = productsCost + deliveryCost;
+
   const orderData = {
     ...formData,
     userId,
@@ -105,11 +109,11 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     customerPhone: finalCustomerData.phone,
     status: asAdmin ? 'FactoryOrdered' : 'Pending',
     date: new Date().toISOString().split('T')[0],
+    totalArea,
+    totalCost,
     deliveryCost,
   };
   
-  // This ensures our mock users exist before we create an order that might need them
-  await initializeTestUsers();
   await addOrder(orderData);
 
   if (asAdmin) {
@@ -152,8 +156,9 @@ export async function approveOrder(orderId: string) {
   await updateOrderStatus(orderId, 'FactoryOrdered');
   revalidatePath('/admin/orders');
 
+  const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وتم إرساله إلى المعمل.`);
-  const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
+  const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
   redirect(whatsappUrl);
 }
 
@@ -164,8 +169,9 @@ export async function rejectOrder(orderId: string) {
   await updateOrderStatus(orderId, 'Rejected');
   revalidatePath('/admin/orders');
   
+  const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
-  const whatsappUrl = `https://wa.me/${order.customerPhone}?text=${message}`;
+  const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
   redirect(whatsappUrl);
 }
 

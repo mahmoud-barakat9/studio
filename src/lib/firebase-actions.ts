@@ -47,22 +47,28 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
 };
 
 
-export const addOrder = async (orderData: any) => {
-    const newId = `ORD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`;
+export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { id?: string }) => {
+    const newId = orderData.id || `ORD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`;
     
-    const totalArea = orderData.openings.reduce(
-      (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
-      0
-    );
-    const productsCost = totalArea * (orderData.pricePerSquareMeter || 0);
-    const totalCost = productsCost + (orderData.deliveryCost || 0);
-
     const newOrder: Order = {
         id: newId,
-        ...orderData,
-        totalArea,
-        totalCost,
+        orderName: orderData.orderName,
+        userId: orderData.userId,
+        customerName: orderData.customerName,
+        customerPhone: orderData.customerPhone,
+        mainAbjourType: orderData.mainAbjourType,
+        mainColor: orderData.mainColor,
+        bladeWidth: orderData.bladeWidth,
+        pricePerSquareMeter: orderData.pricePerSquareMeter,
+        status: orderData.status,
+        date: orderData.date,
+        totalArea: orderData.totalArea,
+        totalCost: orderData.totalCost,
+        openings: orderData.openings,
         isArchived: false,
+        hasDelivery: orderData.hasDelivery,
+        deliveryCost: orderData.deliveryCost,
+        deliveryAddress: orderData.deliveryAddress,
     };
     
     orders.unshift(newOrder); // Add to the beginning of the array
@@ -135,7 +141,6 @@ export const deleteOrder = async (orderId: string): Promise<{ success: boolean }
 
 // --- Users ---
 export const getUsers = async (includeAdmins = false): Promise<User[]> => {
-  await initializeTestUsers(); // Ensure users exist
   if (includeAdmins) {
       return Promise.resolve(users);
   }
@@ -144,7 +149,6 @@ export const getUsers = async (includeAdmins = false): Promise<User[]> => {
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
     if (!id) return Promise.resolve(undefined);
-    await initializeTestUsers(); // Ensure users exist
     return Promise.resolve(users.find(u => u.id === id));
 };
 
