@@ -2,19 +2,19 @@
 import { Hero } from "@/components/landing/hero";
 import { Features } from "@/components/landing/features";
 import { Contact } from "@/components/landing/contact";
-import { MainFooter } from "@/components/layout/main-footer";
-import { MainHeader } from "@/components/layout/main-header";
+import { WelcomeFooter } from "@/components/landing/welcome-footer";
+import { WelcomeHeader } from "@/components/landing/welcome-header";
 
 export default function WelcomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <MainHeader />
+      <WelcomeHeader />
       <main className="flex-1">
         <Hero />
         <Features />
         <Contact />
       </main>
-      <MainFooter />
+      <WelcomeFooter />
     </div>
   );
 }
