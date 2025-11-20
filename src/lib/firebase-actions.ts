@@ -10,26 +10,32 @@ import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, 
 import type { User as FirebaseAuthUser } from 'firebase/auth';
 
 
-export const ensureUserExistsInFirestore = async (firebaseUser: FirebaseAuthUser): Promise<User> => {
-  const userRef = doc(db, 'users', firebaseUser.uid);
-  let userSnap = await getDoc(userRef);
+const testUsers = [
+    { id: "4", name: "Adminstrator", email: "admin@abjour.com", phone: "555-4444", role: "admin" as const },
+    { id: "5", name: "User", email: "user@abjour.com", phone: "555-5555", role: "user" as const },
+];
 
-  if (!userSnap.exists()) {
-    // This is a test user, create them in Firestore
-    const isTestAdmin = firebaseUser.email === 'admin@abjour.com';
-    const newUser: User = {
-      id: firebaseUser.uid,
-      name: isTestAdmin ? 'Adminstrator' : (firebaseUser.displayName || 'User'),
-      email: firebaseUser.email!,
-      role: isTestAdmin ? 'admin' : 'user',
-      phone: firebaseUser.phoneNumber || (isTestAdmin ? '555-4444' : '555-5555'),
-    };
-    await setDoc(userRef, newUser);
-    userSnap = await getDoc(userRef);
-  }
-  
-  return { id: userSnap.id, ...userSnap.data() } as User;
-};
+export async function initializeTestUsers() {
+    const usersRef = collection(db, "users");
+    const batch = writeBatch(db);
+    let usersCreated = false;
+
+    for (const user of testUsers) {
+        const userQuery = query(usersRef, where("email", "==", user.email));
+        const userSnapshot = await getDocs(userQuery);
+        if (userSnapshot.empty) {
+            const userDocRef = doc(usersRef, user.id);
+            batch.set(userDocRef, user);
+            usersCreated = true;
+            console.log(`Creating test user: ${user.email}`);
+        }
+    }
+
+    if (usersCreated) {
+        await batch.commit();
+        console.log("Test users initialization complete.");
+    }
+}
 
 
 
@@ -276,3 +282,4 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
+

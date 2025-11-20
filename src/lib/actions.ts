@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, initializeTestUsers } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User, Order } from './definitions';
@@ -60,6 +60,8 @@ export async function login(prevState: any, formData: FormData) {
   if (!isAdmin && !isUser) {
     return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
   }
+
+  await initializeTestUsers();
 
   const role = isAdmin ? 'admin' : 'user';
   const users = await getAllUsers(true);
