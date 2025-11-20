@@ -84,7 +84,7 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, ha
             </CardHeader>
             {(isCurrent || isCompleted) && (
                 <CardContent className="border-t pt-4">
-                    {attachmentUrl ? (
+                    {attachmentUrl && typeof attachmentUrl === 'string' && attachmentUrl.length > 0 ? (
                          <div>
                             <p className="text-sm font-medium mb-2">الصورة المرفقة:</p>
                              <div className="relative aspect-video max-w-sm rounded-md overflow-hidden border">
