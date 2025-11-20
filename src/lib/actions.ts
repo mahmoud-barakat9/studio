@@ -105,7 +105,8 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     date: new Date().toISOString().split('T')[0],
     deliveryCost,
   };
-
+  
+  await initializeTestUsers();
   await addOrder(orderData);
 
   if (asAdmin) {

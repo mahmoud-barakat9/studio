@@ -40,7 +40,6 @@ export async function initializeTestUsers() {
 
 // --- Orders ---
 export const getOrders = async (): Promise<Order[]> => {
-  await initializeTestUsers();
   const ordersSnapshot = await getDocs(collection(db, "orders"));
   return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -56,7 +55,6 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     if(!userId) return [];
-    await initializeTestUsers();
     const q = query(collection(db, "orders"), where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -64,7 +62,6 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
 
 
 export const addOrder = async (orderData: any) => {
-    await initializeTestUsers();
     const totalArea = orderData.openings.reduce(
       (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
       0
@@ -151,7 +148,6 @@ export const deleteOrder = async (orderId: string): Promise<{ success: boolean }
 
 // --- Users ---
 export const getUsers = async (includeAdmins = false): Promise<User[]> => {
-  await initializeTestUsers();
   let q = query(collection(db, "users"));
   if (!includeAdmins) {
       q = query(q, where("role", "==", "user"));
@@ -162,7 +158,6 @@ export const getUsers = async (includeAdmins = false): Promise<User[]> => {
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
     if (!id) return undefined;
-    await initializeTestUsers();
     const docRef = doc(db, "users", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -172,7 +167,6 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
 };
 
 export const getAllUsers = async (includeAdmins = false): Promise<User[]> => {
-    await initializeTestUsers();
     let q = query(collection(db, "users"));
     if (!includeAdmins) {
         q = query(q, where("role", "==", "user"));
