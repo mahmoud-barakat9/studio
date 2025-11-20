@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, XCircle } from "lucide-react";
+import { ArrowRight, FileText, Share2, Truck, XCircle } from "lucide-react";
 import type { OrderStatus, Order, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { useEffect, useState } from "react";
@@ -34,6 +34,23 @@ const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: 
     { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: 'PackageCheck', action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
     { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
+
+function ShareInvoiceButton({ order, customer }: { order: Order, customer?: User }) {
+    if (!customer?.phone) return null;
+
+    const invoiceUrl = `${window.location.origin}/admin/orders/${order.id}/view`;
+    const message = encodeURIComponent(`مرحبًا ${customer.name}،\n\nيمكنك عرض فاتورة طلبك "${order.orderName}" عبر الرابط التالي:\n${invoiceUrl}\n\nشكرًا لك!`);
+    const whatsappUrl = `https://wa.me/${customer.phone.replace(/\D/g, '')}?text=${message}`;
+
+    return (
+        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" className="w-full">
+                <Share2 className="ml-2 h-4 w-4" />
+                عرض الفاتورة ومشاركتها
+            </Button>
+        </a>
+    );
+}
 
 export default function AdminOrderDetailPage({
   params,
@@ -104,12 +121,7 @@ export default function AdminOrderDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                 <Link href={`/admin/orders/${order.id}/view`}>
-                    <Button variant="outline" className="w-full">
-                        <FileText className="ml-2 h-4 w-4" />
-                        عرض وتنزيل الفواتير
-                    </Button>
-                </Link>
+                 <ShareInvoiceButton order={order} customer={customer} />
                 <Link href="/admin/orders" className="w-full sm:w-auto">
                     <Button variant="outline" className="w-full">
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -143,41 +155,54 @@ export default function AdminOrderDetailPage({
                             const isCompleted = index < currentStatusIndex;
                             const isCurrent = index === currentStatusIndex;
                             const isFuture = index > currentStatusIndex;
-                            
-                            if (!order.hasDelivery && (stage.name === 'ReadyForDelivery' || stage.name === 'FactoryShipped')) {
-                                if(stage.name === 'FactoryShipped' && order.status === 'Processing') {
-                                    const readyForPickupStage = { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: 'PackageCheck', action: { label: "تأكيد الاستلام", nextStatus: "Delivered" } } as const;
-                                    const isPickupCurrent = order.status === 'Processing';
+
+                            // Special handling for non-delivery orders
+                            if (!order.hasDelivery) {
+                                // Skip "FactoryShipped" stage for non-delivery
+                                if (stage.name === 'FactoryShipped') return null;
+
+                                // Modify "Processing" stage action
+                                if (stage.name === 'Processing') {
+                                    const modifiedStage = {
+                                        ...stage,
+                                        action: { label: "جاهز للاستلام", nextStatus: "ReadyForDelivery" as OrderStatus }
+                                    };
                                     return (
                                         <StageCard 
-                                            key={readyForPickupStage.name} 
-                                            stage={{...readyForPickupStage, action: {label: "تأكيد الاستلام من قبل العميل", nextStatus: 'Delivered'}}} 
-                                            isCompleted={false}
-                                            isCurrent={isPickupCurrent}
-                                            isFuture={!isPickupCurrent}
+                                            key={modifiedStage.name} 
+                                            stage={modifiedStage} 
+                                            isCompleted={isCompleted}
+                                            isCurrent={isCurrent}
+                                            isFuture={isFuture}
                                             orderId={order.id}
                                             onStatusUpdate={handleStatusUpdate}
                                         />
-                                    )
+                                    );
                                 }
-                                 if (stage.name === 'ReadyForDelivery' && order.status === 'ReadyForDelivery') {
-                                     const deliveredStage = STAGES.find(s => s.name === 'Delivered')!;
-                                     return (
+                                
+                                // Modify "ReadyForDelivery" stage label and action
+                                if (stage.name === 'ReadyForDelivery') {
+                                     const modifiedStage = {
+                                        ...stage,
+                                        label: "جاهز للاستلام",
+                                        icon: 'PackageCheck' as StageIconName,
+                                        action: { label: "تأكيد الاستلام", nextStatus: "Delivered" as OrderStatus }
+                                    };
+                                    return (
                                         <StageCard 
-                                            key={deliveredStage.name} 
-                                            stage={{...deliveredStage, label: "تم الاستلام من قبل العميل"}} 
-                                            isCompleted={false}
-                                            isCurrent={true}
-                                            isFuture={false}
+                                            key={modifiedStage.name} 
+                                            stage={modifiedStage} 
+                                            isCompleted={isCompleted}
+                                            isCurrent={isCurrent}
+                                            isFuture={isFuture}
                                             orderId={order.id}
                                             onStatusUpdate={handleStatusUpdate}
                                         />
-                                    )
-                                 }
-                                return null;
+                                    );
+                                }
                             }
 
-
+                            // Default rendering for delivery orders or other stages
                             return (
                                 <StageCard 
                                     key={stage.name} 
@@ -189,7 +214,7 @@ export default function AdminOrderDetailPage({
                                     showRejectButton={stage.name === 'Pending'}
                                     onStatusUpdate={handleStatusUpdate}
                                 />
-                            )
+                            );
                         })
                     )}
                 </CardContent>
@@ -316,5 +341,3 @@ export default function AdminOrderDetailPage({
     </main>
   );
 }
-
-    
