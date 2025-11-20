@@ -110,7 +110,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
       mainAbjourType: '',
       mainColor: '',
       openings: [],
-      userId: '',
+      userId: currentUser?.id || '',
+      customerName: currentUser?.name || '',
+      customerPhone: currentUser?.phone || '',
       newUserName: '',
       newUserEmail: '',
       newUserPhone: '',
@@ -135,11 +137,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
         month: 'long',
         day: 'numeric'
     }));
+  }, []);
 
-    if (!isAdmin && currentUser) {
-        form.setValue('userId', currentUser.id);
-        form.setValue('customerName', currentUser.name);
-        form.setValue('customerPhone', currentUser.phone || '');
+  useEffect(() => {
+     if (!isAdmin && currentUser) {
+        form.reset({
+            ...form.getValues(),
+            userId: currentUser.id,
+            customerName: currentUser.name,
+            customerPhone: currentUser.phone || '',
+        });
     }
   }, [isAdmin, currentUser, form]);
 

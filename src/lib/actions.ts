@@ -34,9 +34,23 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
   
-  // In a real app, you would create the user in the database
-  // For now, we just simulate a successful registration
-  cookies().set('session-id', 'temp-session-id', { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  const allUsers = await getAllUsers();
+  const existingUser = allUsers.find(u => u.email === validatedFields.data.email);
+  if (existingUser) {
+    return {
+      message: 'هذا البريد الإلكتروني مسجل بالفعل.',
+    };
+  }
+
+  // This is a mock: In a real app you'd securely create the user.
+  const newId = await addUserAndGetId({
+    name: validatedFields.data.name,
+    email: validatedFields.data.email,
+    role: 'user',
+    phone: '', // Phone can be added later
+  });
+
+  cookies().set('session-id', newId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
   redirect('/dashboard');
 }
 
@@ -51,13 +65,25 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email } = validatedFields.data;
-
-  // Set a generic session cookie
-  cookies().set('session-id', 'temp-session-id', { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  const { email, password } = validatedFields.data;
   
-  // Redirect based on email for mock purposes
-  if (email === 'admin@abjour.com') {
+  const allUsers = await getAllUsers();
+  const user = allUsers.find(u => u.email === email);
+
+  // This is a mock authentication check. In a real app, you'd use hashed passwords.
+  if (!user || (user.email !== 'admin@abjour.com' && user.email !== 'user@abjour.com' && password !== 'password123')) {
+    if (user && (user.email === 'admin@abjour.com' || user.email === 'user@abjour.com') && password !== '123456') {
+       return { message: 'كلمة المرور غير صحيحة.' };
+    }
+    if (!user) {
+       return { message: 'المستخدم غير موجود.' };
+    }
+  }
+
+
+  cookies().set('session-id', user.id, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  
+  if (user.role === 'admin') {
     redirect('/admin/dashboard');
   } else {
     redirect('/dashboard');
@@ -98,6 +124,8 @@ export async function generateOrderName(
 
 export async function createOrder(formData: any, asAdmin: boolean) {
   let userId;
+  const cookieStore = cookies();
+  const session = cookieStore.get('session-id');
 
   if (asAdmin) {
     if (formData.userId === 'new') {
@@ -114,8 +142,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       userId = formData.userId;
     }
   } else {
-     // For non-admins, we'll use a mock user ID for now
-     userId = '1';
+     userId = session?.value;
   }
   
   if(!userId){
