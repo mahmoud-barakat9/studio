@@ -30,17 +30,37 @@ export {
     SheetTitle as DropdownMenuTitle,
 } from "./dropdown-menu-responsive-items";
 
-type ResponsiveMenuProps = React.ComponentProps<typeof DropdownMenuDesktop>;
+type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuDesktop> & {
+    children: React.ReactNode;
+};
 
-const DropdownMenu = (props: ResponsiveMenuProps) => {
+const DropdownMenu = ({ children, ...props }: DropdownMenuProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = React.useState(false);
 
+  // We can't conditionally render the trigger and content as it violates rules of hooks
+  // and also we need to pass the trigger and content to the correct parent component.
+  const trigger = React.Children.toArray(children).find(
+    (child) => (child as React.ReactElement).type === DropdownMenuTrigger
+  );
+  const content = React.Children.toArray(children).find(
+    (child) => (child as React.ReactElement).type === DropdownMenuContent
+  );
+
   if (isDesktop) {
-    return <DropdownMenuDesktop open={open} onOpenChange={setOpen} {...props} />;
+    return (
+        <DropdownMenuDesktop open={open} onOpenChange={setOpen} {...props}>
+            {children}
+        </DropdownMenuDesktop>
+    );
   }
 
-  return <Sheet open={open} onOpenChange={setOpen} {...props} />;
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      {trigger}
+      {content}
+    </Sheet>
+  );
 };
 
 const DropdownMenuTrigger = (props: React.ComponentProps<typeof DropdownMenuTriggerDesktop>) => {
