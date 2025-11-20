@@ -13,8 +13,8 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // A real app would check for roles/claims here
-        if (user.email === 'admin@abjour.com') { 
+        // Redirect based on user role
+        if (user.role === 'admin') { 
           router.replace('/admin/dashboard');
         } else {
           router.replace('/dashboard');
