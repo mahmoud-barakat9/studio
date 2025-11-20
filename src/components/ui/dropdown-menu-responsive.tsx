@@ -4,92 +4,67 @@
 import * as React from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuShortcut,
+  DropdownMenu as DropdownMenuDesktop,
+  DropdownMenuContent as DropdownMenuContentDesktop,
+  DropdownMenuTrigger as DropdownMenuTriggerDesktop,
 } from "./dropdown-menu";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "./sheet";
+export {
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuGroup,
+    DropdownMenuPortal,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuCheckboxItem,
+    DropdownMenuShortcut,
+    SheetHeader as DropdownMenuHeader,
+    SheetTitle as DropdownMenuTitle,
+} from "./dropdown-menu-responsive-items";
 
-type DropdownMenuProps = React.ComponentProps<typeof DropdownMenu>;
+type ResponsiveMenuProps = React.ComponentProps<typeof DropdownMenuDesktop>;
 
-const ResponsiveDropdownMenu = ({ children, ...props }: DropdownMenuProps) => {
+const DropdownMenu = (props: ResponsiveMenuProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [open, setOpen] = React.useState(false);
 
   if (isDesktop) {
-    return <DropdownMenu {...props}>{children}</DropdownMenu>;
+    return <DropdownMenuDesktop open={open} onOpenChange={setOpen} {...props} />;
   }
 
-  return <Sheet {...props}>{children}</Sheet>;
+  return <Sheet open={open} onOpenChange={setOpen} {...props} />;
 };
 
-const ResponsiveDropdownMenuTrigger = ({
-  children,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuTrigger>) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+const DropdownMenuTrigger = (props: React.ComponentProps<typeof DropdownMenuTriggerDesktop>) => {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  if (isDesktop) {
-    return (
-      <DropdownMenuTrigger {...props}>{children}</DropdownMenuTrigger>
-    );
-  }
+    if (isDesktop) {
+        return <DropdownMenuTriggerDesktop {...props} />;
+    }
 
-  return <SheetTrigger {...props}>{children}</SheetTrigger>;
-};
+    return <SheetTrigger {...props} />;
+}
 
-const ResponsiveDropdownMenuContent = ({
-  children,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuContent>) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+const DropdownMenuContent = (props: React.ComponentProps<typeof DropdownMenuContentDesktop>) => {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  if (isDesktop) {
-    return (
-      <DropdownMenuContent {...props}>{children}</DropdownMenuContent>
-    );
-  }
+    if (isDesktop) {
+        return <DropdownMenuContentDesktop {...props} />;
+    }
 
-  return (
-    <SheetContent side="bottom" {...props}>
-      {children}
-    </SheetContent>
-  );
-};
+    return <SheetContent side="bottom" {...props} />;
+}
 
 export {
-  ResponsiveDropdownMenu as DropdownMenu,
-  ResponsiveDropdownMenuTrigger as DropdownMenuTrigger,
-  ResponsiveDropdownMenuContent as DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuShortcut,
-  SheetHeader as DropdownMenuHeader,
-  SheetTitle as DropdownMenuTitle,
-};
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+}
