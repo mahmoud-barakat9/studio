@@ -9,18 +9,34 @@ import { db } from '@/firebase/config';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch, setDoc } from 'firebase/firestore';
 
 
-export const ensureUserExistsInFirestore = async (userData: User): Promise<User> => {
-    const userRef = doc(db, "users", userData.id);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-        await setDoc(userRef, userData);
-        console.log(`User ${userData.email} created in Firestore.`);
-        return userData;
+// --- Data Initialization ---
+const ensureTestUsers = async () => {
+    const testUsers: User[] = [
+        { id: 'admin-id', name: 'Adminstrator', email: 'admin@abjour.com', phone: '555-4444', role: 'admin' },
+        { id: 'user-id', name: 'User', email: 'user@abjour.com', phone: '555-5555', role: 'user' },
+    ];
+    const usersRef = collection(db, "users");
+    
+    for (const user of testUsers) {
+        const userDoc = doc(usersRef, user.id);
+        const userSnap = await getDoc(userDoc);
+        if (!userSnap.exists()) {
+            await setDoc(userDoc, user);
+            console.log(`Created test user: ${user.email}`);
+        }
     }
-    return userSnap.data() as User;
-};
+}
+
+const initializeData = async () => {
+    await ensureTestUsers();
+    // You could add mock orders initialization here if needed
+}
+
+// Call initialization
+initializeData().catch(console.error);
 
 
+// --- Orders ---
 export const getOrders = async (): Promise<Order[]> => {
   const ordersSnapshot = await getDocs(collection(db, "orders"));
   return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -41,39 +57,6 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
-export const getUsers = async (includeAdmins = false): Promise<User[]> => {
-  let q = query(collection(db, "users"));
-  if (!includeAdmins) {
-      q = query(q, where("role", "==", "user"));
-  }
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-};
-
-export const getUserById = async (id: string): Promise<User | undefined> => {
-    if (!id) return undefined;
-    const docRef = doc(db, "users", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as User;
-    }
-    console.warn(`User with ID ${id} not found in Firestore.`);
-    return undefined;
-};
-
-export const getAllUsers = async (): Promise<User[]> => {
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    return usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-};
-
-
-export const addUserAndGetId = async (userData: User): Promise<string> => {
-    const userRef = doc(db, "users", userData.id);
-    await setDoc(userRef, userData, { merge: true });
-    revalidatePath('/admin/orders/new');
-    console.log("Added/updated user", userData);
-    return userData.id;
-};
 
 export const addOrder = async (orderData: any) => {
     const totalArea = orderData.openings.reduce(
@@ -82,32 +65,20 @@ export const addOrder = async (orderData: any) => {
     );
     const totalCost = totalArea * (orderData.pricePerSquareMeter || 0);
 
-    const user = await getUserById(orderData.userId);
-
     const newOrderData = {
-        userId: orderData.userId,
-        orderName: orderData.orderName,
-        customerName: user?.name || orderData.customerName || orderData.newUserName,
-        customerPhone: user?.phone || orderData.customerPhone || orderData.newUserPhone || '555-5678',
-        mainAbjourType: orderData.mainAbjourType,
-        mainColor: orderData.mainColor,
-        bladeWidth: orderData.bladeWidth,
-        pricePerSquareMeter: orderData.pricePerSquareMeter,
-        status: orderData.status,
-        date: new Date().toISOString().split('T')[0],
+        ...orderData,
         totalArea,
         totalCost,
-        openings: orderData.openings,
         isArchived: false,
     };
     
     const docRef = await addDoc(collection(db, "orders"), newOrderData);
-    
     console.log("Added new order", {id: docRef.id, ...newOrderData});
     revalidatePath('/admin/orders');
     revalidatePath('/');
     return {id: docRef.id, ...newOrderData};
 };
+
 
 export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
     const orderRef = doc(db, "orders", orderId);
@@ -171,6 +142,46 @@ export const deleteOrder = async (orderId: string): Promise<{ success: boolean }
     return { success: true };
 };
 
+
+// --- Users ---
+export const getUsers = async (includeAdmins = false): Promise<User[]> => {
+  let q = query(collection(db, "users"));
+  if (!includeAdmins) {
+      q = query(q, where("role", "==", "user"));
+  }
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
+
+export const getUserById = async (id: string): Promise<User | undefined> => {
+    if (!id) return undefined;
+    // Special handling for mock users
+    if (id === 'admin-id' || id === 'user-id') {
+        await ensureTestUsers();
+    }
+    const docRef = doc(db, "users", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as User;
+    }
+    return undefined;
+};
+
+export const getAllUsers = async (): Promise<User[]> => {
+    await ensureTestUsers(); // Ensure test users exist before fetching all
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    return usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
+
+export const addUserAndGetId = async (userData: User): Promise<string> => {
+    const userRef = doc(db, "users", userData.id);
+    await setDoc(userRef, userData, { merge: true });
+    revalidatePath('/admin/orders/new');
+    console.log("Added/updated user", userData);
+    return userData.id;
+};
+
+
 export const updateUser = async (userId: string, userData: Partial<User>): Promise<User> => {
     const userRef = doc(db, "users", userId);
     
@@ -206,7 +217,7 @@ export const deleteUser = async (userId: string): Promise<{ success: boolean }> 
 };
 
 
-// MOCK ACTIONS FOR MATERIALS
+// --- Materials ---
 export const getMaterials = async (): Promise<AbjourTypeData[]> => {
     const materialsSnapshot = await getDocs(collection(db, "materials"));
     if (materialsSnapshot.empty) {
@@ -236,7 +247,6 @@ export const addMaterial = async (materialData: AbjourTypeData): Promise<AbjourT
     if (existing) {
         throw new Error("مادة بهذا الاسم موجودة بالفعل.");
     }
-    // Use name as the document ID for simplicity and to enforce uniqueness
     const materialRef = doc(db, "materials", materialData.name);
     await setDoc(materialRef, materialData);
     revalidatePath('/admin/materials');
@@ -257,5 +267,3 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
-
-    

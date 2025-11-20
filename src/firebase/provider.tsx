@@ -1,13 +1,16 @@
 
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "./config";
-import type { User } from "firebase/auth";
+import type { User as FirebaseAuthUser } from "firebase/auth";
+import { usePathname } from "next/navigation";
+import { getCookie, hasCookie, deleteCookie } from 'cookies-next';
 
 // Create the context
 export const FirebaseContext = createContext<{
-  user: User | null;
+  user: FirebaseAuthUser | null;
   loading: boolean;
 }>({
   user: null,
@@ -16,18 +19,37 @@ export const FirebaseContext = createContext<{
 
 // Create the provider component
 export function FirebaseProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseAuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+      // This is a mock implementation based on cookies.
+      // In a real Firebase app, you would just use the `user` object from the callback.
+      const hasSessionCookie = hasCookie('session-id');
+
+      if (user && !hasSessionCookie) {
+         // If firebase has a user but our mock cookie doesn't, sign them out of firebase
+         // to keep them in sync.
+         auth.signOut();
+         setUser(null);
+      } else if (!user && hasSessionCookie) {
+        // If our cookie thinks there's a user but firebase doesn't, clear the cookie
+        deleteCookie('session-id');
+        deleteCookie('session-role');
+        setUser(null);
+      } else {
+        setUser(user);
+      }
+
       setLoading(false);
     });
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+  }, [pathname]);
 
   return (
     <FirebaseContext.Provider value={{ user, loading }}>
@@ -44,5 +66,3 @@ export const useFirebase = () => {
   }
   return context;
 };
-
-    

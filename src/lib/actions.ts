@@ -8,12 +8,10 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, ensureUserExistsInFirestore } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User } from './definitions';
-import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '@/firebase/config';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,32 +36,28 @@ export async function register(prevState: any, formData: FormData) {
   }
   
   const {name, email, password} = validatedFields.data;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    if (userCredential.user) {
-        await updateProfile(userCredential.user, { displayName: name });
-        // After creating user in Auth, create them in Firestore
-        await addUserAndGetId({
-          id: userCredential.user.uid,
-          name: name,
-          email: email,
-          role: 'user',
-          phone: '', // Phone can be added later
-        });
-    }
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
-        return { message: 'هذا البريد الإلكتروني مسجل بالفعل.' };
-    }
-    console.error("Registration Error:", error);
+  const allUsers = await getAllUsers();
+  
+  if (allUsers.find(u => u.email === email)) {
     return {
-      message: "حدث خطأ أثناء إنشاء الحساب. " + error.message,
+      message: 'هذا البريد الإلكتروني مسجل بالفعل.',
     };
   }
+  
+  const newUser = {
+    id: `user-${Date.now()}`,
+    name,
+    email,
+    role: 'user' as const,
+    phone: ''
+  };
 
-  // After successful registration, sign in the user to trigger the provider
-  await signInWithEmailAndPassword(auth, email, password);
+  await addUserAndGetId(newUser);
+  
+  // Mock session cookie
+  cookies().set('session-id', newUser.id);
+  cookies().set('session-role', newUser.role);
+  
   redirect('/dashboard');
 }
 
@@ -80,44 +74,48 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
   
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const authUser = userCredential.user;
+  // This is a mock authentication. In a real app, you'd verify against a database.
+  const testUsers = [
+      { email: 'admin@abjour.com', password: '123456', role: 'admin', id: 'admin-id' },
+      { email: 'user@abjour.com', password: '123456', role: 'user', id: 'user-id' }
+  ];
 
-    // After successful sign-in, ensure the user exists in Firestore
-    let firestoreUser = await getUserById(authUser.uid);
-
-    if (!firestoreUser) {
-        console.warn(`User ${email} not found in Firestore. Creating entry...`);
-        const isTestAdmin = email === 'admin@abjour.com';
-        const newFirestoreUser: User = {
-            id: authUser.uid,
-            name: authUser.displayName || email.split('@')[0],
-            email: email,
-            phone: authUser.phoneNumber || '',
-            role: isTestAdmin ? 'admin' : 'user',
-        };
-        firestoreUser = await ensureUserExistsInFirestore(newFirestoreUser);
-    }
-    
-    if (firestoreUser.role === 'admin') {
-      redirect('/admin/dashboard');
-    } else {
-      redirect('/dashboard');
+  const matchedUser = testUsers.find(u => u.email === email);
+  
+  if (!matchedUser || (matchedUser.password !== password)) {
+    // If not a test user, let's check our dynamically created users
+    const allUsers = await getAllUsers();
+    const dynamicUser = allUsers.find(u => u.email === email);
+    if(dynamicUser){
+        // In a real app, you would check the password here. For this mock, we assume it's correct.
+        cookies().set('session-id', dynamicUser.id);
+        cookies().set('session-role', dynamicUser.role);
+        if (dynamicUser.role === 'admin') {
+            redirect('/admin/dashboard');
+        } else {
+            redirect('/dashboard');
+        }
+        return; // exit
     }
 
-  } catch (error: any) {
-    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-      return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-    }
-    console.error("Login Error:", error);
-    return { message: 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
+    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+  }
+  
+  // Set mock session cookie
+  cookies().set('session-id', matchedUser.id);
+  cookies().set('session-role', matchedUser.role);
+
+  if (matchedUser.role === 'admin') {
+    redirect('/admin/dashboard');
+  } else {
+    redirect('/dashboard');
   }
 }
 
 
 export async function logout() {
-  await signOut(auth);
+  cookies().delete('session-id');
+  cookies().delete('session-role');
   redirect('/login');
 }
 
@@ -158,16 +156,15 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   let userId;
   let finalCustomerData: Partial<User> = {};
   
-  const user = auth.currentUser;
+  const sessionUserId = cookies().get('session-id')?.value;
 
   if (asAdmin) {
     if (formData.userId === 'new') {
       if (!formData.newUserName || !formData.newUserEmail) {
         throw new Error("New user name and email are required.");
       }
-       const newUserCredential = await createUserWithEmailAndPassword(auth, formData.newUserEmail, '123456');
       const newUserData = {
-        id: newUserCredential.user.uid,
+        id: `user-${Date.now()}`,
         name: formData.newUserName,
         email: formData.newUserEmail,
         phone: formData.newUserPhone,
@@ -185,7 +182,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       }
     }
   } else {
-     userId = user?.uid;
+     userId = sessionUserId;
      finalCustomerData = { name: formData.customerName, phone: formData.customerPhone };
   }
   
