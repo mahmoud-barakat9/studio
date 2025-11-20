@@ -150,7 +150,7 @@ export default async function AdminOrderDetailPage({
                         <span className="text-muted-foreground">الحالة</span>
                         <span>
                             <Badge variant={
-                                order.status === 'Completed' ? 'default' :
+                                order.status === 'Delivered' ? 'default' :
                                 order.status === 'Rejected' ? 'destructive' :
                                 'secondary'
                             }>{order.status}</Badge>

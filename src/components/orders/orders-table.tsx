@@ -197,6 +197,7 @@ export function OrdersTable({
               {orders.map((order) => {
                 const statusStyle =
                   statusStyles[order.status] || statusStyles["Pending"];
+                const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
                 return (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
@@ -215,7 +216,7 @@ export function OrdersTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-left">
-                      ${order.totalCost.toFixed(2)}
+                      ${finalTotalCost.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-left">
                        <div className="flex items-center gap-2">

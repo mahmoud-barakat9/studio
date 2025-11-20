@@ -6,7 +6,7 @@ import { getOrders, getUsers } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Order } from "@/lib/definitions";
 
-const statusTranslations: Record<Order['status'], string> = {
+const statusTranslations: Record<string, string> = {
   "Pending": "تم الاستلام",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
@@ -23,9 +23,12 @@ export default async function AdminOrdersPage() {
   const archivedOrders = orders.filter(order => order.isArchived);
   
   const ordersByStatus = (Object.keys(statusTranslations) as Array<Order['status']>).reduce((acc, status) => {
-    acc[status] = orders.filter(order => order.status === status && !order.isArchived);
+    const filteredOrders = orders.filter(order => order.status === status && !order.isArchived);
+    if(filteredOrders.length > 0 || status === 'Pending') { // Always show Pending tab
+        acc[status] = filteredOrders;
+    }
     return acc;
-  }, {} as Record<Order['status'], Order[]>);
+  }, {} as Record<string, Order[]>);
   
 
   return (
@@ -45,7 +48,7 @@ export default async function AdminOrdersPage() {
       <Tabs defaultValue="Pending" className="w-full">
         <div className="overflow-x-auto pb-2">
             <TabsList className="inline-flex w-max">
-                {(Object.keys(ordersByStatus) as Array<Order['status']>).map(status => (
+                {(Object.keys(ordersByStatus) as Array<string>).map(status => (
                     <TabsTrigger key={status} value={status}>
                         {statusTranslations[status]} ({ordersByStatus[status].length})
                     </TabsTrigger>
@@ -54,7 +57,7 @@ export default async function AdminOrdersPage() {
             </TabsList>
         </div>
 
-        {(Object.keys(ordersByStatus) as Array<Order['status']>).map(status => (
+        {(Object.keys(ordersByStatus) as Array<string>).map(status => (
              <TabsContent key={status} value={status}>
                 <OrdersTable orders={ordersByStatus[status]} users={users} isAdmin={true} />
              </TabsContent>
