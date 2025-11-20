@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Share2, Truck, XCircle } from "lucide-react";
+import { ArrowRight, FileText, Truck, XCircle } from "lucide-react";
 import type { OrderStatus, Order, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { useEffect, useState } from "react";
@@ -33,38 +33,6 @@ const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: 
     { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: 'PackageCheck', action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
     { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
-
-function ShareInvoiceButton({ order }: { order: Order }) {
-    const [origin, setOrigin] = useState('');
-
-    useEffect(() => {
-        // This ensures the window object is available
-        setOrigin(window.location.origin);
-    }, []);
-
-    if (!order.customerPhone || !origin) {
-        return (
-             <Button variant="outline" className="w-full" disabled>
-                <Share2 className="ml-2 h-4 w-4" />
-                عرض الفاتورة ومشاركتها
-            </Button>
-        );
-    }
-    
-    const invoiceUrl = `${origin}/admin/orders/${order.id}/view`;
-    const message = encodeURIComponent(`مرحبًا ${order.customerName},\n\nيمكنك عرض تفاصيل فاتورة طلبك "${order.orderName}" عبر الرابط التالي:\n${invoiceUrl}`);
-    const whatsappUrl = `https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${message}`;
-
-    return (
-        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" className="w-full">
-                <Share2 className="ml-2 h-4 w-4" />
-                مشاركة الفاتورة عبر WhatsApp
-            </Button>
-        </a>
-    );
-}
-
 
 export default function AdminOrderDetailPage({
   params,
@@ -121,7 +89,12 @@ export default function AdminOrderDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                 <ShareInvoiceButton order={order} />
+                 <Link href={`/admin/orders/${order.id}/view`} target="_blank">
+                    <Button variant="outline" className="w-full">
+                        <FileText className="ml-2 h-4 w-4" />
+                        عرض وتنزيل الفواتير
+                    </Button>
+                </Link>
                 <Link href="/admin/orders" className="w-full sm:w-auto">
                     <Button variant="outline" className="w-full">
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -156,11 +129,10 @@ export default function AdminOrderDetailPage({
                             const isCurrent = index === currentStatusIndex;
                             const isFuture = index > currentStatusIndex;
                             
-                            // Don't show delivery stages if hasDelivery is false
                             if (!order.hasDelivery && (stage.name === 'ReadyForDelivery' || stage.name === 'FactoryShipped')) {
                                 if(stage.name === 'FactoryShipped' && order.status === 'Processing') {
                                     const readyForPickupStage = { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: 'PackageCheck', action: { label: "تأكيد الاستلام", nextStatus: "Delivered" } } as const;
-                                    const isPickupCurrent = order.status === 'Processing'; // It becomes current when main flow is processing
+                                    const isPickupCurrent = order.status === 'Processing';
                                     return (
                                         <StageCard 
                                             key={readyForPickupStage.name} 
