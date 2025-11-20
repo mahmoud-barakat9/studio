@@ -8,12 +8,10 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById, ensureUserExistsInFirestore } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus, addUserAndGetId, getUserById } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User, Order } from './definitions';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase/config';
 
 
 const loginSchema = z.object({
@@ -38,25 +36,7 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
   
-  const {name, email, password} = validatedFields.data;
-  
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
-    
-    await addUserAndGetId({ id: firebaseUser.uid, name, email, role: 'user' });
-
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
-        return {
-            message: 'هذا البريد الإلكتروني مسجل بالفعل.',
-        };
-    }
-    return {
-      message: error.message || 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.',
-    };
-  }
-  
+  // Fake registration, just redirect
   redirect('/login?registered=true');
 }
 
@@ -73,31 +53,30 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
 
-  try {
-     // This is problematic on server. This is what we are reverting to.
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
+  // Dummy authentication
+  const isAdmin = email === 'admin@abjour.com' && password === '123456';
+  const isUser = email === 'user@abjour.com' && password === '123456';
 
-    const user = await ensureUserExistsInFirestore(firebaseUser);
+  if (!isAdmin && !isUser) {
+    return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+  }
 
-    if (!user) {
-        return { message: 'لم يتم العثور على بيانات المستخدم في قاعدة البيانات.' };
-    }
+  const role = isAdmin ? 'admin' : 'user';
+  const users = await getAllUsers(true);
+  const user = users.find(u => u.email === email);
 
-    cookies().set('session-id', user.id, { httpOnly: true, path: '/' });
-    cookies().set('session-role', user.role, { httpOnly: true, path: '/' });
+  if (!user) {
+    return { message: 'لم يتم العثور على المستخدم في قاعدة البيانات.' };
+  }
+  
+  cookies().set('session-id', user.id, { httpOnly: true, path: '/' });
+  cookies().set('session-role', role, { httpOnly: true, path: '/' });
 
-    if (user.role === 'admin') {
-        redirect('/admin/dashboard');
-    } else {
-        redirect('/dashboard');
-    }
 
-  } catch (error: any) {
-     if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-        return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-    }
-     return { message: error.message || 'حدث خطأ ما أثناء تسجيل الدخول.' };
+  if (role === 'admin') {
+      redirect('/admin/dashboard');
+  } else {
+      redirect('/dashboard');
   }
 }
 
@@ -363,3 +342,4 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+

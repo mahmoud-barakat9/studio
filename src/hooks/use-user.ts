@@ -2,32 +2,25 @@
 
 "use client";
 
-import { useFirebase } from "@/firebase/provider";
 import { useEffect, useState } from "react";
 import { getUserById } from "@/lib/firebase-actions";
 import type { User } from "@/lib/definitions";
-import { usePathname } from "next/navigation";
-
+import { getCookie } from 'cookies-next';
 
 export const useUser = () => {
-    const { user: authUser, loading: authLoading } = useFirebase();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
-            if (authLoading) {
-                setLoading(true);
-                return;
-            }
+            setLoading(true);
+            const userId = getCookie('session-id');
 
-            if (authUser) {
-                const dbUser = await getUserById(authUser.uid);
+            if (userId) {
+                const dbUser = await getUserById(userId as string);
                 if (dbUser) {
                     setUser(dbUser);
                 } else {
-                    // This might happen if user exists in Auth but not in Firestore DB yet.
-                    // For now, we set it to null, but you might want to handle this case.
                     setUser(null);
                 }
             } else {
@@ -37,7 +30,13 @@ export const useUser = () => {
         };
 
         fetchUser();
-    }, [authUser, authLoading]);
+        // Listen for changes in cookies (e.g., on login/logout)
+        window.addEventListener('storage', fetchUser);
+        return () => {
+            window.removeEventListener('storage', fetchUser);
+        }
+
+    }, []);
 
     return { user, loading };
 };
