@@ -21,10 +21,9 @@ export async function initializeTestUsers() {
     let usersCreated = false;
 
     for (const user of testUsers) {
-        const userQuery = query(usersRef, where("email", "==", user.email));
-        const userSnapshot = await getDocs(userQuery);
-        if (userSnapshot.empty) {
-            const userDocRef = doc(usersRef, user.id);
+        const userDocRef = doc(usersRef, user.id);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
             batch.set(userDocRef, user);
             usersCreated = true;
             console.log(`Creating test user: ${user.email}`);
@@ -41,6 +40,7 @@ export async function initializeTestUsers() {
 
 // --- Orders ---
 export const getOrders = async (): Promise<Order[]> => {
+  await initializeTestUsers();
   const ordersSnapshot = await getDocs(collection(db, "orders"));
   return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -63,6 +63,7 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
 
 
 export const addOrder = async (orderData: any) => {
+    await initializeTestUsers();
     const totalArea = orderData.openings.reduce(
       (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
       0
@@ -149,6 +150,7 @@ export const deleteOrder = async (orderId: string): Promise<{ success: boolean }
 
 // --- Users ---
 export const getUsers = async (includeAdmins = false): Promise<User[]> => {
+  await initializeTestUsers();
   let q = query(collection(db, "users"));
   if (!includeAdmins) {
       q = query(q, where("role", "==", "user"));
@@ -159,6 +161,7 @@ export const getUsers = async (includeAdmins = false): Promise<User[]> => {
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
     if (!id) return undefined;
+    await initializeTestUsers();
     const docRef = doc(db, "users", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -168,6 +171,7 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
 };
 
 export const getAllUsers = async (includeAdmins = false): Promise<User[]> => {
+    await initializeTestUsers();
     let q = query(collection(db, "users"));
     if (!includeAdmins) {
         q = query(q, where("role", "==", "user"));
@@ -282,4 +286,3 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
-
