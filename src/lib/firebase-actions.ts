@@ -173,9 +173,13 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
     return undefined;
 };
 
-export const getAllUsers = async (): Promise<User[]> => {
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    return usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+export const getAllUsers = async (includeAdmins = false): Promise<User[]> => {
+    let q = query(collection(db, "users"));
+    if (!includeAdmins) {
+        q = query(q, where("role", "==", "user"));
+    }
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
 };
 
 export const addUserAndGetId = async (userData: Partial<User> & { email: string }): Promise<string> => {
@@ -188,10 +192,13 @@ export const addUserAndGetId = async (userData: Partial<User> & { email: string 
         return querySnapshot.docs[0].id;
     }
 
-    const docRef = await addDoc(collection(db, "users"), userData);
+    const newUserRef = doc(collection(db, 'users'));
+    const finalUserData = { ...userData, id: newUserRef.id };
+    await setDoc(newUserRef, finalUserData);
+
     revalidatePath('/admin/orders/new');
     console.log("Added user", userData);
-    return docRef.id;
+    return newUserRef.id;
 };
 
 
@@ -280,3 +287,5 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return { success: true };
 };
+
+    

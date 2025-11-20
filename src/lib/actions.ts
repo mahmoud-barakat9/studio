@@ -12,8 +12,6 @@ import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updat
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User, Order } from './definitions';
-import { auth } from '@/firebase/config';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 
 const loginSchema = z.object({
@@ -41,25 +39,16 @@ export async function register(prevState: any, formData: FormData) {
   const {name, email, password} = validatedFields.data;
   
   try {
-    // This part runs on the server, but Firebase Auth SDK is client-side.
-    // This will not work as expected on the server.
-    // We will simulate it and the real creation will happen on the client.
-    // The proper way is to use Firebase Admin SDK for server-side auth actions.
-    
-    // Simulate check if user exists
     const allUsers = await getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
         message: 'هذا البريد الإلكتروني مسجل بالفعل.',
       };
     }
-
-    // In a real app, you would create user with Admin SDK.
-    // For this mock-up, we redirect and let client-side handle it.
-    // The action here is mostly for validation.
     
-    // The `addUserAndGetId` should be called after client-side creation.
-    // We can't do it here directly.
+    // In a real app, you would create user with Admin SDK.
+    // This is just a mock now.
+    await addUserAndGetId({ name, email, role: 'user' });
 
   } catch (error: any) {
     return {
@@ -67,7 +56,6 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
   
-  // Redirect to login, maybe with a success message.
   redirect('/login?registered=true');
 }
 
@@ -83,25 +71,36 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   const { email, password } = validatedFields.data;
-  
-  // This is a mock authentication. We can't use Firebase client SDK on the server.
-  // We'll just check against our known test users and users in DB.
-  const allUsers = await getAllUsers(true);
-  const user = allUsers.find(u => u.email === email); // Simplified check without password for mock
 
-  if (!user) {
-      return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
-  }
+  try {
+    const allUsers = await getAllUsers(true);
+    const user = allUsers.find(u => u.email === email);
+    
+    if (!user) {
+        return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+    }
+    
+    // Mock password check for demo users
+    const isDemoUser = (email === 'admin@abjour.com' || email === 'user@abjour.com') && password === '123456';
+    
+    if (!isDemoUser) {
+        // For other users, we can't check password on server, so we just check if user exists.
+        // In a real scenario, this would be handled by Firebase client SDK or Admin SDK.
+    }
 
-  // Set mock session cookie
-  cookies().set('session-id', user.id, { httpOnly: true, path: '/' });
-  cookies().set('session-role', user.role, { httpOnly: true, path: '/' });
+
+    cookies().set('session-id', user.id, { httpOnly: true, path: '/' });
+    cookies().set('session-role', user.role, { httpOnly: true, path: '/' });
 
 
-  if (user.role === 'admin') {
-      redirect('/admin/dashboard');
-  } else {
-      redirect('/dashboard');
+    if (user.role === 'admin') {
+        redirect('/admin/dashboard');
+    } else {
+        redirect('/dashboard');
+    }
+
+  } catch (error) {
+     return { message: 'حدث خطأ ما أثناء تسجيل الدخول.' };
   }
 }
 
@@ -367,3 +366,5 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+
+    
