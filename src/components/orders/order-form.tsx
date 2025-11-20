@@ -98,9 +98,10 @@ interface OrderFormProps {
   currentUser?: User | null;
   userOrders?: Order[];
   isLoading?: boolean;
+  currentDate?: string;
 }
 
-export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, userOrders, isLoading }: OrderFormProps) {
+export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, isLoading, currentDate }: OrderFormProps) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
   
   const form = useForm<OrderFormValues>({
@@ -124,20 +125,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [nameState, generateNameAction] = useActionState(generateOrderName, null);
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
-  const [currentDate, setCurrentDate] = useState('');
 
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
   const watchUserId = useWatch({ control: form.control, name: 'userId'});
 
-  useEffect(() => {
-    setCurrentDate(new Date().toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }));
-  }, []);
 
   useEffect(() => {
      if (!isAdmin && currentUser) {

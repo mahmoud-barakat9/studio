@@ -19,8 +19,14 @@ export default function NewOrderPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }));
     const fetchUserData = async () => {
       setIsLoading(true);
       const sessionId = getCookie('session-id');
@@ -76,8 +82,8 @@ export default function NewOrderPage() {
 
             <OrderForm 
               currentUser={currentUser} 
-              userOrders={userOrders}
               isLoading={isLoading} 
+              currentDate={currentDate}
             />
         </div>
       </main>
