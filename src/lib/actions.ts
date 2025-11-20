@@ -75,12 +75,10 @@ export async function login(prevState: any, formData: FormData) {
     return { message: 'المستخدم غير موجود.' };
   }
   
-  // Specific check for demo users
-  if (user.email === 'admin@abjour.com' && password !== '123456') {
+  // Specific password check for demo users only.
+  const isDemoUser = user.email === 'admin@abjour.com' || user.email === 'user@abjour.com';
+  if (isDemoUser && password !== '123456') {
       return { message: 'كلمة المرور غير صحيحة.' };
-  }
-  if (user.email === 'user@abjour.com' && password !== '123456') {
-    return { message: 'كلمة المرور غير صحيحة.' };
   }
 
 
