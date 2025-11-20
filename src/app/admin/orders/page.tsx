@@ -5,7 +5,6 @@ import { PlusCircle } from "lucide-react";
 import { getOrders, getUsers } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Order } from "@/lib/definitions";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const statusTranslations: Record<Order['status'], string> = {
   "Pending": "تم الاستلام",
@@ -44,7 +43,7 @@ export default async function AdminOrdersPage() {
       </div>
       
       <Tabs defaultValue="Pending" className="w-full">
-        <ScrollArea className="w-full whitespace-nowrap rounded-lg">
+        <div className="overflow-x-auto pb-2">
             <TabsList className="inline-flex w-max">
                 {(Object.keys(ordersByStatus) as Array<Order['status']>).map(status => (
                     <TabsTrigger key={status} value={status}>
@@ -53,8 +52,7 @@ export default async function AdminOrdersPage() {
                 ))}
                 <TabsTrigger value="archived">المؤرشفة ({archivedOrders.length})</TabsTrigger>
             </TabsList>
-            <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </div>
 
         {(Object.keys(ordersByStatus) as Array<Order['status']>).map(status => (
              <TabsContent key={status} value={status}>
