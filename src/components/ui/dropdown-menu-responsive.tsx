@@ -30,22 +30,11 @@ export {
     SheetTitle as DropdownMenuTitle,
 } from "./dropdown-menu-responsive-items";
 
-type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuDesktop> & {
-    children: React.ReactNode;
-};
+type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuDesktop>;
 
 const DropdownMenu = ({ children, ...props }: DropdownMenuProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = React.useState(false);
-
-  // We can't conditionally render the trigger and content as it violates rules of hooks
-  // and also we need to pass the trigger and content to the correct parent component.
-  const trigger = React.Children.toArray(children).find(
-    (child) => (child as React.ReactElement).type === DropdownMenuTrigger
-  );
-  const content = React.Children.toArray(children).find(
-    (child) => (child as React.ReactElement).type === DropdownMenuContent
-  );
 
   if (isDesktop) {
     return (
@@ -55,33 +44,28 @@ const DropdownMenu = ({ children, ...props }: DropdownMenuProps) => {
     );
   }
 
+  const trigger = React.Children.toArray(children).find(
+    (child) => (child as React.ReactElement).type === DropdownMenuTrigger
+  );
+  const content = React.Children.toArray(children).find(
+    (child) => (child as React.ReactElement).type === DropdownMenuContent
+  );
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {trigger}
-      {content}
+      <SheetTrigger asChild>
+        {trigger}
+      </SheetTrigger>
+      <SheetContent side="bottom">
+        {content}
+      </SheetContent>
     </Sheet>
   );
 };
 
-const DropdownMenuTrigger = (props: React.ComponentProps<typeof DropdownMenuTriggerDesktop>) => {
-    const isDesktop = useMediaQuery("(min-width: 768px)");
+const DropdownMenuTrigger = DropdownMenuTriggerDesktop;
+const DropdownMenuContent = DropdownMenuContentDesktop;
 
-    if (isDesktop) {
-        return <DropdownMenuTriggerDesktop {...props} />;
-    }
-
-    return <SheetTrigger {...props} />;
-}
-
-const DropdownMenuContent = (props: React.ComponentProps<typeof DropdownMenuContentDesktop>) => {
-    const isDesktop = useMediaQuery("(min-width: 768px)");
-
-    if (isDesktop) {
-        return <DropdownMenuContentDesktop {...props} />;
-    }
-
-    return <SheetContent side="bottom" {...props} />;
-}
 
 export {
     DropdownMenu,

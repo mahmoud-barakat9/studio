@@ -180,7 +180,7 @@ export function OrdersTable({
   return (
     <Card>
       <CardContent className="p-0">
-          <Table className="whitespace-nowrap">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden md:table-cell">رقم الطلب</TableHead>
