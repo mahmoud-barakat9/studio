@@ -24,23 +24,25 @@ export default function AdminLayout({
   const router = useRouter();
   
   useEffect(() => {
-    if (!loading && (!user || user.email !== 'admin@abjour.com')) {
+    if (!loading && (!user || user.role !== 'admin')) {
       router.replace('/login');
     }
   }, [user, loading, router]);
   
   useEffect(() => {
     async function fetchOrders() {
-        const orders = await getOrders();
-        setAllOrders(orders);
-        const pendingCount = orders.filter(order => order.status === 'Pending' && !order.isArchived).length;
-        setPendingOrdersCount(pendingCount);
+        if (user && user.role === 'admin') {
+            const orders = await getOrders();
+            setAllOrders(orders);
+            const pendingCount = orders.filter(order => order.status === 'Pending' && !order.isArchived).length;
+            setPendingOrdersCount(pendingCount);
+        }
     }
     fetchOrders();
-  }, []);
+  }, [user]);
 
-  if (loading || !user || user.email !== 'admin@abjour.com') {
-      return <div>Loading...</div>; // Or a proper loading spinner
+  if (loading || !user || user.role !== 'admin') {
+      return <div>Loading...</div>;
   }
 
   return (
@@ -50,5 +52,3 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
-
-    
