@@ -31,8 +31,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu-responsive";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -182,64 +180,61 @@ export function OrdersTable({
   return (
     <Card>
       <CardContent className="p-0">
-        <ScrollArea>
-            <Table className="min-w-[640px] whitespace-nowrap">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>رقم الطلب</TableHead>
-                  <TableHead>اسم الطلب</TableHead>
-                  {isAdmin && <TableHead>العميل</TableHead>}
-                  <TableHead>النوع واللون</TableHead>
-                  <TableHead>التاريخ</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-left">التكلفة</TableHead>
-                  <TableHead className="text-left">الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.map((order) => {
-                  const statusStyle =
-                    statusStyles[order.status] || statusStyles["Pending"];
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{order.orderName}</TableCell>
-                      {isAdmin && <TableCell>{getUserName(order.userId)}</TableCell>}
-                      <TableCell>
-                          <div className="flex flex-col">
-                            <span>{order.mainAbjourType}</span>
-                            <span className="text-xs text-muted-foreground">{order.mainColor}</span>
-                          </div>
-                      </TableCell>
-                      <TableCell>{order.date}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusStyle.variant}>
-                          {statusStyle.text}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-left">
-                        ${order.totalCost.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-left">
-                         <div className="flex items-center gap-2">
-                            {(isAdmin || showViewAction) && (
-                            <Link href={getViewLink(order.id)} scroll={false}>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">عرض الطلب</span>
-                                </Button>
-                            </Link>
-                            )}
-                            {isAdmin && <AdminOrderActions order={order} />}
-                          </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+          <Table className="whitespace-nowrap">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="hidden md:table-cell">رقم الطلب</TableHead>
+                <TableHead>اسم الطلب</TableHead>
+                {isAdmin && <TableHead className="hidden md:table-cell">العميل</TableHead>}
+                <TableHead>النوع واللون</TableHead>
+                <TableHead className="hidden md:table-cell">التاريخ</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead className="text-left">التكلفة</TableHead>
+                <TableHead className="text-left">الإجراءات</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => {
+                const statusStyle =
+                  statusStyles[order.status] || statusStyles["Pending"];
+                return (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
+                    <TableCell>{order.orderName}</TableCell>
+                    {isAdmin && <TableCell className="hidden md:table-cell">{getUserName(order.userId)}</TableCell>}
+                    <TableCell>
+                        <div className="flex flex-col">
+                          <span>{order.mainAbjourType}</span>
+                          <span className="text-xs text-muted-foreground">{order.mainColor}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{order.date}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusStyle.variant}>
+                        {statusStyle.text}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-left">
+                      ${order.totalCost.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-left">
+                       <div className="flex items-center gap-2">
+                          {(isAdmin || showViewAction) && (
+                          <Link href={getViewLink(order.id)} scroll={false}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">عرض الطلب</span>
+                              </Button>
+                          </Link>
+                          )}
+                          {isAdmin && <AdminOrderActions order={order} />}
+                        </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
       </CardContent>
     </Card>
   );
