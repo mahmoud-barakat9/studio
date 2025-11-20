@@ -43,16 +43,15 @@ export async function register(prevState: any, formData: FormData) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (userCredential.user) {
         await updateProfile(userCredential.user, { displayName: name });
+        // After creating user in Auth, create them in Firestore
+        await addUserAndGetId({
+          id: userCredential.user.uid,
+          name: name,
+          email: email,
+          role: 'user',
+          phone: '', // Phone can be added later
+        });
     }
-    
-    await addUserAndGetId({
-      id: userCredential.user.uid,
-      name: name,
-      email: email,
-      role: 'user',
-      phone: '', // Phone can be added later
-    });
-
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
         return { message: 'هذا البريد الإلكتروني مسجل بالفعل.' };
@@ -63,54 +62,10 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
 
+  // After successful registration, sign in the user to trigger the provider
+  await signInWithEmailAndPassword(auth, email, password);
   redirect('/dashboard');
 }
-
-async function ensureTestUsers() {
-    const testUsers = [
-        {
-            email: 'admin@abjour.com',
-            password: '123456',
-            name: 'Adminstrator',
-            phone: '555-4444',
-            role: 'admin' as const,
-        },
-        {
-            email: 'user@abjour.com',
-            password: '123456',
-            name: 'User',
-            phone: '555-5555',
-            role: 'user' as const,
-        }
-    ];
-
-    for (const testUser of testUsers) {
-        try {
-            // Check if user exists in Auth, if not, create it
-            const userCredential = await createUserWithEmailAndPassword(auth, testUser.email, testUser.password);
-            await updateProfile(userCredential.user, { displayName: testUser.name });
-            await ensureUserExistsInFirestore({
-                id: userCredential.user.uid,
-                ...testUser
-            });
-             console.log(`Test user ${testUser.email} created successfully.`);
-        } catch (error: any) {
-            if (error.code === 'auth/email-already-in-use') {
-                // User already exists in Auth, ensure they exist in Firestore
-                const userSnap = await signInWithEmailAndPassword(auth, testUser.email, testUser.password);
-                await ensureUserExistsInFirestore({
-                    id: userSnap.user.uid,
-                    ...testUser
-                });
-            } else {
-                console.error(`Failed to ensure test user ${testUser.email}:`, error);
-            }
-        }
-    }
-     // Sign out after ensuring users to not affect the current login flow
-    await signOut(auth);
-}
-
 
 export async function login(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse(
@@ -126,37 +81,31 @@ export async function login(prevState: any, formData: FormData) {
   const { email, password } = validatedFields.data;
   
   try {
-     // Ensure test users exist before attempting login
-    if (email === 'admin@abjour.com' || email === 'user@abjour.com') {
-      await ensureTestUsers();
-    }
-
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = await getUserById(userCredential.user.uid);
+    const authUser = userCredential.user;
 
-    if (!user) {
-        // This can happen if auth succeeds but firestore doc is missing
-        const firestoreUser = await ensureUserExistsInFirestore({
-            id: userCredential.user.uid,
-            name: userCredential.user.displayName || email,
+    // After successful sign-in, ensure the user exists in Firestore
+    let firestoreUser = await getUserById(authUser.uid);
+
+    if (!firestoreUser) {
+        console.warn(`User ${email} not found in Firestore. Creating entry...`);
+        const isTestAdmin = email === 'admin@abjour.com';
+        const newFirestoreUser: User = {
+            id: authUser.uid,
+            name: authUser.displayName || email.split('@')[0],
             email: email,
-            role: 'user',
-            phone: userCredential.user.phoneNumber || ''
-        });
-
-        if (firestoreUser.role === 'admin') {
-            redirect('/admin/dashboard');
-        } else {
-            redirect('/dashboard');
-        }
-        return;
+            phone: authUser.phoneNumber || '',
+            role: isTestAdmin ? 'admin' : 'user',
+        };
+        firestoreUser = await ensureUserExistsInFirestore(newFirestoreUser);
     }
-
-    if (user.role === 'admin') {
+    
+    if (firestoreUser.role === 'admin') {
       redirect('/admin/dashboard');
     } else {
       redirect('/dashboard');
     }
+
   } catch (error: any) {
     if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
       return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
@@ -165,6 +114,7 @@ export async function login(prevState: any, formData: FormData) {
     return { message: 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
   }
 }
+
 
 export async function logout() {
   await signOut(auth);
@@ -413,5 +363,3 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
-
-    
