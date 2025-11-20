@@ -113,7 +113,7 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
                         <CardDescription>رقم الطلب: {orderToView.id}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <OrderTracker currentStatus={orderToView.status} />
+                        <OrderTracker order={orderToView} />
                     </CardContent>
                 </Card>
             ) : (
