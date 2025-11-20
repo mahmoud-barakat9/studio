@@ -24,7 +24,7 @@ export default function NewOrderPage() {
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
-    // This will only run on the client
+    // This will only run on the client, preventing hydration mismatch
     setCurrentDate(new Date().toLocaleDateString('ar-EG', {
         year: 'numeric',
         month: 'long',
