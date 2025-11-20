@@ -499,6 +499,11 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                         </div>
                     </CardHeader>
                 </Card>
+                {form.formState.errors.openings && (
+                    <p className="text-sm font-medium text-destructive px-4">
+                    {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
+                    </p>
+                )}
                 {watchedOpenings.length > 0 && (
                     <div className="mt-6">
                         <OpeningsTable 
@@ -507,11 +512,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                             onUpdateOpening={handleUpdateOpening}
                             onDeleteOpening={handleDeleteOpening}
                         />
-                        {form.formState.errors.openings && (
-                            <p className="text-sm font-medium text-destructive mt-2">
-                            {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                            </p>
-                        )}
                     </div>
                 )}
             </div>
