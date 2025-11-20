@@ -1,7 +1,7 @@
 
 "use client";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Ruler } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from "react";
 import { getCookie } from 'cookies-next';
@@ -15,23 +15,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { getOrdersByUserId } from "@/lib/firebase-actions";
+import { getOrdersByUserId, getUserById } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
+import { Skeleton } from "../ui/skeleton";
 
 export function Dashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [orderToView, setOrderToView] = useState<Order | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   
   const viewOrderId = searchParams.get('view_order');
-  // Mock user, in a real app, this would come from an auth context
-  const mockUserId = '1'; 
-  const mockUserName = "Ahmed Ali";
-
+  
   const getDefaultTab = useCallback(() => {
     if (viewOrderId) return 'track-order';
     return 'overview';
@@ -40,14 +39,20 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState(getDefaultTab());
 
   useEffect(() => {
-    async function fetchUserOrders() {
+    async function fetchUserData() {
       setIsLoading(true);
-      // Simulating fetching orders for a logged-in user
-      const orders = await getOrdersByUserId(mockUserId);
-      setUserOrders(orders);
+      const sessionId = getCookie('session-id');
+      if (sessionId) {
+        const user = await getUserById(sessionId);
+        if (user) {
+          setCurrentUser(user);
+          const orders = await getOrdersByUserId(user.id);
+          setUserOrders(orders);
+        }
+      }
       setIsLoading(false);
     }
-    fetchUserOrders();
+    fetchUserData();
   }, []);
 
   const handleTabChange = useCallback((value: string) => {
@@ -76,6 +81,9 @@ export function Dashboard() {
     }
   }, [viewOrderId, userOrders, activeTab, handleTabChange]);
 
+  const totalApprovedMeters = userOrders
+    .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
+    .reduce((sum, order) => sum + order.totalArea, 0);
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -88,7 +96,7 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {`أهلاً بكِ، ${mockUserName}!`}
+            {isLoading ? <Skeleton className="h-9 w-48" /> : `أهلاً بكِ، ${currentUser?.name || 'User'}!`}
           </h1>
           <p className="text-muted-foreground">
             هذا هو مركز التحكم الخاص بطلباتك.
@@ -108,24 +116,50 @@ export function Dashboard() {
           <TabsTrigger value="track-order" disabled={!viewOrderId && activeTab !== 'track-order'}>تتبع الطلب</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>الطلبات الأخيرة</CardTitle>
-              <CardDescription>
-                أحدث طلبات الأباجور الخاصة بك.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <OrdersTable orders={userOrders.slice(0, 3)} showViewAction={true} />
-              <div className="flex items-center justify-start pt-4">
-                 <a href="#all-orders-tab" onClick={handleAllOrdersClick}>
-                    <Button variant="outline" size="sm">
-                        عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
-                    </Button>
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+              <CardHeader>
+                <CardTitle>الطلبات الأخيرة</CardTitle>
+                <CardDescription>
+                  أحدث طلبات الأباجور الخاصة بك.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                ) : (
+                    <>
+                        <OrdersTable orders={userOrders.slice(0, 3)} showViewAction={true} />
+                        <div className="flex items-center justify-start pt-4">
+                            <a href="#all-orders-tab" onClick={handleAllOrdersClick}>
+                                <Button variant="outline" size="sm">
+                                    عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
+                                </Button>
+                            </a>
+                        </div>
+                    </>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+              <CardHeader className="pb-2">
+                <CardDescription>إجمالي الأمتار المعتمدة</CardDescription>
+                <CardTitle className="text-4xl flex items-center gap-2">
+                   {isLoading ? <Skeleton className="h-10 w-32" /> : `${totalApprovedMeters.toFixed(2)} م²`}
+                   <Ruler className="h-8 w-8 text-primary" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xs text-muted-foreground">
+                  مجموع مساحة جميع طلباتك التي تمت الموافقة عليها.
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         <TabsContent value="all-orders" id="all-orders-tab">
              <Card>
@@ -134,7 +168,14 @@ export function Dashboard() {
                     <CardDescription>هنا يمكنك عرض وإدارة جميع طلباتك.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OrdersTable orders={userOrders} showViewAction={true}/>
+                    {isLoading ? (
+                         <div className="space-y-4">
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-24 w-full" />
+                        </div>
+                    ) : (
+                        <OrdersTable orders={userOrders} showViewAction={true}/>
+                    )}
                 </CardContent>
              </Card>
         </TabsContent>
@@ -169,3 +210,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+    
