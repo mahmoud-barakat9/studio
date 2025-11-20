@@ -132,4 +132,23 @@ export const orders: Order[] = [
     ],
     isArchived: false,
   },
+    {
+    id: "ORD005",
+    userId: "5",
+    orderName: "Test User Order",
+    customerName: "User",
+    customerPhone: "555-5555",
+    mainAbjourType: "شراع",
+    mainColor: "أبيض",
+    bladeWidth: 5.5,
+    pricePerSquareMeter: 120,
+    status: "Pending",
+    date: "2024-05-22",
+    totalArea: 15.0,
+    totalCost: 1800.0,
+    openings: [
+        { serial: "E01", abjourType: "Standard", codeLength: 3.0, numberOfCodes: 50, hasEndCap: true, hasAccessories: true },
+    ],
+    isArchived: false,
+  },
 ];

@@ -1,43 +1,46 @@
 'use server';
 
 import { abjourTypesData } from '@/lib/abjour-data';
-import { orders, users } from '@/lib/data';
+import { orders as mockOrders, users as mockUsers } from '@/lib/data';
 import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 
 // This is a mock implementation. In a real app, you would use Firebase.
+let orders = [...mockOrders];
+let users = [...mockUsers];
+let materials = [...abjourTypesData];
+
 
 export async function getOrders(): Promise<Order[]> {
   // In a real app, this would fetch from Firestore
-  return Promise.resolve(orders);
+  return Promise.resolve(JSON.parse(JSON.stringify(orders)));
 }
 
 export async function getOrderById(id: string): Promise<Order | undefined> {
   // In a real app, this would fetch from Firestore
-  return Promise.resolve(orders.find((o) => o.id === id));
+  return Promise.resolve(JSON.parse(JSON.stringify(orders.find((o) => o.id === id))));
 }
 
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
     // In a real app, this would fetch from Firestore
-    return Promise.resolve(orders.filter(order => order.userId === userId));
+    return Promise.resolve(JSON.parse(JSON.stringify(orders.filter(order => order.userId === userId))));
 }
 
 export async function getUsers(includeAdmins = false): Promise<User[]> {
   // In a real app, this would fetch from Firestore
   if (includeAdmins) {
-      return Promise.resolve(users);
+      return Promise.resolve(JSON.parse(JSON.stringify(users)));
   }
-  return Promise.resolve(users.filter(u => u.role === 'user' && u.email !== 'user@abjour.com'));
+  return Promise.resolve(JSON.parse(JSON.stringify(users.filter(u => u.role === 'user' && u.email !== 'user@abjour.com'))));
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
     const allUsers = await getAllUsers();
-    return Promise.resolve(allUsers.find((u) => u.id === id));
+    return Promise.resolve(JSON.parse(JSON.stringify(allUsers.find((u) => u.id === id))));
 }
 
 export async function getAllUsers(): Promise<User[]> {
-    return Promise.resolve(users);
+    return Promise.resolve(JSON.parse(JSON.stringify(users)));
 }
 
 
@@ -185,6 +188,9 @@ export async function deleteUser(userId: string): Promise<{ success: boolean }> 
     // For this mock, we'll just remove the user.
     users.splice(userIndex, 1);
     
+    // Also remove user's orders
+    orders = orders.filter(o => o.userId !== userId);
+
     console.log(`Deleted user ${userId}`);
     revalidatePath('/admin/users');
     return Promise.resolve({ success: true });
@@ -193,40 +199,40 @@ export async function deleteUser(userId: string): Promise<{ success: boolean }> 
 
 // MOCK ACTIONS FOR MATERIALS
 export async function getMaterials(): Promise<AbjourTypeData[]> {
-    return Promise.resolve(abjourTypesData);
+    return Promise.resolve(JSON.parse(JSON.stringify(materials)));
 }
 
 export async function getMaterialByName(name: string): Promise<AbjourTypeData | undefined> {
-    return Promise.resolve(abjourTypesData.find(m => m.name === name));
+    return Promise.resolve(JSON.parse(JSON.stringify(materials.find(m => m.name === name))));
 }
 
 export async function addMaterial(materialData: AbjourTypeData): Promise<AbjourTypeData> {
-    const existing = abjourTypesData.find(m => m.name === materialData.name);
+    const existing = materials.find(m => m.name === materialData.name);
     if (existing) {
         throw new Error("مادة بهذا الاسم موجودة بالفعل.");
     }
-    abjourTypesData.push(materialData);
+    materials.push(materialData);
     revalidatePath('/admin/materials');
     return Promise.resolve(materialData);
 }
 
 export async function updateMaterial(materialData: AbjourTypeData): Promise<AbjourTypeData> {
-    const index = abjourTypesData.findIndex(m => m.name === materialData.name);
+    const index = materials.findIndex(m => m.name === materialData.name);
     if (index === -1) {
         throw new Error("المادة غير موجودة.");
     }
-    abjourTypesData[index] = materialData;
+    materials[index] = materialData;
     revalidatePath('/admin/materials');
     revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
     return Promise.resolve(materialData);
 }
 
 export async function deleteMaterial(materialName: string): Promise<{ success: boolean }> {
-    const index = abjourTypesData.findIndex(m => m.name === materialName);
+    const index = materials.findIndex(m => m.name === materialName);
     if (index === -1) {
         throw new Error("المادة غير موجودة.");
     }
-    abjourTypesData.splice(index, 1);
+    materials.splice(index, 1);
     revalidatePath('/admin/materials');
     return Promise.resolve({ success: true });
 }
