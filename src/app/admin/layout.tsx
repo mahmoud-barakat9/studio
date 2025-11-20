@@ -20,30 +20,30 @@ export default function AdminLayout({
 }) {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
-  const { user, loading } = useUser();
+  // const { user, loading } = useUser();
   const router = useRouter();
   
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'admin')) {
-      router.replace('/login');
-    }
-  }, [user, loading, router]);
+  // useEffect(() => {
+  //   if (!loading && (!user || user.role !== 'admin')) {
+  //     router.replace('/login');
+  //   }
+  // }, [user, loading, router]);
   
   useEffect(() => {
     async function fetchOrders() {
-        if (user && user.role === 'admin') {
+        // if (user && user.role === 'admin') {
             const orders = await getOrders();
             setAllOrders(orders);
             const pendingCount = orders.filter(order => order.status === 'Pending' && !order.isArchived).length;
             setPendingOrdersCount(pendingCount);
-        }
+        // }
     }
     fetchOrders();
-  }, [user]);
+  }, []);
 
-  if (loading || !user || user.role !== 'admin') {
-      return <div>Loading...</div>;
-  }
+  // if (loading || !user || user.role !== 'admin') {
+  //     return <div>Loading...</div>;
+  // }
 
   return (
     <SidebarProvider>
