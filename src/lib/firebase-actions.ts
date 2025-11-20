@@ -1,31 +1,65 @@
 
+
 'use server';
 
 import { abjourTypesData } from '@/lib/abjour-data';
 import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/firebase/config';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch, setDoc } from 'firebase/firestore';
 
 // This is a mock implementation. In a real app, you would use Firebase.
-let orders: Order[] = [];
-let users: User[] = [];
-let materials: AbjourTypeData[] = [];
+let dataInitialized = false;
 
 async function initializeData() {
-    if (users.length === 0) {
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    if (dataInitialized) return;
+
+    console.log("Initializing data...");
+
+    // Check for admin user
+    const adminRef = doc(db, "users", "s3A9sIilp0cBlKZE2oV3iQpWiW23");
+    const adminSnap = await getDoc(adminRef);
+    if (!adminSnap.exists()) {
+        console.log("Admin user not found, creating...");
+        await setDoc(adminRef, {
+            email: "admin@abjour.com",
+            name: "Adminstrator",
+            phone: "555-4444",
+            role: "admin",
+            id: "s3A9sIilp0cBlKZE2oV3iQpWiW23"
+        });
     }
-     if (orders.length === 0) {
-        const ordersSnapshot = await getDocs(collection(db, "orders"));
-        orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+
+    // Check for regular user
+    const userRef = doc(db, "users", "3jciB2e2g4e42kYxGa2a8gqfO1F2");
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+        console.log("Test user not found, creating...");
+        await setDoc(userRef, {
+            email: "user@abjour.com",
+            name: "User",
+            phone: "555-5555",
+            role: "user",
+            id: "3jciB2e2g4e42kYxGa2a8gqfO1F2"
+        });
     }
-     if (materials.length === 0) {
-        const materialsSnapshot = await getDocs(collection(db, "materials"));
-        materials = materialsSnapshot.docs.map(doc => doc.data() as AbjourTypeData);
+
+    // Check if materials are populated
+    const materialsSnapshot = await getDocs(collection(db, "materials"));
+    if (materialsSnapshot.empty) {
+        console.log("Materials not found, creating...");
+        const batch = writeBatch(db);
+        abjourTypesData.forEach(material => {
+            const materialRef = doc(db, "materials", material.name);
+            batch.set(materialRef, material);
+        });
+        await batch.commit();
     }
+    
+    dataInitialized = true;
+    console.log("Data initialization complete.");
 }
+
 
 // Ensure data is initialized before any action
 const withInitializedData = <T extends (...args: any[]) => Promise<any>>(fn: T) => {
@@ -66,11 +100,13 @@ export const getUsers = withInitializedData(async (includeAdmins = false): Promi
 });
 
 export const getUserById = withInitializedData(async (id: string): Promise<User | undefined> => {
+    if (!id) return undefined;
     const docRef = doc(db, "users", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as User;
     }
+    console.warn(`User with ID ${id} not found in Firestore.`);
     return undefined;
 });
 
@@ -82,7 +118,7 @@ export const getAllUsers = withInitializedData(async (): Promise<User[]> => {
 
 export const addUserAndGetId = withInitializedData(async (userData: User): Promise<string> => {
     const userRef = doc(db, "users", userData.id);
-    await updateDoc(userRef, userData, { merge: true });
+    await setDoc(userRef, userData);
     revalidatePath('/admin/orders/new');
     console.log("Added new user", userData);
     return userData.id;
@@ -190,7 +226,7 @@ export const updateUser = withInitializedData(async (userId: string, userData: P
     const dataToUpdate = { ...userData };
     delete (dataToUpdate as any).password; // Never save password to Firestore
     
-    await updateDoc(userRef, dataToUpdate, { merge: true });
+    await setDoc(userRef, dataToUpdate, { merge: true });
     
     console.log(`Updated user ${userId}`, dataToUpdate);
     revalidatePath('/admin/users');
@@ -241,7 +277,7 @@ export const addMaterial = withInitializedData(async (materialData: AbjourTypeDa
     }
     // Use name as the document ID for simplicity and to enforce uniqueness
     const materialRef = doc(db, "materials", materialData.name);
-    await updateDoc(materialRef, materialData, { merge: true });
+    await setDoc(materialRef, materialData);
     revalidatePath('/admin/materials');
     return materialData;
 });

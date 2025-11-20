@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers } from './firebase-actions';
+import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder as updateOrderDB, deleteOrder as deleteOrderDB, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, getUserById } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User } from './definitions';
@@ -47,14 +47,13 @@ export async function register(prevState: any, formData: FormData) {
   
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, validatedFields.data.email, validatedFields.data.password);
-    const newId = await addUserAndGetId({
+    await addUserAndGetId({
       id: userCredential.user.uid,
       name: validatedFields.data.name,
       email: validatedFields.data.email,
       role: 'user',
       phone: '', // Phone can be added later
     });
-    // cookies().set('session-id', newId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
   } catch (error: any) {
     return {
       message: error.message,
@@ -80,7 +79,13 @@ export async function login(prevState: any, formData: FormData) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = await getUserById(userCredential.user.uid);
-    if (user?.role === 'admin') {
+
+    if (!user) {
+        // This case can happen if auth succeeds but firestore doc is missing
+         return { message: 'لم يتم العثور على بيانات المستخدم.' };
+    }
+
+    if (user.role === 'admin') {
       redirect('/admin/dashboard');
     } else {
       redirect('/dashboard');
@@ -89,6 +94,7 @@ export async function login(prevState: any, formData: FormData) {
     if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
       return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
     }
+    console.error("Login Error:", error);
     return { message: 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
   }
 }
