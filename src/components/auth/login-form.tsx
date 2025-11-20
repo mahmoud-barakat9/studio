@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -66,7 +67,7 @@ export function LoginForm() {
         </div>
         <LoginButton />
         {state?.message && (
-          <p className="text-sm text-destructive">{state.message}</p>
+          <p className="text-sm text-destructive text-center">{state.message}</p>
         )}
          <div className="text-xs text-muted-foreground text-center space-y-1">
             <p>لأغراض العرض، استخدم الحسابات التالية:</p>
@@ -87,3 +88,5 @@ function LoginButton() {
         </Button>
     )
 }
+
+    

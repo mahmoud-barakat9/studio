@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { OrderForm } from "@/components/orders/order-form";
@@ -9,13 +10,14 @@ import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getCookie } from "cookies-next";
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
 import type { User, Order } from "@/lib/definitions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@/hooks/use-user";
 
 
 export default function NewOrderPage() {
+  const { user: authUser, loading: authLoading } = useUser();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,10 +32,10 @@ export default function NewOrderPage() {
     }));
 
     const fetchUserData = async () => {
+      if (authLoading) return;
       setIsLoading(true);
-      const sessionId = getCookie('session-id');
-      if (sessionId) {
-        const user = await getUserById(sessionId);
+      if (authUser) {
+        const user = await getUserById(authUser.uid);
         if (user) {
           setCurrentUser(user);
           const orders = await getOrdersByUserId(user.id);
@@ -43,7 +45,7 @@ export default function NewOrderPage() {
       setIsLoading(false);
     };
     fetchUserData();
-  }, []);
+  }, [authUser, authLoading]);
 
   const totalApprovedMeters = userOrders
     .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
@@ -84,7 +86,7 @@ export default function NewOrderPage() {
 
             <OrderForm 
               currentUser={currentUser} 
-              isLoading={isLoading} 
+              isLoading={isLoading || authLoading} 
               currentDate={currentDate}
             />
         </div>
@@ -93,3 +95,5 @@ export default function NewOrderPage() {
     </div>
   );
 }
+
+    

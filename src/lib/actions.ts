@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -11,6 +12,8 @@ import { addOrder, addUserAndGetId, updateOrderStatus, getOrderById, updateOrder
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import type { AbjourTypeData, User } from './definitions';
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase/config';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -41,16 +44,23 @@ export async function register(prevState: any, formData: FormData) {
       message: 'هذا البريد الإلكتروني مسجل بالفعل.',
     };
   }
+  
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, validatedFields.data.email, validatedFields.data.password);
+    const newId = await addUserAndGetId({
+      id: userCredential.user.uid,
+      name: validatedFields.data.name,
+      email: validatedFields.data.email,
+      role: 'user',
+      phone: '', // Phone can be added later
+    });
+    // cookies().set('session-id', newId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
+  } catch (error: any) {
+    return {
+      message: error.message,
+    };
+  }
 
-  // This is a mock: In a real app you'd securely create the user.
-  const newId = await addUserAndGetId({
-    name: validatedFields.data.name,
-    email: validatedFields.data.email,
-    role: 'user',
-    phone: '', // Phone can be added later
-  });
-
-  cookies().set('session-id', newId, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
   redirect('/dashboard');
 }
 
@@ -67,29 +77,27 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
   
-  const allUsers = await getAllUsers();
-  const user = allUsers.find(u => u.email === email);
-
-  // This is a mock authentication check. In a real app, you'd use hashed passwords.
-  if (!user) {
-    return { message: 'المستخدم غير موجود.' };
-  }
-  
-  // Specific password check for demo users only.
-  const isDemoUser = user.email === 'admin@abjour.com' || user.email === 'user@abjour.com';
-  if (isDemoUser && password !== '123456') {
-      return { message: 'كلمة المرور غير صحيحة.' };
-  }
-
-
-  cookies().set('session-id', user.id, { httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
-  
-  if (user.role === 'admin') {
-    redirect('/admin/dashboard');
-  } else {
-    redirect('/dashboard');
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = await getUserById(userCredential.user.uid);
+    if (user?.role === 'admin') {
+      redirect('/admin/dashboard');
+    } else {
+      redirect('/dashboard');
+    }
+  } catch (error: any) {
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      return { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' };
+    }
+    return { message: 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.' };
   }
 }
+
+export async function logout() {
+  await signOut(auth);
+  redirect('/login');
+}
+
 
 export async function calculateAbjourDimensions(
   prevState: any,
@@ -126,15 +134,17 @@ export async function generateOrderName(
 export async function createOrder(formData: any, asAdmin: boolean) {
   let userId;
   let finalCustomerData: Partial<User> = {};
-  const cookieStore = cookies();
-  const session = cookieStore.get('session-id');
+  
+  const user = auth.currentUser;
 
   if (asAdmin) {
     if (formData.userId === 'new') {
       if (!formData.newUserName || !formData.newUserEmail) {
         throw new Error("New user name and email are required.");
       }
+       const newUserCredential = await createUserWithEmailAndPassword(auth, formData.newUserEmail, '123456');
       const newUserData = {
+        id: newUserCredential.user.uid,
         name: formData.newUserName,
         email: formData.newUserEmail,
         phone: formData.newUserPhone,
@@ -152,7 +162,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
       }
     }
   } else {
-     userId = session?.value;
+     userId = user?.uid;
      finalCustomerData = { name: formData.customerName, phone: formData.customerPhone };
   }
   
@@ -244,10 +254,7 @@ export async function updateUser(userId: string, formData: any) {
         phone: formData.phone,
     };
 
-    if (formData.password) {
-        // In a real app, you would hash this password
-        dataToUpdate.password = formData.password;
-    }
+    // In a real app, you would use Firebase Admin SDK to update the password
     
     await updateUserDB(userId, dataToUpdate);
 
@@ -333,3 +340,5 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+
+    

@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Users,
   ClipboardList,
@@ -29,7 +30,7 @@ import {
 import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { deleteCookie } from "cookies-next";
+import { logout } from "@/lib/actions";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -41,11 +42,9 @@ const links = [
 
 export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
   const pathname = usePathname();
-  const router = useRouter();
 
-  const handleLogout = () => {
-    deleteCookie('session-id');
-    router.push('/login');
+  const handleLogout = async () => {
+    await logout();
   }
 
   return (
@@ -108,3 +107,5 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
     </Sidebar>
   );
 }
+
+    

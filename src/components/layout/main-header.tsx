@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, User as UserIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { getCookie, deleteCookie } from 'cookies-next';
+import { useUser } from "@/hooks/use-user";
+import { logout } from "@/lib/actions";
+import { Skeleton } from "../ui/skeleton";
 
 const guestLinks = [
   { href: "/welcome", label: "الرئيسية" },
@@ -28,32 +30,27 @@ const userLinks = [
 export function MainHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { user, loading } = useUser();
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-    const session = getCookie('session-id');
-    setIsLoggedIn(!!session);
-  }, [pathname]); // Re-check on any path change
 
-  const handleLogout = () => {
-    deleteCookie('session-id');
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
     handleLinkClick();
-    router.push('/login');
+    await logout();
   };
 
   const handleLinkClick = () => {
     setIsOpen(false);
   };
   
-  const links = isLoggedIn ? userLinks : guestLinks;
-  const homeUrl = isLoggedIn ? "/dashboard" : "/welcome";
+  const links = user ? userLinks : guestLinks;
+  const homeUrl = user ? "/dashboard" : "/welcome";
 
-  if (!isClient) {
-    // Return a placeholder or null to avoid hydration errors
+  const getAvatarFallback = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  }
+
+  if (loading) {
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-16 items-center justify-between px-4 md:px-6">
@@ -61,6 +58,12 @@ export function MainHeader() {
                     <BrandLogo />
                     <span className="font-bold text-lg">طلب أباجور</span>
                 </Link>
+                <div className="hidden md:flex items-center gap-4">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="h-10 w-24" />
             </div>
         </header>
     );
@@ -88,22 +91,22 @@ export function MainHeader() {
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
-            {isLoggedIn ? (
+            {user ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="secondary" size="icon" className="rounded-full">
                         <Avatar>
-                            <AvatarImage src="https://i.pravatar.cc/150?u=a" />
-                            <AvatarFallback>U</AvatarFallback>
+                            <AvatarImage src={user.photoURL || `https://i.pravatar.cc/150?u=${user.email}`} />
+                            <AvatarFallback>{getAvatarFallback(user.displayName)}</AvatarFallback>
                         </Avatar>
                         <span className="sr-only">فتح قائمة المستخدم</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                        <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild><Link href="/dashboard"><LayoutDashboard className="ml-2 h-4 w-4" />لوحة التحكم</Link></DropdownMenuItem>
-                        <DropdownMenuItem asChild><Link href="/admin/profile"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/admin/profile"><UserIcon className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
@@ -149,7 +152,7 @@ export function MainHeader() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 w-full mt-4 items-center">
-               {isLoggedIn ? (
+               {user ? (
                     <Button className="w-full" onClick={handleLogout}>
                         <LogOut className="ml-2 h-4 w-4" />تسجيل الخروج
                     </Button>
@@ -170,3 +173,5 @@ export function MainHeader() {
     </header>
   );
 }
+
+    

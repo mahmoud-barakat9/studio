@@ -1,25 +1,24 @@
+
 "use client";
 
 import Link from "next/link";
 import { BrandLogo } from "@/components/icons";
 import { useState, useEffect } from "react";
-import { getCookie } from 'cookies-next';
+import { useUser } from "@/hooks/use-user";
 
 export function MainFooter() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, loading } = useUser();
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
     setCurrentYear(new Date().getFullYear());
-    const session = getCookie('session-id');
-    setIsLoggedIn(!!session);
   }, []);
 
-  const homeUrl = isLoggedIn ? '/dashboard' : '/welcome';
-  const dashboardUrl = isLoggedIn ? '/dashboard' : '/login';
-  const newOrderUrl = isLoggedIn ? '/orders/new' : '/login';
+  const homeUrl = user ? '/dashboard' : '/welcome';
+  const dashboardUrl = user ? '/dashboard' : '/login';
+  const newOrderUrl = user ? '/orders/new' : '/login';
 
   return (
     <footer className="bg-muted text-muted-foreground">
@@ -67,3 +66,5 @@ export function MainFooter() {
     </footer>
   );
 }
+
+    
