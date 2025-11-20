@@ -8,9 +8,10 @@ import {
   ClipboardList,
   LayoutDashboard,
   LineChart,
-  LogOut,
+  Home,
   UserCog,
   Boxes,
+  User,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,7 +31,6 @@ import {
 import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { logout } from "@/lib/actions";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -42,10 +42,6 @@ const links = [
 
 export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    await logout();
-  }
 
   return (
     <Sidebar side="right">
@@ -95,10 +91,10 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                     <DropdownMenuLabel>حسابي</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                        <Link href="/admin/profile"><UserCog className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
+                        <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج
+                    <DropdownMenuItem asChild>
+                        <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -107,5 +103,3 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
     </Sidebar>
   );
 }
-
-    

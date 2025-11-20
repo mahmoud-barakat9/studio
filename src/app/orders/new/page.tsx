@@ -13,11 +13,10 @@ import { useEffect, useState } from "react";
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
 import type { User, Order } from "@/lib/definitions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUser } from "@/hooks/use-user";
 
+const DUMMY_USER_ID = "5"; 
 
 export default function NewOrderPage() {
-  const { user: authUser, loading: authLoading } = useUser();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,20 +31,17 @@ export default function NewOrderPage() {
     }));
 
     const fetchUserData = async () => {
-      if (authLoading) return;
       setIsLoading(true);
-      if (authUser) {
-        const user = await getUserById(authUser.uid);
-        if (user) {
-          setCurrentUser(user);
-          const orders = await getOrdersByUserId(user.id);
-          setUserOrders(orders);
-        }
+      const user = await getUserById(DUMMY_USER_ID);
+      if (user) {
+        setCurrentUser(user);
+        const orders = await getOrdersByUserId(user.id);
+        setUserOrders(orders);
       }
       setIsLoading(false);
     };
     fetchUserData();
-  }, [authUser, authLoading]);
+  }, []);
 
   const totalApprovedMeters = userOrders
     .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
@@ -86,7 +82,7 @@ export default function NewOrderPage() {
 
             <OrderForm 
               currentUser={currentUser} 
-              isLoading={isLoading || authLoading} 
+              isLoading={isLoading} 
               currentDate={currentDate}
             />
         </div>
@@ -95,5 +91,3 @@ export default function NewOrderPage() {
     </div>
   );
 }
-
-    

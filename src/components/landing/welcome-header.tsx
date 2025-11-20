@@ -46,16 +46,6 @@ export function WelcomeHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden md:flex items-center gap-2">
-            <>
-                <Button asChild variant="ghost">
-                    <Link href="/login">تسجيل الدخول</Link>
-                </Button>
-                <Button asChild>
-                    <Link href="/register">اشتراك</Link>
-                </Button>
-            </>
-        </div>
         <div className="md:hidden">
           <Button
             variant="ghost"
@@ -83,16 +73,6 @@ export function WelcomeHeader() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex flex-col gap-2 w-full mt-4 items-center">
-                <>
-                    <Button asChild className="w-full" onClick={handleLinkClick} variant="outline">
-                      <Link href="/login">تسجيل الدخول</Link>
-                    </Button>
-                    <Button asChild className="w-full" onClick={handleLinkClick}>
-                      <Link href="/register">اشتراك</Link>
-                    </Button>
-                </>
-            </div>
           </div>
         </div>
       )}

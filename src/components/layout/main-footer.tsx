@@ -4,11 +4,9 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/icons";
 import { useState, useEffect } from "react";
-import { useUser } from "@/hooks/use-user";
 
 export function MainFooter() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const { user, loading } = useUser();
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
@@ -16,9 +14,9 @@ export function MainFooter() {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
-  const homeUrl = user ? '/dashboard' : '/welcome';
-  const dashboardUrl = user ? '/dashboard' : '/login';
-  const newOrderUrl = user ? '/orders/new' : '/login';
+  const homeUrl = '/dashboard';
+  const dashboardUrl = '/dashboard';
+  const newOrderUrl = '/orders/new';
 
   return (
     <footer className="bg-muted text-muted-foreground">
@@ -45,7 +43,6 @@ export function MainFooter() {
             <div>
               <h4 className="font-semibold text-foreground mb-2">روابط سريعة</h4>
               <nav className="flex flex-col gap-1">
-                <Link href="/login" className="hover:text-primary">تسجيل الدخول</Link>
                 <Link href={dashboardUrl} className="hover:text-primary">لوحة التحكم</Link>
                 <Link href={newOrderUrl} className="hover:text-primary">طلب جديد</Link>
               </nav>
@@ -66,5 +63,3 @@ export function MainFooter() {
     </footer>
   );
 }
-
-    

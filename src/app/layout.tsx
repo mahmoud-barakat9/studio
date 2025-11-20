@@ -4,7 +4,6 @@ import { Cairo } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { FirebaseProvider } from '@/firebase/provider';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -44,10 +43,8 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={cn('antialiased', cairo.variable)}>
-        <FirebaseProvider>
-            {children}
-            <Toaster />
-        </FirebaseProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

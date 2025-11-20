@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Dashboard } from "@/components/dashboard/dashboard";
@@ -8,31 +7,27 @@ import { MainHeader } from "@/components/layout/main-header";
 import { useEffect, useState } from "react";
 import type { User, Order } from "@/lib/definitions";
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
-import { useUser } from "@/hooks/use-user";
+
+const DUMMY_USER_ID = "5"; 
 
 export default function DashboardPage() {
-  const { user: authUser, loading: authLoading } = useUser();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUserData() {
-      if (authLoading) return;
-      
       setIsLoading(true);
-      if (authUser) {
-        const user = await getUserById(authUser.uid);
-        if (user) {
-          setCurrentUser(user);
-          const orders = await getOrdersByUserId(user.id);
-          setUserOrders(orders);
-        }
+      const user = await getUserById(DUMMY_USER_ID);
+      if (user) {
+        setCurrentUser(user);
+        const orders = await getOrdersByUserId(user.id);
+        setUserOrders(orders);
       }
       setIsLoading(false);
     }
     fetchUserData();
-  }, [authUser, authLoading]);
+  }, []);
 
 
   return (
@@ -42,12 +37,10 @@ export default function DashboardPage() {
         <Dashboard 
           currentUser={currentUser}
           userOrders={userOrders}
-          isLoading={isLoading || authLoading}
+          isLoading={isLoading}
         />
       </main>
       <MainFooter />
     </div>
   );
 }
-
-    
