@@ -220,7 +220,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                             <RadioGroup
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
-                                                className="grid grid-cols-2 gap-4"
+                                                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
                                             >
                                                 <FormItem>
                                                     <FormControl>
@@ -252,7 +252,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 <FormLabel>الخطوة 2: أدخل الأبعاد (بالسنتيمتر)</FormLabel>
                                 <div className="p-4 border rounded-lg mt-2">
                                     {watchMethod === 'direct' ? (
-                                        <div className="grid md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <FormField
                                                 control={form.control}
                                                 name="codeLength"
@@ -282,7 +282,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
-                                            <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <FormField
                                                     control={form.control}
                                                     name="width"
@@ -370,17 +370,17 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 sm:justify-start pt-4 border-t">
-                            <Button type="button" onClick={handleSaveAndClose}>
-                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
+                        <DialogFooter className="gap-2 sm:justify-start pt-4 border-t flex-col-reverse sm:flex-row">
+                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                                إلغاء
                             </Button>
                             {!isEditing && (
                                 <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
                                     إضافة والمتابعة
                                 </Button>
                             )}
-                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-                                إلغاء
+                             <Button type="button" onClick={handleSaveAndClose}>
+                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
                             </Button>
                         </DialogFooter>
                     </form>

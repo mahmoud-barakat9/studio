@@ -30,7 +30,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu-responsive";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -180,8 +182,8 @@ export function OrdersTable({
   return (
     <Card>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
-            <Table className="min-w-full">
+        <ScrollArea>
+            <Table className="min-w-[640px] whitespace-nowrap">
               <TableHeader>
                 <TableRow>
                   <TableHead>رقم الطلب</TableHead>
@@ -236,7 +238,8 @@ export function OrdersTable({
                 })}
               </TableBody>
             </Table>
-        </div>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </CardContent>
     </Card>
   );
