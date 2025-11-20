@@ -1,7 +1,5 @@
 
 "use client";
-import Link from "next/link";
-import { ArrowUpRight, Ruler } from "lucide-react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from "react";
 
@@ -34,7 +32,7 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
   
   const getDefaultTab = useCallback(() => {
     if (viewOrderId) return 'track-order';
-    return 'overview';
+    return 'all-orders';
   }, [viewOrderId]);
 
   const [activeTab, setActiveTab] = useState(getDefaultTab());
@@ -46,7 +44,6 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
         newParams.delete('view_order');
     }
     
-    // Add a hash to navigate to the dashboard section
     const newUrl = `${window.location.pathname}?${newParams.toString()}`.replace(/\?$/, '');
     router.replace(newUrl, {scroll: false});
   }, [router, searchParams]);
@@ -60,14 +57,11 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
       }
     } else {
         if(activeTab === 'track-order' && !viewOrderId){
-            handleTabChange("overview");
+            handleTabChange("all-orders");
         }
     }
   }, [viewOrderId, userOrders, activeTab, handleTabChange]);
 
-  const totalApprovedMeters = userOrders
-    .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
-    .reduce((sum, order) => sum + order.totalArea, 0);
 
   const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -83,68 +77,16 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
             {isLoading ? <Skeleton className="h-9 w-48" /> : `أهلاً بكِ، ${currentUser?.name || 'User'}!`}
           </h1>
           <p className="text-muted-foreground">
-            هذا هو مركز التحكم الخاص بطلباتك.
+            هنا يمكنك عرض وتتبع جميع طلباتك.
           </p>
         </div>
-         <Link href="/orders/new">
-            <Button>
-                إنشاء طلب جديد
-            </Button>
-        </Link>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-orders">كل طلباتي</TabsTrigger>
           <TabsTrigger value="track-order" disabled={!viewOrderId && activeTab !== 'track-order'}>تتبع الطلب</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview">
-         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="lg:col-span-4">
-              <CardHeader>
-                <CardTitle>الطلبات الأخيرة</CardTitle>
-                <CardDescription>
-                  أحدث طلبات الأباجور الخاصة بك.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                    <div className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                ) : (
-                    <>
-                        <OrdersTable orders={userOrders.slice(0, 3)} showViewAction={true} />
-                        <div className="flex items-center justify-start pt-4">
-                            <a href="#all-orders-tab" onClick={handleAllOrdersClick}>
-                                <Button variant="outline" size="sm">
-                                    عرض كل الطلبات <ArrowUpRight className="h-4 w-4 mr-2" />
-                                </Button>
-                            </a>
-                        </div>
-                    </>
-                )}
-              </CardContent>
-            </Card>
-            <Card className="lg:col-span-3">
-              <CardHeader className="pb-2">
-                <CardDescription>إجمالي الأمتار المعتمدة</CardDescription>
-                <CardTitle className="text-4xl flex items-center gap-2">
-                   {isLoading ? <Skeleton className="h-10 w-32" /> : `${totalApprovedMeters.toFixed(2)} م²`}
-                   <Ruler className="h-8 w-8 text-primary" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground">
-                  مجموع مساحة جميع طلباتك التي تمت الموافقة عليها.
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
         <TabsContent value="all-orders" id="all-orders-tab">
              <Card>
                 <CardHeader>

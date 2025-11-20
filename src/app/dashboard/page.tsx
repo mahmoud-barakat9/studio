@@ -18,13 +18,18 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchUserData() {
       setIsLoading(true);
-      const user = await getUserById(DUMMY_USER_ID);
-      if (user) {
-        setCurrentUser(user);
-        const orders = await getOrdersByUserId(user.id);
-        setUserOrders(orders);
+      try {
+        const user = await getUserById(DUMMY_USER_ID);
+        if (user) {
+          setCurrentUser(user);
+          const orders = await getOrdersByUserId(user.id);
+          setUserOrders(orders);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     fetchUserData();
   }, []);

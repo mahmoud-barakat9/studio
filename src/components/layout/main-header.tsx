@@ -20,7 +20,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const userLinks = [
     { href: "/dashboard", label: "لوحة التحكم" },
-    { href: "/dashboard#all-orders-tab", label: "كل طلباتي" },
     { href: "/orders/new", label: "إنشاء طلب جديد" },
 ]
 
@@ -49,7 +48,7 @@ export function MainHeader() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                (pathname + (typeof window !== 'undefined' ? window.location.hash : '')) === link.href ? "text-primary" : "text-muted-foreground"
+                pathname.startsWith(link.href) ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.label}
@@ -108,7 +107,7 @@ export function MainHeader() {
                 onClick={handleLinkClick}
                 className={cn(
                   "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                   (pathname + (typeof window !== 'undefined' ? window.location.hash: '')) === link.href ? "text-primary" : "text-foreground"
+                   pathname.startsWith(link.href) ? "text-primary" : "text-foreground"
                 )}
               >
                 {link.label}
