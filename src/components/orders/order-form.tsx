@@ -106,11 +106,10 @@ interface OrderFormProps {
   isAdmin?: boolean;
   users?: User[];
   currentUser?: User | null;
-  isLoading?: boolean;
-  currentDate?: string;
+  currentDate?: React.ReactNode;
 }
 
-export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, isLoading, currentDate }: OrderFormProps) {
+export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, currentDate }: OrderFormProps) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
   
   const form = useForm<OrderFormValues>({
@@ -358,7 +357,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                       </>
                     )}
                   </>
-                ) : isLoading ? (
+                ) : !currentUser ? (
                   <>
                     <div className="space-y-2">
                         <Skeleton className="h-4 w-20" />

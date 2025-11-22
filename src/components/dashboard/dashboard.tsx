@@ -15,15 +15,13 @@ import { OrdersTable } from "@/components/orders/orders-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import type { Order, User } from "@/lib/definitions";
-import { Skeleton } from "../ui/skeleton";
 
 interface DashboardProps {
     currentUser: User | null;
     userOrders: Order[];
-    isLoading: boolean;
 }
 
-export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps) {
+export function Dashboard({ currentUser, userOrders }: DashboardProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [orderToView, setOrderToView] = useState<Order | undefined>();
@@ -74,7 +72,7 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {isLoading ? <Skeleton className="h-9 w-48" /> : `أهلاً بكِ، ${currentUser?.name || 'User'}!`}
+            {`أهلاً بكِ، ${currentUser?.name || 'User'}!`}
           </h1>
           <p className="text-muted-foreground">
             هنا يمكنك عرض وتتبع جميع طلباتك.
@@ -94,14 +92,7 @@ export function Dashboard({ currentUser, userOrders, isLoading }: DashboardProps
                     <CardDescription>هنا يمكنك عرض وإدارة جميع طلباتك.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                         <div className="space-y-4">
-                            <Skeleton className="h-12 w-full" />
-                            <Skeleton className="h-24 w-full" />
-                        </div>
-                    ) : (
-                        <OrdersTable orders={userOrders} showViewAction={true}/>
-                    )}
+                    <OrdersTable orders={userOrders} showViewAction={true}/>
                 </CardContent>
              </Card>
         </TabsContent>

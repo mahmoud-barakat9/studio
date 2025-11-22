@@ -8,32 +8,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 import type { Order, User } from "@/lib/definitions";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
+
+async function getOrderAndUsers(orderId: string) {
+    const orderData = await getOrderById(orderId);
+    let usersData: User[] = [];
+    if (orderData) {
+        usersData = await getUsers();
+    }
+    return { orderData, usersData };
+}
+
+
 export default function OrderInvoicesPage() {
   const params = useParams();
   const orderId = params.orderId as string;
-
-  const [order, setOrder] = useState<Order | null | undefined>(undefined);
-  const [users, setUsers] = useState<User[]>([]);
+  const [data, setData] = useState<{orderData: Order | null | undefined, usersData: User[]}>({ orderData: undefined, usersData: [] });
 
   useEffect(() => {
     async function fetchData() {
         if (!orderId) return;
-        const orderData = await getOrderById(orderId);
-        setOrder(orderData);
-        if (orderData) {
-            const usersData = await getUsers();
-            setUsers(usersData);
-        }
+        const { orderData, usersData } = await getOrderAndUsers(orderId);
+        setData({ orderData, usersData });
     }
     fetchData();
   }, [orderId]);
+
+  const { orderData: order, usersData: users } = data;
 
   if (order === undefined) {
     return (

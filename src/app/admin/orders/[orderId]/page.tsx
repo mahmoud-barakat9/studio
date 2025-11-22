@@ -1,5 +1,4 @@
 
-'use client';
 
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import {
@@ -20,59 +19,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Share2, Truck, XCircle } from "lucide-react";
+import { ArrowRight, FileText, Truck } from "lucide-react";
 import type { OrderStatus, Order, User } from "@/lib/definitions";
-import { StageCard, type StageIconName } from "@/components/orders/stage-card";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { AdminOrderDetails } from "@/components/orders/admin-order-details";
 
-const STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } }[] = [
-    { name: "Pending", label: "تم الاستلام", icon: 'FileQuestion', action: { label: "موافقة وبدء الطلب", nextStatus: "FactoryOrdered" } },
-    { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: 'Factory', action: { label: "نقل إلى التجهيز", nextStatus: "Processing" } },
-    { name: "Processing", label: "قيد التجهيز", icon: 'Cog', action: { label: "شحن من المعمل", nextStatus: "FactoryShipped" } },
-    { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: 'Truck', action: { label: "تأكيد الاستلام وجاهزية التوصيل", nextStatus: "ReadyForDelivery" } },
-    { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: 'PackageCheck', action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
-    { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
-];
-
-export default function AdminOrderDetailPage() {
-  const params = useParams();
-  const orderId = params.orderId as string;
-
-  const [order, setOrder] = useState<Order | null | undefined>(undefined);
-  const [users, setUsers] = useState<User[]>([]);
-
-  const handleStatusUpdate = async (newStatus: OrderStatus) => {
-    if (!order) return;
-
-    // Optimistic UI update
-    setOrder(prevOrder => prevOrder ? { ...prevOrder, status: newStatus } : null);
-
-    // Call server action - Note: This will revalidate the path but we also update locally.
-    // await updateOrderStatus(order.id, newStatus);
-    
-    // For a fully optimistic UI, we can re-fetch just in case, but it might cause a flicker.
-    // Let's rely on the optimistic update for now and let revalidation handle background consistency.
-    // const updatedOrder = await getOrderById(orderId);
-    // setOrder(updatedOrder);
-  };
-
-  useEffect(() => {
-    async function fetchData() {
-        if (!orderId) return;
-        const orderData = await getOrderById(orderId);
-        const usersData = await getUsers();
-        setOrder(orderData);
-        setUsers(usersData);
-    }
-    fetchData();
-  }, [orderId]);
-
-
-  if (order === undefined) {
-      return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
-
+export default async function AdminOrderDetailPage({ params }: { params: { orderId: string } }) {
+  const order = await getOrderById(params.orderId);
+  const users = await getUsers();
 
   if (!order) {
     return (
@@ -98,7 +51,6 @@ export default function AdminOrderDetailPage() {
   const customer = users.find((u) => u.id === order.userId);
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
 
-  const currentStatusIndex = STAGES.findIndex(s => s.name === order.status);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
@@ -123,91 +75,7 @@ export default function AdminOrderDetailPage() {
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-grow flex flex-col gap-8">
-           <Card>
-                <CardHeader>
-                    <CardTitle>مراحل تتبع الطلب</CardTitle>
-                    <CardDescription>تتبع حالة الطلب وقم بتحديثها.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {order.status === 'Rejected' ? (
-                         <Card className="border-destructive">
-                            <CardHeader className="flex flex-row items-center gap-4">
-                                <XCircle className="h-8 w-8 text-destructive" />
-                                <div>
-                                    <CardTitle>الطلب مرفوض</CardTitle>
-                                    <CardDescription>تم رفض هذا الطلب.</CardDescription>
-                                </div>
-                            </CardHeader>
-                        </Card>
-                    ) : (
-                        STAGES.map((stage, index) => {
-                            const isCompleted = index < currentStatusIndex;
-                            const isCurrent = index === currentStatusIndex;
-                            const isFuture = index > currentStatusIndex;
-
-                            // Special handling for non-delivery orders
-                            if (!order.hasDelivery) {
-                                // Skip "FactoryShipped" stage for non-delivery
-                                if (stage.name === 'FactoryShipped') return null;
-
-                                // Modify "Processing" stage action
-                                if (stage.name === 'Processing') {
-                                    const modifiedStage = {
-                                        ...stage,
-                                        action: { label: "جاهز للاستلام", nextStatus: "ReadyForDelivery" as OrderStatus }
-                                    };
-                                    return (
-                                        <StageCard 
-                                            key={modifiedStage.name} 
-                                            stage={modifiedStage} 
-                                            isCompleted={isCompleted}
-                                            isCurrent={isCurrent}
-                                            isFuture={isFuture}
-                                            orderId={order.id}
-                                            onStatusUpdate={handleStatusUpdate}
-                                        />
-                                    );
-                                }
-                                
-                                // Modify "ReadyForDelivery" stage label and action
-                                if (stage.name === 'ReadyForDelivery') {
-                                     const modifiedStage = {
-                                        ...stage,
-                                        label: "جاهز للاستلام",
-                                        icon: 'PackageCheck' as StageIconName,
-                                        action: { label: "تأكيد الاستلام", nextStatus: "Delivered" as OrderStatus }
-                                    };
-                                    return (
-                                        <StageCard 
-                                            key={modifiedStage.name} 
-                                            stage={modifiedStage} 
-                                            isCompleted={isCompleted}
-                                            isCurrent={isCurrent}
-                                            isFuture={isFuture}
-                                            orderId={order.id}
-                                            onStatusUpdate={handleStatusUpdate}
-                                        />
-                                    );
-                                }
-                            }
-
-                            // Default rendering for delivery orders or other stages
-                            return (
-                                <StageCard 
-                                    key={stage.name} 
-                                    stage={stage} 
-                                    isCompleted={isCompleted}
-                                    isCurrent={isCurrent}
-                                    isFuture={isFuture}
-                                    orderId={order.id}
-                                    showRejectButton={stage.name === 'Pending'}
-                                    onStatusUpdate={handleStatusUpdate}
-                                />
-                            );
-                        })
-                    )}
-                </CardContent>
-           </Card>
+            <AdminOrderDetails order={order} />
            <Card>
             <CardHeader>
               <CardTitle>تفاصيل الفتحات</CardTitle>

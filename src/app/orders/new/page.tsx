@@ -1,7 +1,3 @@
-
-
-'use client';
-
 import { OrderForm } from "@/components/orders/order-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,39 +5,18 @@ import { ArrowRight, Ruler } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
 import type { User, Order } from "@/lib/definitions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ClientDateTime } from "@/components/client-date-time";
 
 const DUMMY_USER_ID = "5"; 
 
-export default function NewOrderPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userOrders, setUserOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState('');
-
-  useEffect(() => {
-    // This will only run on the client, preventing hydration mismatch
-    setCurrentDate(new Date().toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }));
-
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      const user = await getUserById(DUMMY_USER_ID);
-      if (user) {
-        setCurrentUser(user);
-        const orders = await getOrdersByUserId(user.id);
-        setUserOrders(orders);
-      }
-      setIsLoading(false);
-    };
-    fetchUserData();
-  }, []);
+export default async function NewOrderPage() {
+  const currentUser = await getUserById(DUMMY_USER_ID);
+  let userOrders: Order[] = [];
+  if (currentUser) {
+      userOrders = await getOrdersByUserId(currentUser.id);
+  }
 
   const totalApprovedMeters = userOrders
     .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
@@ -69,7 +44,7 @@ export default function NewOrderPage() {
                 <CardHeader className="pb-4">
                     <CardDescription>إجمالي الأمتار المعتمدة حتى الآن</CardDescription>
                     <CardTitle className="text-4xl flex items-center gap-3">
-                    {isLoading ? <Skeleton className="h-10 w-40" /> : `${totalApprovedMeters.toFixed(2)} م²`}
+                    {totalApprovedMeters.toFixed(2)} م²
                     <Ruler className="h-8 w-8 text-primary" />
                     </CardTitle>
                 </CardHeader>
@@ -81,9 +56,8 @@ export default function NewOrderPage() {
             </Card>
 
             <OrderForm 
-              currentUser={currentUser} 
-              isLoading={isLoading} 
-              currentDate={currentDate}
+              currentUser={currentUser}
+              currentDate={<ClientDateTime />}
             />
         </div>
       </main>
