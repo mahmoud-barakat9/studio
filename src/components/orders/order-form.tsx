@@ -45,6 +45,7 @@ import { OpeningsTable } from './openings-table';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
+import { Badge } from '../ui/badge';
 
 
 const openingSchema = z.object({
@@ -484,9 +485,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 <Card>
                     <CardHeader>
                         <div className='flex items-center justify-between'>
-                            <div>
+                            <div className="flex items-center gap-3">
                                 <CardTitle>فتحات الطلب</CardTitle>
-                                <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
+                                {watchedOpenings.length > 0 && <Badge variant="secondary">{watchedOpenings.length}</Badge>}
                             </div>
                             <AddOpeningForm 
                                 onSave={handleAddOpening} 
@@ -495,6 +496,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                                 openingsCount={watchedOpenings.length}
                             />
                         </div>
+                        <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
                     </CardHeader>
                 </Card>
                 {form.formState.errors.openings && (

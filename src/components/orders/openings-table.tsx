@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -59,13 +60,9 @@ function DeleteOpeningAlert({ onDelete }: { onDelete: () => void }) {
 
 export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteOpening }: OpeningsTableProps) {
     
-    const totalOpenings = openings.length;
-    const totalCodeLength = openings.reduce((sum, op) => sum + ((op.codeLength / 100) * op.numberOfCodes), 0);
-    const totalNumberOfCodes = openings.reduce((sum, op) => sum + op.numberOfCodes, 0);
-
     return (
         <div className="w-full">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto border rounded-lg">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -107,20 +104,6 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                         ))}
                     </TableBody>
                 </Table>
-            </div>
-             <div className="mt-4 p-4 bg-muted/50 rounded-lg text-sm font-medium space-y-1">
-                <div className="flex justify-between">
-                    <span>إجمالي الفتحات:</span>
-                    <span>{totalOpenings}</span>
-                </div>
-                 <div className="flex justify-between">
-                    <span>إجمالي طول الشفرات (مجمع):</span>
-                    <span>{totalCodeLength.toFixed(2)} م</span>
-                </div>
-                 <div className="flex justify-between">
-                    <span>إجمالي عدد الشفرات (مجمع):</span>
-                    <span>{totalNumberOfCodes}</span>
-                </div>
             </div>
         </div>
     );
