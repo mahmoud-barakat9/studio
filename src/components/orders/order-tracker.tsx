@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
 import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
     { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
@@ -47,8 +46,7 @@ export function OrderTracker({ order }: { order: Order }) {
   }
 
   return (
-    <TooltipProvider>
-      <div className="flex flex-col md:flex-row items-center justify-between w-full gap-2">
+      <div className="flex items-start justify-between w-full gap-1 md:gap-2">
         {stagesToShow.map((stage, index) => {
           const originalIndex = STAGES.findIndex(s => s.name === stage.name);
           
@@ -57,35 +55,34 @@ export function OrderTracker({ order }: { order: Order }) {
 
           return (
             <React.Fragment key={stage.name}>
-              <div className="flex flex-col md:flex-row items-center gap-2 w-full">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div
-                            className={cn(
-                            'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
-                            isCompleted ? 'bg-primary border-primary text-primary-foreground' : '',
-                            isCurrent ? 'bg-primary/10 border-primary text-primary ring-4 ring-primary/20' : '',
-                            !isCompleted && !isCurrent ? 'bg-muted border-border text-muted-foreground' : ''
-                            )}
-                        >
-                            <stage.icon className="w-5 h-5" />
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{stage.label}</p>
-                    </TooltipContent>
-                </Tooltip>
-                 <div className={cn(
-                    "w-full h-1 mt-2 md:mt-0 md:w-full rounded-full transition-colors duration-300",
-                    isCompleted ? 'bg-primary' : 'bg-border',
-                    index === stagesToShow.length - 1 ? 'hidden md:block' : '',
-                     index === stagesToShow.length - 1 && 'bg-transparent'
-                 )}></div>
+              <div className="flex flex-col items-center gap-2 text-center w-full">
+                  <div
+                      className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
+                      isCompleted ? 'bg-primary border-primary text-primary-foreground' : '',
+                      isCurrent ? 'bg-primary/10 border-primary text-primary ring-4 ring-primary/20' : '',
+                      !isCompleted && !isCurrent ? 'bg-muted border-border text-muted-foreground' : ''
+                      )}
+                  >
+                      <stage.icon className="w-5 h-5" />
+                  </div>
+                  <p className={cn(
+                      'text-xs font-medium',
+                      isCurrent ? 'text-primary' : 'text-muted-foreground'
+                  )}>
+                      {stage.label}
+                  </p>
               </div>
+
+               {index < stagesToShow.length - 1 && (
+                 <div className={cn(
+                    "flex-1 h-0.5 mt-5 rounded-full transition-colors duration-300",
+                    isCompleted ? 'bg-primary' : 'bg-border'
+                 )}></div>
+               )}
             </React.Fragment>
           );
         })}
       </div>
-    </TooltipProvider>
   );
 }
