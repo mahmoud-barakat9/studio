@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, Shield, Home, ListOrdered } from "lucide-react"; // Added ListOrdered
+import { Menu, X, Shield, Home, ListOrdered, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const userLinks = [
-    { href: "/dashboard", label: "إنشاء طلب جديد" },
+    { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
+    { href: "/orders/new", label: "إنشاء طلب" },
     { href: "/orders", label: "طلباتي", icon: ListOrdered },
 ]
 
@@ -48,7 +49,7 @@ export function MainHeader() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary flex items-center gap-2",
-                pathname.startsWith(link.href) ? "text-primary" : "text-muted-foreground"
+                pathname === link.href ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.icon && <link.icon className="h-4 w-4" />}

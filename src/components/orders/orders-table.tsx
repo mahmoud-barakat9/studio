@@ -157,12 +157,10 @@ export function OrdersTable({
   orders,
   users = [],
   isAdmin = false,
-  showViewAction = false,
 }: {
   orders: Order[];
   users?: User[];
   isAdmin?: boolean;
-  showViewAction?: boolean;
 }) {
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.name || "غير معروف";

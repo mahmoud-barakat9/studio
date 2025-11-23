@@ -15,8 +15,7 @@ export function MainFooter() {
   }, []);
 
   const homeUrl = '/dashboard';
-  const dashboardUrl = '/dashboard';
-  const newOrderUrl = '/dashboard'; // Changed from /orders/new
+  const newOrderUrl = '/orders/new'; 
   const myOrdersUrl = '/orders';
 
   return (

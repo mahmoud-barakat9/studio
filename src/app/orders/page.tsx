@@ -31,13 +31,13 @@ export default async function OrdersPage() {
             <div className="flex items-center justify-between">
                 <div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                    {`أهلاً بكِ، ${currentUser?.name || 'User'}!`}
+                    طلباتي
                 </h1>
                 <p className="text-muted-foreground">
                     هنا يمكنك عرض وتتبع جميع طلباتك.
                 </p>
                 </div>
-                 <Link href="/dashboard">
+                 <Link href="/orders/new">
                     <Button>
                         <PlusCircle className="ml-2 h-4 w-4" />
                         إنشاء طلب جديد
@@ -51,7 +51,7 @@ export default async function OrdersPage() {
                     <CardDescription>هنا يمكنك عرض وإدارة جميع طلباتك.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OrdersTable orders={userOrders} showViewAction={true}/>
+                    <OrdersTable orders={userOrders} />
                 </CardContent>
             </Card>
         </div>
