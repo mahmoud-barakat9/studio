@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu-responsive";
-import { OrderTrackingDialog } from "./order-tracking-dialog";
+import { OrderDetailsDialog } from "./order-details-dialog";
 
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
@@ -225,7 +225,7 @@ export function OrdersTable({
                             isAdmin ? (
                               <AdminOrderActions order={order} />
                             ) : (
-                              <OrderTrackingDialog order={order} />
+                              <OrderDetailsDialog order={order} />
                             )
                           ) : null}
                         </div>
