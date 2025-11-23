@@ -1,6 +1,7 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlusCircle, Ruler } from "lucide-react";
+import { ArrowLeft, PlusCircle, Ruler, ClipboardList, CheckCircle2 } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -22,6 +23,9 @@ export default async function DashboardPage() {
   const totalApprovedMeters = userOrders
     .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
     .reduce((sum, order) => sum + order.totalArea, 0);
+
+  const activeOrdersCount = userOrders.filter(order => order.status !== 'Delivered' && order.status !== 'Rejected').length;
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -46,20 +50,39 @@ export default async function DashboardPage() {
                 </Link>
             </div>
 
-            <Card className="mb-8 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-                <CardHeader className="pb-4">
-                    <CardDescription>إجمالي الأمتار المعتمدة حتى الآن</CardDescription>
-                    <CardTitle className="text-4xl flex items-center gap-3">
-                    {totalApprovedMeters.toFixed(2)} م²
-                    <Ruler className="h-8 w-8 text-primary" />
-                    </CardTitle>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
+                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <p className="text-xs text-muted-foreground">
-                        هذا هو مجموع مساحة جميع طلباتك التي تمت الموافقة عليها. واصل العمل الرائع!
-                    </p>
+                  <div className="text-2xl font-bold">{userOrders.length}</div>
+                  <p className="text-xs text-muted-foreground">كل الطلبات التي قمت بإنشائها</p>
                 </CardContent>
-            </Card>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">إجمالي الأمتار المعتمدة</CardTitle>
+                  <Ruler className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalApprovedMeters.toFixed(2)} م²</div>
+                  <p className="text-xs text-muted-foreground">مجموع مساحة طلباتك المكتملة</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">الطلبات النشطة</CardTitle>
+                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{activeOrdersCount}</div>
+                  <p className="text-xs text-muted-foreground">الطلبات قيد التنفيذ حاليًا</p>
+                </CardContent>
+              </Card>
+            </div>
+
 
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
