@@ -120,8 +120,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     redirect('/admin/orders');
   } else {
     revalidatePath('/dashboard');
+    revalidatePath('/orders');
     revalidatePath('/admin/orders'); // also revalidate admin page so they see the new order
-    redirect(`/admin/orders/${newOrder.id}/view`);
+    redirect(`/orders/${newOrder.id}`);
   }
   
   return { success: true };
@@ -185,7 +186,7 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
 export async function deleteOrder(orderId: string) {
   await deleteOrderDB(orderId);
   revalidatePath('/admin/orders');
-  revalidatePath('/dashboard');
+  revalidatePath('/orders');
 }
 
 
@@ -281,5 +282,3 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
-
-    

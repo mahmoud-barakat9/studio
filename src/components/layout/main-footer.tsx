@@ -16,7 +16,8 @@ export function MainFooter() {
 
   const homeUrl = '/dashboard';
   const dashboardUrl = '/dashboard';
-  const newOrderUrl = '/orders/new';
+  const newOrderUrl = '/dashboard'; // Changed from /orders/new
+  const myOrdersUrl = '/orders';
 
   return (
     <footer className="bg-muted text-muted-foreground">
@@ -43,8 +44,8 @@ export function MainFooter() {
             <div>
               <h4 className="font-semibold text-foreground mb-2">روابط سريعة</h4>
               <nav className="flex flex-col gap-1">
-                <Link href={dashboardUrl} className="hover:text-primary">لوحة التحكم</Link>
                 <Link href={newOrderUrl} className="hover:text-primary">طلب جديد</Link>
+                <Link href={myOrdersUrl} className="hover:text-primary">طلباتي</Link>
               </nav>
             </div>
             <div>
