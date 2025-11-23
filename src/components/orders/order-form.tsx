@@ -46,6 +46,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 
 const openingSchema = z.object({
@@ -110,6 +111,33 @@ interface OrderFormProps {
   currentDate?: React.ReactNode;
 }
 
+function FloatingSubmitButton({ isVisible, isPending, totalCost, onClick }: { isVisible: boolean, isPending: boolean, totalCost: number, onClick: () => void }) {
+    if (!isVisible) return null;
+
+    return (
+        <div className="fixed bottom-0 left-0 right-0 z-10 lg:hidden">
+            <div className="bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-lg">
+                <div className="flex items-center justify-between gap-4">
+                     <div>
+                        <span className="text-sm text-muted-foreground">التكلفة الإجمالية</span>
+                        <p className="font-bold text-lg">${totalCost.toFixed(2)}</p>
+                    </div>
+                    <Button
+                        type="button"
+                        onClick={onClick}
+                        disabled={isPending}
+                        size="lg"
+                        className="w-full max-w-xs"
+                    >
+                        {isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                        إرسال الطلب
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, currentDate }: OrderFormProps) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
   
@@ -136,7 +164,36 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [nameState, generateNameAction] = useActionState(generateOrderName, null);
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+  
+  const submitButtonRef = React.useRef<HTMLButtonElement>(null);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+
+  useEffect(() => {
+    if (isDesktop) {
+        setShowFloatingButton(false);
+        return;
+    }
+
+    const observer = new IntersectionObserver(
+        ([entry]) => {
+            setShowFloatingButton(!entry.isIntersecting);
+        },
+        { root: null, rootMargin: "0px", threshold: 0 }
+    );
+
+    const currentRef = submitButtonRef.current;
+    if (currentRef) {
+        observer.observe(currentRef);
+    }
+
+    return () => {
+        if (currentRef) {
+            observer.unobserve(currentRef);
+        }
+    };
+  }, [isDesktop]);
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
@@ -272,142 +329,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
-          
-          {/* Left Side: Summary Card (Sticky) */}
-          <div className="lg:col-span-1 lg:sticky top-4 space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>ملخص الطلب</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="orderName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>اسم الطلب</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              {...field}
-                              placeholder="مثال: 'غرفة معيشة الفيلا'"
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              onClick={handleSuggestName}
-                              disabled={isNamePending}
-                            >
-                              {isNamePending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Wand2 className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">اقتراح اسم</span>
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-              <CardContent>
-                 <Card className="shadow-none">
-                    <CardHeader className="p-4">
-                        <FormField
-                        control={form.control}
-                        name="hasDelivery"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base flex items-center gap-2">
-                                    <Truck className="h-5 w-5"/>
-                                    إضافة خدمة توصيل
-                                    </FormLabel>
-                                    <FormDescription>
-                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                        />
-                    </CardHeader>
-                    {watchHasDelivery && (
-                    <CardContent className="p-4 pt-0">
-                         <FormField
-                            control={form.control}
-                            name="deliveryAddress"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>عنوان التوصيل</FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                    </CardContent>
-                    )}
-                </Card>
-              </CardContent>
-
-              <CardContent>
-                 <Separator className="mb-4" />
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">إجمالي عدد الفتحات</span>
-                    <span className="font-medium">{watchedOpenings.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">المساحة الإجمالية</span>
-                    <span className="font-medium">{totalArea.toFixed(2)} م²</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">تكلفة المنتجات</span>
-                    <span className="font-medium">${productsCost.toFixed(2)}</span>
-                  </div>
-                  <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
-                    <span className="text-muted-foreground">تكلفة التوصيل</span>
-                    <span className="font-medium">${deliveryCost.toFixed(2)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-base">
-                    <span className="text-muted-foreground">التكلفة الإجمالية</span>
-                    <span className="font-bold">${totalCost.toFixed(2)}</span>
-                  </div>
-                </div>
-              </CardContent>
-
-              <CardFooter>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitPending}
-                >
-                  {isSubmitPending && (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  )}
-                  إرسال الطلب
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-
-           {/* Right Side: Form Fields */}
           <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardHeader>
@@ -679,10 +600,147 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   </div>
               )}
             </div>
-            
+          </div>
+          
+          <div className="lg:col-span-1 lg:sticky top-4 space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>ملخص الطلب</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="orderName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>اسم الطلب</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              {...field}
+                              placeholder="مثال: 'غرفة معيشة الفيلا'"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={handleSuggestName}
+                              disabled={isNamePending}
+                            >
+                              {isNamePending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Wand2 className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">اقتراح اسم</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                 <Card className="shadow-none">
+                    <CardHeader className="p-4">
+                        <FormField
+                        control={form.control}
+                        name="hasDelivery"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                    <Truck className="h-5 w-5"/>
+                                    إضافة خدمة توصيل
+                                    </FormLabel>
+                                    <FormDescription>
+                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </CardHeader>
+                    {watchHasDelivery && (
+                    <CardContent className="p-4 pt-0">
+                         <FormField
+                            control={form.control}
+                            name="deliveryAddress"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>عنوان التوصيل</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </CardContent>
+                    )}
+                </Card>
+                 <Separator className="my-4" />
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">إجمالي عدد الفتحات</span>
+                    <span className="font-medium">{watchedOpenings.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">المساحة الإجمالية</span>
+                    <span className="font-medium">{totalArea.toFixed(2)} م²</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">تكلفة المنتجات</span>
+                    <span className="font-medium">${productsCost.toFixed(2)}</span>
+                  </div>
+                  <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
+                    <span className="text-muted-foreground">تكلفة التوصيل</span>
+                    <span className="font-medium">${deliveryCost.toFixed(2)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-semibold text-base">
+                    <span className="text-muted-foreground">التكلفة الإجمالية</span>
+                    <span className="font-bold">${totalCost.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter>
+                <Button
+                  ref={submitButtonRef}
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitPending}
+                >
+                  {isSubmitPending && (
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  )}
+                  إرسال الطلب
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
+         <FloatingSubmitButton 
+            isVisible={showFloatingButton} 
+            isPending={isSubmitPending}
+            totalCost={totalCost}
+            onClick={() => form.handleSubmit(onSubmit)()}
+        />
+        <div className="lg:hidden h-24" /> {/* Spacer for floating button */}
       </form>
     </Form>
   );
 }
+
+    
