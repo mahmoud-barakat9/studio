@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
 import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
     { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
@@ -26,7 +27,6 @@ const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType
 export function OrderTracker({ order }: { order: Order }) {
   const { status: currentStatus, hasDelivery } = order;
   
-  // Choose the correct set of stages based on the delivery option
   const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES.filter(stage => STAGES.some(s => s.name === stage.name));
   
   const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
@@ -46,49 +46,45 @@ export function OrderTracker({ order }: { order: Order }) {
   }
 
   return (
-    <div className="space-y-6">
-      {stagesToShow.map((stage, index) => {
-        const originalIndex = STAGES.findIndex(s => s.name === stage.name);
-        
-        const isCompleted = originalIndex < mainFlowCurrentIndex;
-        const isCurrent = originalIndex === mainFlowCurrentIndex;
+    <TooltipProvider>
+      <div className="flex flex-col md:flex-row items-center justify-between w-full gap-2">
+        {stagesToShow.map((stage, index) => {
+          const originalIndex = STAGES.findIndex(s => s.name === stage.name);
+          
+          const isCompleted = originalIndex < mainFlowCurrentIndex;
+          const isCurrent = originalIndex === mainFlowCurrentIndex;
 
-        return (
-            <div key={stage.name} className="flex items-start gap-4 md:gap-6">
-                 <div className="flex flex-col items-center">
-                    <div
-                        className={cn(
-                        'w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
-                        isCompleted ? 'bg-primary border-primary text-primary-foreground' : '',
-                        isCurrent ? 'bg-primary/10 border-primary text-primary animate-pulse' : '',
-                        !isCompleted && !isCurrent ? 'bg-muted border-border text-muted-foreground' : ''
-                        )}
-                    >
-                        <stage.icon className="w-6 h-6" />
-                    </div>
-                     {index < stagesToShow.length - 1 && (
+          return (
+            <React.Fragment key={stage.name}>
+              <div className="flex flex-col md:flex-row items-center gap-2 w-full">
+                <Tooltip>
+                    <TooltipTrigger asChild>
                         <div
                             className={cn(
-                            'w-0.5 h-12 mt-2 transition-colors duration-300',
-                            isCompleted ? 'bg-primary' : 'bg-border'
+                            'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
+                            isCompleted ? 'bg-primary border-primary text-primary-foreground' : '',
+                            isCurrent ? 'bg-primary/10 border-primary text-primary ring-4 ring-primary/20' : '',
+                            !isCompleted && !isCurrent ? 'bg-muted border-border text-muted-foreground' : ''
                             )}
-                        />
-                    )}
-                 </div>
-
-                 <div className={cn("pt-2 w-full", isCurrent ? "opacity-100" : "opacity-70")}>
-                    <h3 className={cn("text-lg font-semibold", isCompleted && "text-primary", isCurrent && "text-primary")}>
-                        {stage.label}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                        {isCompleted && "اكتملت هذه المرحلة."}
-                        {isCurrent && "طلبك في هذه المرحلة حاليًا."}
-                        {!isCompleted && !isCurrent && "مرحلة قادمة."}
-                    </p>
-                 </div>
-            </div>
-        );
-      })}
-    </div>
+                        >
+                            <stage.icon className="w-5 h-5" />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{stage.label}</p>
+                    </TooltipContent>
+                </Tooltip>
+                 <div className={cn(
+                    "w-full h-1 mt-2 md:mt-0 md:w-full rounded-full transition-colors duration-300",
+                    isCompleted ? 'bg-primary' : 'bg-border',
+                    index === stagesToShow.length - 1 ? 'hidden md:block' : '',
+                     index === stagesToShow.length - 1 && 'bg-transparent'
+                 )}></div>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }

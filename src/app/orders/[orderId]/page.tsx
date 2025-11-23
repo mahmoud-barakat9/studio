@@ -84,7 +84,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                         <CardHeader>
                             <CardTitle>مراحل تتبع الطلب</CardTitle>
                         </CardHeader>
-                        <CardContent className="pr-6 pt-4">
+                        <CardContent>
                              <OrderTracker order={order} />
                         </CardContent>
                     </Card>
