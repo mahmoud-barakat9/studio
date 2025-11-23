@@ -589,12 +589,13 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                           onUpdateOpening={handleUpdateOpening}
                           onDeleteOpening={handleDeleteOpening}
                       />
-                       <div className="flex justify-start px-4">
+                       <div className="flex justify-center pt-2">
                            <AddOpeningForm 
                                 onSave={handleAddOpening} 
                                 bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
                                 isDisabled={!isPrimaryInfoSelected}
                                 openingsCount={watchedOpenings.length}
+                                variant="secondary"
                             />
                        </div>
                   </div>
@@ -742,5 +743,3 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     </Form>
   );
 }
-
-    

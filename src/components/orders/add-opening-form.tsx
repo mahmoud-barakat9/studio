@@ -36,6 +36,7 @@ import {
     TooltipTrigger,
   } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
+import { VariantProps, cva } from 'class-variance-authority';
 
 const openingSchema = z.object({
     method: z.enum(['direct', 'measure']),
@@ -62,7 +63,23 @@ const openingSchema = z.object({
 
 type OpeningFormValues = z.infer<typeof openingSchema>;
 
-interface AddOpeningFormProps {
+
+const addOpeningButtonVariants = cva(
+    '',
+    {
+      variants: {
+        variant: {
+          default: "outline",
+          secondary: "secondary",
+        },
+      },
+      defaultVariants: {
+        variant: "default",
+      },
+    }
+  )
+
+interface AddOpeningFormProps extends VariantProps<typeof addOpeningButtonVariants> {
     onSave: (opening: Omit<Opening, 'serial'>) => void;
     bladeWidth: number;
     isDisabled: boolean;
@@ -71,7 +88,7 @@ interface AddOpeningFormProps {
     isEditing?: boolean;
 }
 
-export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, openingToEdit, isEditing = false }: AddOpeningFormProps) {
+export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, openingToEdit, isEditing = false, variant }: AddOpeningFormProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
     const form = useForm<OpeningFormValues>({
@@ -163,8 +180,17 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
     const processSubmit = (data: OpeningFormValues) => {
         let finalOpeningData: Omit<Opening, 'serial' | 'abjourType'>;
-        const currentCodeLength = (data.width || 0) - 3.5;
-        const currentNumberOfCodes = (bladeWidth > 0 && data.height && data.height > 0) ? Math.ceil(((data.height || 0) + 10) / bladeWidth) : 0;
+        
+        let currentCodeLength: number;
+        let currentNumberOfCodes: number;
+        
+        if (data.method === 'measure') {
+            currentCodeLength = (data.width || 0) - 3.5;
+            currentNumberOfCodes = (bladeWidth > 0 && data.height && data.height > 0) ? Math.ceil(((data.height || 0) + 10) / bladeWidth) : 0;
+        } else {
+            currentCodeLength = data.codeLength || 0;
+            currentNumberOfCodes = data.numberOfCodes || 0;
+        }
 
 
         if (data.method === 'measure' && currentCodeLength > 0 && currentNumberOfCodes > 0) {
@@ -224,7 +250,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
             <span className="sr-only">تعديل</span>
         </Button>
     ) : (
-         <Button type="button" variant="outline" disabled={isDisabled}>
+         <Button type="button" variant={addOpeningButtonVariants({ variant })} disabled={isDisabled}>
             <PlusCircle className="w-4 h-4 ml-2" />
             أضف فتحة جديدة
         </Button>
@@ -304,8 +330,9 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                                         <FormLabel>عرض الفتحة</FormLabel>
                                                         <FormControl>
                                                             <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
-                                                                field.onChange(e.target.valueAsNumber);
-                                                                const newCodeLength = e.target.valueAsNumber - 3.5;
+                                                                const value = e.target.valueAsNumber;
+                                                                field.onChange(value);
+                                                                const newCodeLength = value > 0 ? value - 3.5 : 0;
                                                                 form.setValue('codeLength', newCodeLength > 0 ? parseFloat(newCodeLength.toFixed(2)) : undefined);
                                                             }}/>
                                                         </FormControl>
@@ -321,8 +348,9 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                                         <FormLabel>ارتفاع الفتحة</FormLabel>
                                                         <FormControl>
                                                             <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
-                                                                field.onChange(e.target.valueAsNumber);
-                                                                const newNumberOfCodes = (bladeWidth > 0 && e.target.valueAsNumber > 0) ? Math.ceil((e.target.valueAsNumber + 10) / bladeWidth) : 0;
+                                                                const value = e.target.valueAsNumber;
+                                                                field.onChange(value);
+                                                                const newNumberOfCodes = (bladeWidth > 0 && value > 0) ? Math.ceil((value + 10) / bladeWidth) : 0;
                                                                 form.setValue('numberOfCodes', newNumberOfCodes > 0 ? newNumberOfCodes : undefined);
                                                             }}/>
                                                         </FormControl>
@@ -415,16 +443,23 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t sm:flex-row sm:justify-end">
-                            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-                                {!isEditing && (
-                                    <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
-                                        إضافة والمتابعة
+                        <DialogFooter className="gap-2 pt-4 border-t">
+                             <div className="flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">
+                                <div>
+                                    {!isEditing && (
+                                        <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
+                                            إضافة والمتابعة
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                                        إلغاء
                                     </Button>
-                                )}
-                                <Button type="button" onClick={handleSaveAndClose}>
-                                    {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
-                                </Button>
+                                    <Button type="button" onClick={handleSaveAndClose}>
+                                        {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
+                                    </Button>
+                                </div>
                             </div>
                         </DialogFooter>
                     </form>
