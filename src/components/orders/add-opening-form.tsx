@@ -394,17 +394,19 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 sm:justify-start pt-4 border-t flex-col-reverse sm:flex-row">
+                        <DialogFooter className="gap-2 pt-4 border-t flex-row justify-between sm:justify-start">
+                             <div className="flex gap-2 justify-start">
+                                <Button type="button" onClick={handleSaveAndClose}>
+                                    {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
+                                </Button>
+                                {!isEditing && (
+                                    <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
+                                        إضافة والمتابعة
+                                    </Button>
+                                )}
+                            </div>
                             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
                                 إلغاء
-                            </Button>
-                            {!isEditing && (
-                                <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
-                                    إضافة والمتابعة
-                                </Button>
-                            )}
-                             <Button type="button" onClick={handleSaveAndClose}>
-                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -413,5 +415,3 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
         </Dialog>
     );
 }
-
-    
