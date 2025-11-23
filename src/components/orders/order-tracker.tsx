@@ -1,4 +1,3 @@
-
 'use client';
 
 import { cn } from '@/lib/utils';
@@ -30,7 +29,7 @@ export function OrderTracker({ order }: { order: Order }) {
   // Choose the correct set of stages based on the delivery option
   const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES.filter(stage => STAGES.some(s => s.name === stage.name));
   
-  const currentStatusIndex = stagesToShow.findIndex(s => s.name === currentStatus);
+  const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
 
   if (currentStatus === 'Rejected') {
     return (
@@ -50,7 +49,6 @@ export function OrderTracker({ order }: { order: Order }) {
     <div className="space-y-8">
       {stagesToShow.map((stage, index) => {
         const originalIndex = STAGES.findIndex(s => s.name === stage.name);
-        const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
         
         const isCompleted = originalIndex < mainFlowCurrentIndex;
         const isCurrent = originalIndex === mainFlowCurrentIndex;

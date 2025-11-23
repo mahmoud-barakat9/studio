@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -27,7 +26,7 @@ export function OrderTrackingDialog({ order }: OrderTrackingDialogProps) {
             <span className="sr-only">عرض الطلب</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>تتبع الطلب: {order.orderName}</DialogTitle>
           <DialogDescription>
