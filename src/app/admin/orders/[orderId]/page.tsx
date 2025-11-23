@@ -1,5 +1,6 @@
 
 
+'use client';
 import { getOrderById, getUsers } from "@/lib/firebase-actions";
 import {
   Card,
@@ -20,12 +21,51 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileText, Truck } from "lucide-react";
-import type { OrderStatus, Order, User } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function AdminOrderDetailPage({ params }: { params: { orderId: string } }) {
-  const order = await getOrderById(params.orderId);
-  const users = await getUsers();
+export default function AdminOrderDetailPage() {
+    const params = useParams();
+    const orderId = params.orderId as string;
+    const [order, setOrder] = useState<Order | null | undefined>(undefined);
+    const [users, setUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            if (!orderId) return;
+            const orderData = await getOrderById(orderId);
+            const usersData = await getUsers();
+            setOrder(orderData);
+            setUsers(usersData);
+        }
+        fetchData();
+    }, [orderId]);
+
+  if (order === undefined) {
+      return (
+          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+              <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="h-8 w-1/4" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-24" />
+                  </div>
+              </div>
+              <div className="flex flex-col lg:flex-row gap-8">
+                  <div className="flex-grow">
+                      <Skeleton className="h-96 w-full" />
+                  </div>
+                  <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-8">
+                      <Skeleton className="h-48 w-full" />
+                      <Skeleton className="h-32 w-full" />
+                  </div>
+              </div>
+          </main>
+      )
+  }
 
   if (!order) {
     return (

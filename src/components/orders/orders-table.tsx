@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder } from "@/lib/actions";
@@ -220,14 +220,20 @@ export function OrdersTable({
                       ${finalTotalCost.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-left">
-                       <div className="flex items-center gap-2">
-                          {(isAdmin || showViewAction) ? (
-                            isAdmin ? (
-                              <AdminOrderActions order={order} />
-                            ) : (
+                       <div className="flex items-center gap-1">
+                          {isAdmin ? (
+                             <AdminOrderActions order={order} />
+                          ) : (
+                            <>
                               <OrderDetailsDialog order={order} />
-                            )
-                          ) : null}
+                              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                                <Link href={`/admin/orders/${order.id}`}>
+                                  <FileText className="h-4 w-4" />
+                                  <span className="sr-only">عرض التفاصيل الكاملة</span>
+                                </Link>
+                              </Button>
+                            </>
+                          )}
                         </div>
                     </TableCell>
                   </TableRow>

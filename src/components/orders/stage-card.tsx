@@ -5,7 +5,7 @@
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2, Home } from "lucide-react";
 import { updateOrderStatus } from "@/lib/actions";
 import type { OrderStatus } from "@/lib/definitions";
 import React, { useTransition } from "react";
@@ -17,6 +17,7 @@ const icons = {
     Truck,
     PackageCheck,
     CheckCircle2,
+    Home,
 }
 export type StageIconName = keyof typeof icons;
 
