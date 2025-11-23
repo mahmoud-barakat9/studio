@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -33,7 +34,7 @@ export function OrderTrackingDialog({ order }: OrderTrackingDialogProps) {
             رقم الطلب: {order.id}
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-4 max-h-[70vh] overflow-y-auto pr-6">
             <OrderTracker order={order} />
         </div>
       </DialogContent>
