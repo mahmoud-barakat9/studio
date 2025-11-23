@@ -26,7 +26,6 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { PlusCircle, Pencil } from 'lucide-react';
 import type { Opening } from '@/lib/definitions';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Textarea } from '../ui/textarea';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +35,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
   } from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils';
 
 const openingSchema = z.object({
     method: z.enum(['direct', 'measure']),
@@ -120,12 +120,11 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     const watchHeight = useWatch({ control: form.control, name: 'height'});
     const watchHasAccessories = useWatch({ control: form.control, name: 'hasAccessories' });
     
-    // --- Calculations for 'measure' method ---
     const finalWidth = (watchWidth || 0) - 3.5;
     const calculatedCodeLength = finalWidth > 0 ? finalWidth : 0;
     
     const finalHeight = (watchHeight || 0) + 10;
-    const calculatedNumberOfCodes = (bladeWidth > 0 && finalHeight > 0) ? Math.ceil(finalHeight / bladeWidth) : 0;
+    const calculatedNumberOfCodes = (bladeWidth > 0 && watchHeight && watchHeight > 0) ? Math.ceil(finalHeight / bladeWidth) : 0;
     
     const channelLength = (watchHeight || 0) > 0 ? ((watchHeight || 0) + 5) * 2 : 0;
 
@@ -259,28 +258,22 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                     <FormItem className="space-y-3">
                                         <FormLabel>الخطوة 1: اختر طريقة الإدخال</FormLabel>
                                         <FormControl>
-                                            <RadioGroup
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                className="grid grid-cols-2 gap-4"
-                                            >
-                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                    <FormControl>
-                                                        <RadioGroupItem value="direct" id="direct" />
-                                                    </FormControl>
-                                                    <FormLabel htmlFor="direct" className="font-normal">
-                                                        مباشرة (طول وعدد)
-                                                    </FormLabel>
-                                                </FormItem>
-                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                    <FormControl>
-                                                        <RadioGroupItem value="measure" id="measure" />
-                                                    </FormControl>
-                                                    <FormLabel htmlFor="measure" className="font-normal">
-                                                        قياس (عرض × ارتفاع)
-                                                    </FormLabel>
-                                                </FormItem>
-                                            </RadioGroup>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant={field.value === 'direct' ? 'default' : 'outline'}
+                                                    onClick={() => field.onChange('direct')}
+                                                >
+                                                    مباشرة (طول وعدد)
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant={field.value === 'measure' ? 'default' : 'outline'}
+                                                    onClick={() => field.onChange('measure')}
+                                                >
+                                                    قياس (عرض × ارتفاع)
+                                                </Button>
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -321,7 +314,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                             />
                                              <div className="col-span-2 p-3 bg-muted/50 rounded-md text-sm space-y-2">
                                                 <div className="flex justify-between font-bold"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{calculatedCodeLength.toFixed(2)} سم</span></div>
-                                                <div className="flex justify-between font-bold"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes}</span></div>
+                                                <div className="flex justify-between font-bold"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes > 0 ? calculatedNumberOfCodes : '-'}</span></div>
                                             </div>
                                         </div>
                                      )}
@@ -404,11 +397,11 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t sm:justify-between flex-col-reverse sm:flex-row">
+                        <DialogFooter className="gap-2 pt-4 border-t flex-col-reverse sm:flex-row sm:justify-between">
                             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
                                 إلغاء
                             </Button>
-                             <div className="flex gap-2 justify-end">
+                             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
                                 {!isEditing && (
                                     <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
                                         إضافة والمتابعة
