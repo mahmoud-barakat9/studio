@@ -61,7 +61,7 @@ export function Dashboard({ currentUser, userOrders }: DashboardProps) {
   }, [viewOrderId, userOrders, activeTab, handleTabChange]);
 
 
-  const handleAllOrdersClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleAllOrdersClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     handleTabChange('all-orders');
   }
@@ -114,11 +114,9 @@ export function Dashboard({ currentUser, userOrders }: DashboardProps) {
                     </CardHeader>
                     <CardContent>
                        <p>الرجاء تحديد طلب لعرض تفاصيله.</p>
-                       <a href="#all-orders-tab" onClick={handleAllOrdersClick}>
-                           <Button variant="link" className="p-0 mt-2">
-                                العودة إلى كل الطلبات
-                           </Button>
-                       </a>
+                       <Button variant="link" className="p-0 mt-2" onClick={handleAllOrdersClick}>
+                            العودة إلى كل الطلبات
+                       </Button>
                     </CardContent>
                 </Card>
             )}
