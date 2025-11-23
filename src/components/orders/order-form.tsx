@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, Truck, PlusCircle } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -46,7 +46,6 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 const openingSchema = z.object({
@@ -272,7 +271,143 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          
+          {/* Left Side: Summary Card (Sticky) */}
+          <div className="lg:col-span-1 lg:sticky top-4 space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>ملخص الطلب</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="orderName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>اسم الطلب</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              {...field}
+                              placeholder="مثال: 'غرفة معيشة الفيلا'"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={handleSuggestName}
+                              disabled={isNamePending}
+                            >
+                              {isNamePending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Wand2 className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">اقتراح اسم</span>
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+              <CardContent>
+                 <Card className="shadow-none">
+                    <CardHeader className="p-4">
+                        <FormField
+                        control={form.control}
+                        name="hasDelivery"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                    <Truck className="h-5 w-5"/>
+                                    إضافة خدمة توصيل
+                                    </FormLabel>
+                                    <FormDescription>
+                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </CardHeader>
+                    {watchHasDelivery && (
+                    <CardContent className="p-4 pt-0">
+                         <FormField
+                            control={form.control}
+                            name="deliveryAddress"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>عنوان التوصيل</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </CardContent>
+                    )}
+                </Card>
+              </CardContent>
+
+              <CardContent>
+                 <Separator className="mb-4" />
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">إجمالي عدد الفتحات</span>
+                    <span className="font-medium">{watchedOpenings.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">المساحة الإجمالية</span>
+                    <span className="font-medium">{totalArea.toFixed(2)} م²</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">تكلفة المنتجات</span>
+                    <span className="font-medium">${productsCost.toFixed(2)}</span>
+                  </div>
+                  <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
+                    <span className="text-muted-foreground">تكلفة التوصيل</span>
+                    <span className="font-medium">${deliveryCost.toFixed(2)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-semibold text-base">
+                    <span className="text-muted-foreground">التكلفة الإجمالية</span>
+                    <span className="font-bold">${totalCost.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitPending}
+                >
+                  {isSubmitPending && (
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  )}
+                  إرسال الطلب
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+
+           {/* Right Side: Form Fields */}
           <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardHeader>
@@ -500,17 +635,14 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   {watchedOpenings.length === 0 && (
                       <CardContent>
                           <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
-                            {!isPrimaryInfoSelected ? (
-                                <>
-                                  <h3 className="text-lg font-medium text-muted-foreground">خطوة أولى</h3>
-                                  <p className="text-sm text-muted-foreground mb-4">الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً.</p>
-                                </>
-                            ) : (
-                                <>
-                                  <h3 className="text-lg font-medium text-muted-foreground">أنت جاهز الآن!</h3>
-                                  <p className="text-sm text-muted-foreground mb-4">انقر أدناه لإضافة أول فتحة لطلبك.</p>
-                                </>
-                            )}
+                            <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                               {isPrimaryInfoSelected ? "أنت جاهز الآن!" : "خطوة أولى"}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                {isPrimaryInfoSelected 
+                                    ? "انقر أدناه لإضافة أول فتحة لطلبك." 
+                                    : "الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً."}
+                            </p>
                             <AddOpeningForm 
                                 onSave={handleAddOpening} 
                                 bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
@@ -548,136 +680,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
               )}
             </div>
             
-          </div>
-
-          <div className="lg:col-span-1 space-y-8 sticky top-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>ملخص الطلب</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="orderName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>اسم الطلب</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              {...field}
-                              placeholder="مثال: 'غرفة معيشة الفيلا'"
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              onClick={handleSuggestName}
-                              disabled={isNamePending}
-                            >
-                              {isNamePending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Wand2 className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">اقتراح اسم</span>
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Card>
-                    <CardHeader className="p-4">
-                        <FormField
-                        control={form.control}
-                        name="hasDelivery"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base flex items-center gap-2">
-                                    <Truck className="h-5 w-5"/>
-                                    إضافة خدمة توصيل
-                                    </FormLabel>
-                                    <FormDescription>
-                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                        />
-                    </CardHeader>
-                    {watchHasDelivery && (
-                    <CardContent className="p-4 pt-0">
-                         <FormField
-                            control={form.control}
-                            name="deliveryAddress"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>عنوان التوصيل</FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                    </CardContent>
-                    )}
-                </Card>
-
-
-                <Separator />
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">إجمالي عدد الفتحات</span>
-                    <span className="font-medium">{watchedOpenings.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">المساحة الإجمالية</span>
-                    <span className="font-medium">{totalArea.toFixed(2)} م²</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">تكلفة المنتجات</span>
-                    <span className="font-medium">${productsCost.toFixed(2)}</span>
-                  </div>
-                  <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
-                    <span className="text-muted-foreground">تكلفة التوصيل</span>
-                    <span className="font-medium">${deliveryCost.toFixed(2)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-base">
-                    <span className="text-muted-foreground">التكلفة الإجمالية</span>
-                    <span className="font-bold">${totalCost.toFixed(2)}</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitPending}
-                >
-                  {isSubmitPending && (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  )}
-                  إرسال الطلب
-                </Button>
-              </CardFooter>
-            </Card>
           </div>
         </div>
       </form>
