@@ -31,6 +31,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu-responsive";
+import { OrderTrackingDialog } from "./order-tracking-dialog";
+
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -122,6 +124,12 @@ function AdminOrderActions({ order }: { order: Order }) {
                 تعديل
               </Link>
             </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href={`/admin/orders/${order.id}`}>
+                 <Eye className="ml-2 h-4 w-4" />
+                عرض التفاصيل
+              </Link>
+            </DropdownMenuItem>
             <form action={archiveOrder.bind(null, order.id)} className="w-full">
                <DropdownMenuItem asChild>
                  <button type="submit" className="w-full">
@@ -160,13 +168,6 @@ export function OrdersTable({
     return users.find((u) => u.id === userId)?.name || "غير معروف";
   };
   
-  const getViewLink = (orderId: string) => {
-    if (isAdmin) {
-      return `/admin/orders/${orderId}`;
-    }
-    return `/dashboard?view_order=${orderId}`;
-  };
-
   if (orders.length === 0) {
     return (
         <Card>
@@ -220,15 +221,13 @@ export function OrdersTable({
                     </TableCell>
                     <TableCell className="text-left">
                        <div className="flex items-center gap-2">
-                          {(isAdmin || showViewAction) && (
-                          <Link href={getViewLink(order.id)} scroll={false}>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">عرض الطلب</span>
-                              </Button>
-                          </Link>
-                          )}
-                          {isAdmin && <AdminOrderActions order={order} />}
+                          {(isAdmin || showViewAction) ? (
+                            isAdmin ? (
+                              <AdminOrderActions order={order} />
+                            ) : (
+                              <OrderTrackingDialog order={order} />
+                            )
+                          ) : null}
                         </div>
                     </TableCell>
                   </TableRow>
