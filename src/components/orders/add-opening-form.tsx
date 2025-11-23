@@ -241,7 +241,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
             <DialogTrigger asChild>
                  {isEditing ? triggerButton : dialogTrigger}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-xl">
                  <Form {...form}>
                     <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                         <DialogHeader>
@@ -252,34 +252,32 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                         </DialogHeader>
                         <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
                             {/* Step 1: Input Method */}
-                            <FormField
+                             <FormField
                                 control={form.control}
                                 name="method"
                                 render={({ field }) => (
-                                    <FormItem className="space-y-2">
+                                    <FormItem className="space-y-3">
                                         <FormLabel>الخطوة 1: اختر طريقة الإدخال</FormLabel>
                                         <FormControl>
                                             <RadioGroup
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
-                                                className="grid grid-cols-2 gap-2"
+                                                className="grid grid-cols-2 gap-4"
                                             >
-                                                <FormItem>
+                                                <FormItem className="flex items-center space-x-2 space-y-0">
                                                     <FormControl>
-                                                        <RadioGroupItem value="direct" id="direct" className="sr-only" />
+                                                        <RadioGroupItem value="direct" id="direct" />
                                                     </FormControl>
-                                                    <FormLabel htmlFor="direct" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-sm hover:bg-accent hover:text-accent-foreground ${field.value === 'direct' ? 'border-primary' : ''}`}>
-                                                        مباشرة
-                                                        <span className="text-xs text-muted-foreground mt-1 hidden sm:inline">طول وعدد</span>
+                                                    <FormLabel htmlFor="direct" className="font-normal">
+                                                        مباشرة (طول وعدد)
                                                     </FormLabel>
                                                 </FormItem>
-                                                <FormItem>
+                                                <FormItem className="flex items-center space-x-2 space-y-0">
                                                     <FormControl>
-                                                        <RadioGroupItem value="measure" id="measure" className="sr-only"/>
+                                                        <RadioGroupItem value="measure" id="measure" />
                                                     </FormControl>
-                                                    <FormLabel htmlFor="measure" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-sm hover:bg-accent hover:text-accent-foreground ${field.value === 'measure' ? 'border-primary' : ''}`}>
-                                                        قياس
-                                                        <span className="text-xs text-muted-foreground mt-1 hidden sm:inline">عرض × ارتفاع</span>
+                                                    <FormLabel htmlFor="measure" className="font-normal">
+                                                        قياس (عرض × ارتفاع)
                                                     </FormLabel>
                                                 </FormItem>
                                             </RadioGroup>
@@ -292,59 +290,71 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                             {/* Step 2: Input Fields */}
                              <div>
                                 <FormLabel>الخطوة 2: أدخل الأبعاد (بالسنتيمتر)</FormLabel>
-                                <div className="p-4 border rounded-lg mt-2 grid grid-cols-2 gap-4">
-                                     <FormField
-                                        control={form.control}
-                                        name="width"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>عرض الفتحة</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod !== 'measure'} placeholder="للقياس فقط" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="height"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>ارتفاع الفتحة</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod !== 'measure'} placeholder="للقياس فقط" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name="codeLength"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>طول الشفرة</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod === 'measure'} placeholder={watchMethod === 'measure' ? 'محسوب' : ''}/>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="numberOfCodes"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>عدد الشفرات</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" {...field} value={field.value ?? ''} disabled={watchMethod === 'measure'} placeholder={watchMethod === 'measure' ? 'محسوب' : ''} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                <div className="p-4 border rounded-lg mt-2">
+                                     {watchMethod === 'measure' && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="width"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>عرض الفتحة</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="height"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>ارتفاع الفتحة</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                             <div className="col-span-2 p-3 bg-muted/50 rounded-md text-sm space-y-2">
+                                                <div className="flex justify-between font-bold"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{calculatedCodeLength.toFixed(2)} سم</span></div>
+                                                <div className="flex justify-between font-bold"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes}</span></div>
+                                            </div>
+                                        </div>
+                                     )}
+                                     {watchMethod === 'direct' && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                             <FormField
+                                                control={form.control}
+                                                name="codeLength"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>طول الشفرة</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="numberOfCodes"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>عدد الشفرات</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} value={field.value ?? ''} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                     )}
                                 </div>
                             </div>
 
@@ -394,20 +404,20 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t flex-row justify-between sm:justify-start">
-                             <div className="flex gap-2 justify-start">
-                                <Button type="button" onClick={handleSaveAndClose}>
-                                    {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
-                                </Button>
+                        <DialogFooter className="gap-2 pt-4 border-t sm:justify-between flex-col-reverse sm:flex-row">
+                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                                إلغاء
+                            </Button>
+                             <div className="flex gap-2 justify-end">
                                 {!isEditing && (
                                     <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
                                         إضافة والمتابعة
                                     </Button>
                                 )}
+                                <Button type="button" onClick={handleSaveAndClose}>
+                                    {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
+                                </Button>
                             </div>
-                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-                                إلغاء
-                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>
