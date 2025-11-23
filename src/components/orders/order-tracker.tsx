@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
 import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home } from 'lucide-react';
