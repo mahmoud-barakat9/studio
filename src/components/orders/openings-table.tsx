@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, ChevronDown, Pencil } from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
 import type { Opening } from "@/lib/definitions";
 import { Badge } from "../ui/badge";
 import { AddOpeningForm } from "./add-opening-form";
@@ -103,21 +103,17 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                     <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
                                     <TableCell className="text-left">
                                         <div className="flex gap-2 justify-end">
-                                            <div className="hidden md:flex">
-                                                <AddOpeningForm
-                                                        isEditing={true}
-                                                        openingToEdit={opening}
-                                                        onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
-                                                        bladeWidth={bladeWidth}
-                                                        isDisabled={false}
-                                                        openingsCount={0}
-                                                    />
-                                            </div>
-                                            <div className="hidden md:flex">
-                                                <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
-                                            </div>
+                                            <AddOpeningForm
+                                                isEditing={true}
+                                                openingToEdit={opening}
+                                                onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
+                                                bladeWidth={bladeWidth}
+                                                isDisabled={false}
+                                                openingsCount={0}
+                                            />
+                                            <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
                                             <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent md:hidden">
                                                     <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
                                                      <span className="sr-only">عرض التفاصيل</span>
                                                 </Button>
@@ -126,10 +122,10 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                     </TableCell>
                                 </TableRow>
                                 <CollapsibleContent asChild>
-                                   <tr className="bg-muted/50">
+                                   <tr className="bg-muted/50 md:hidden">
                                         <TableCell colSpan={6} className="p-0">
                                             <div className="p-4 space-y-4">
-                                                <div className="md:hidden">
+                                                <div>
                                                     <h4 className="font-semibold text-sm mb-1">الإضافات</h4>
                                                     <div className="flex flex-wrap gap-1">
                                                         {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
@@ -140,17 +136,6 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                                 <div>
                                                     <h4 className="font-semibold text-sm mb-1">الملاحظات</h4>
                                                     <p className="text-sm text-muted-foreground">{opening.notes || 'لا توجد ملاحظات.'}</p>
-                                                </div>
-                                                <div className="flex gap-2 pt-2 border-t border-border">
-                                                     <AddOpeningForm
-                                                        isEditing={true}
-                                                        openingToEdit={opening}
-                                                        onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
-                                                        bladeWidth={bladeWidth}
-                                                        isDisabled={false}
-                                                        openingsCount={0}
-                                                    />
-                                                    <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} size="default"/>
                                                 </div>
                                             </div>
                                         </TableCell>

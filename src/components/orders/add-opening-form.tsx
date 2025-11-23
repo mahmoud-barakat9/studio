@@ -35,7 +35,6 @@ import {
     TooltipProvider,
     TooltipTrigger,
   } from "@/components/ui/tooltip";
-import { cn } from '@/lib/utils';
 import { VariantProps, cva } from 'class-variance-authority';
 
 const openingSchema = z.object({
@@ -86,8 +85,6 @@ interface AddOpeningFormProps extends VariantProps<typeof addOpeningButtonVarian
     openingsCount: number;
     openingToEdit?: Opening | null;
     isEditing?: boolean;
-    asChild?: boolean;
-    children?: React.ReactNode;
 }
 
 export function AddOpeningForm({ 
@@ -97,9 +94,7 @@ export function AddOpeningForm({
     openingsCount, 
     openingToEdit, 
     isEditing = false, 
-    variant,
-    asChild,
-    children
+    variant
 }: AddOpeningFormProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
@@ -145,17 +140,12 @@ export function AddOpeningForm({
 
 
     const watchMethod = useWatch({ control: form.control, name: 'method'});
-    const watchWidth = useWatch({ control: form.control, name: 'width'});
-    const watchHeight = useWatch({ control: form.control, name: 'height'});
     const watchHasAccessories = useWatch({ control: form.control, name: 'hasAccessories' });
     
-    const finalWidth = (watchWidth || 0) - 3.5;
-    const calculatedCodeLength = finalWidth > 0 ? finalWidth : 0;
     
-    const finalHeight = (watchHeight || 0) + 10;
-    const calculatedNumberOfCodes = (bladeWidth > 0 && watchHeight && watchHeight > 0) ? Math.ceil(finalHeight / bladeWidth) : 0;
+    const finalHeight = (form.getValues('height') || 0) + 10;
     
-    const channelLength = (watchHeight || 0) > 0 ? ((watchHeight || 0) + 5) * 2 : 0;
+    const channelLength = (form.getValues('height') || 0) > 0 ? ((form.getValues('height') || 0) + 5) * 2 : 0;
 
      useEffect(() => {
         if (watchMethod === 'measure') {
@@ -248,39 +238,47 @@ export function AddOpeningForm({
         })();
     }
 
-
-    const triggerButton = children ? children : isEditing ? (
-        <Button size="icon" variant="outline" className="h-8 w-8">
+    const triggerContent = isEditing ? (
+        <>
             <Pencil className="h-4 w-4" />
             <span className="sr-only">تعديل</span>
-        </Button>
+        </>
     ) : (
-         <Button type="button" variant={addOpeningButtonVariants({ variant })} disabled={isDisabled}>
+        <>
             <PlusCircle className="w-4 h-4 ml-2" />
-            أضف فتحة جديدة
-        </Button>
+            {openingsCount > 0 ? 'أضف فتحة أخرى' : 'أضف فتحة جديدة'}
+        </>
     );
 
-    const dialogTrigger = isDisabled ? (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <span tabIndex={0}>{triggerButton}</span>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>الرجاء اختيار نوع الأباجور واللون أولاً.</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    ) : (
-        triggerButton
+    const triggerButton = (
+        <Button 
+            type="button" 
+            variant={isEditing ? 'outline' : addOpeningButtonVariants({ variant })} 
+            size={isEditing ? 'icon' : 'default'}
+            className={isEditing ? 'h-8 w-8' : ''}
+            disabled={isDisabled}
+        >
+            {triggerContent}
+        </Button>
     );
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild={asChild || isEditing}>
-                 {dialogTrigger}
-            </DialogTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
+                             {isDisabled ? <span tabIndex={0}>{triggerButton}</span> : triggerButton}
+                        </DialogTrigger>
+                    </TooltipTrigger>
+                     {isDisabled && (
+                        <TooltipContent>
+                            <p>الرجاء اختيار نوع الأباجور واللون أولاً.</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TooltipProvider>
+
             <DialogContent className="sm:max-w-xl">
                  <Form {...form}>
                     <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
@@ -448,18 +446,20 @@ export function AddOpeningForm({
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t flex-row justify-end">
-                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                        <DialogFooter className="gap-2 pt-4 border-t sm:justify-between w-full flex-row">
+                             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
                                 إلغاء
                             </Button>
-                            {!isEditing && (
-                                <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
-                                    إضافة والمتابعة
+                            <div className="flex gap-2 justify-end">
+                                {!isEditing && (
+                                    <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
+                                        إضافة والمتابعة
+                                    </Button>
+                                )}
+                                <Button type="button" onClick={handleSaveAndClose}>
+                                    {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
                                 </Button>
-                            )}
-                             <Button type="button" onClick={handleSaveAndClose}>
-                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
-                            </Button>
+                            </div>
                         </DialogFooter>
                     </form>
                 </Form>
