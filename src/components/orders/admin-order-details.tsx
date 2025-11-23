@@ -1,24 +1,23 @@
 
 'use client';
 import { useState } from 'react';
-import type { Order, OrderStatus } from "@/lib/definitions";
+import type { Order, OrderStatus, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { XCircle } from 'lucide-react';
 import { updateOrderStatus as updateOrderStatusAction } from '@/lib/actions';
 import { OrderTracker } from './order-tracker';
 
+
 const DUMMY_USER_ID = "5"; 
 
-export function AdminOrderDetails({ order: initialOrder }: { order: Order }) {
+export function AdminOrderDetails({ order: initialOrder, currentUser }: { order: Order, currentUser: User | null }) {
     const [order, setOrder] = useState(initialOrder);
 
-    // This is a placeholder for a real authentication check
-    const isOwner = order.userId === DUMMY_USER_ID;
-    const isAdmin = !isOwner;
+    const isOwner = currentUser?.id === order.userId;
+    const isAdmin = currentUser?.role === 'admin';
 
     const handleStatusUpdate = async (newStatus: OrderStatus) => {
-        // Optimistic UI update only for admins
         if (isAdmin) {
             setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
         }
@@ -36,10 +35,12 @@ export function AdminOrderDetails({ order: initialOrder }: { order: Order }) {
             <CardContent className="space-y-6">
                 {isAdmin ? (
                      <AdminStageManager order={order} onStatusUpdate={handleStatusUpdate} />
-                ) : (
+                ) : isOwner ? (
                     <div className="py-4 pr-6">
                          <OrderTracker order={order} />
                     </div>
+                ) : (
+                    <p>ليس لديك إذن لعرض تفاصيل هذا الطلب.</p>
                 )}
             </CardContent>
        </Card>
@@ -141,4 +142,3 @@ function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUp
         </>
     );
 }
-

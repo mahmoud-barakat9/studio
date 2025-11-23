@@ -227,7 +227,7 @@ export function OrdersTable({
                             <>
                               <OrderDetailsDialog order={order} />
                               <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                                <Link href={`/admin/orders/${order.id}`}>
+                                <Link href={`/orders/${order.id}`}>
                                   <FileText className="h-4 w-4" />
                                   <span className="sr-only">عرض التفاصيل الكاملة</span>
                                 </Link>

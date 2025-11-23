@@ -1,7 +1,5 @@
 
-
-'use client';
-import { getOrderById, getUsers } from "@/lib/firebase-actions";
+import { getOrderById, getUserById } from "@/lib/firebase-actions";
 import {
   Card,
   CardContent,
@@ -20,59 +18,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck } from "lucide-react";
-import type { Order, User } from "@/lib/definitions";
+import { ArrowRight, FileText, Truck, AlertTriangle } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
 
-export default function AdminOrderDetailPage() {
-    const params = useParams();
-    const orderId = params.orderId as string;
-    const [order, setOrder] = useState<Order | null | undefined>(undefined);
-    const [users, setUsers] = useState<User[]>([]);
+const DUMMY_USER_ID = "4"; // Admin User ID
 
-    useEffect(() => {
-        async function fetchData() {
-            if (!orderId) return;
-            const orderData = await getOrderById(orderId);
-            const usersData = await getUsers();
-            setOrder(orderData);
-            setUsers(usersData);
-        }
-        fetchData();
-    }, [orderId]);
-
-  if (order === undefined) {
-      return (
-          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-              <div className="flex items-center justify-between mb-4">
-                  <Skeleton className="h-8 w-1/4" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-10 w-32" />
-                    <Skeleton className="h-10 w-24" />
-                  </div>
-              </div>
-              <div className="flex flex-col lg:flex-row gap-8">
-                  <div className="flex-grow">
-                      <Skeleton className="h-96 w-full" />
-                  </div>
-                  <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-8">
-                      <Skeleton className="h-48 w-full" />
-                      <Skeleton className="h-32 w-full" />
-                  </div>
-              </div>
-          </main>
-      )
-  }
+export default async function AdminOrderDetailPage({ params }: { params: { orderId: string }}) {
+  const orderId = params.orderId;
+  const order = await getOrderById(orderId);
+  const currentUser = await getUserById(DUMMY_USER_ID);
 
   if (!order) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Card>
           <CardHeader>
-            <CardTitle>لم يتم العثور على الطلب</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="text-destructive" />
+                لم يتم العثور على الطلب
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p>لم نتمكن من العثور على الطلب الذي تبحث عنه.</p>
@@ -88,7 +52,7 @@ export default function AdminOrderDetailPage() {
     );
   }
 
-  const customer = users.find((u) => u.id === order.userId);
+  const customer = await getUserById(order.userId);
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
 
 
@@ -115,7 +79,7 @@ export default function AdminOrderDetailPage() {
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-grow flex flex-col gap-8">
-            <AdminOrderDetails order={order} />
+            <AdminOrderDetails order={order} currentUser={currentUser} />
            <Card>
             <CardHeader>
               <CardTitle>تفاصيل الفتحات</CardTitle>
@@ -137,7 +101,7 @@ export default function AdminOrderDetailPage() {
                         <TableRow key={opening.serial}>
                           <TableCell>{index + 1}</TableCell>
                           <TableCell>{opening.abjourType}</TableCell>
-                          <TableCell>{opening.codeLength}م</TableCell>
+                          <TableCell>{opening.codeLength}سم</TableCell>
                           <TableCell>{opening.numberOfCodes}</TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
@@ -238,5 +202,3 @@ export default function AdminOrderDetailPage() {
     </main>
   );
 }
-
-    
