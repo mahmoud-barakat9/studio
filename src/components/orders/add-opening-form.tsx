@@ -84,19 +84,33 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     });
 
     useEffect(() => {
-        if (isEditing && openingToEdit && isOpen) {
-            form.reset({
-                method: (openingToEdit.width && openingToEdit.height) ? 'measure' : 'direct',
-                width: openingToEdit.width,
-                height: openingToEdit.height,
-                codeLength: (openingToEdit.width && openingToEdit.height) ? undefined : openingToEdit.codeLength,
-                numberOfCodes: (openingToEdit.width && openingToEdit.height) ? undefined : openingToEdit.numberOfCodes,
-                hasEndCap: openingToEdit.hasEndCap,
-                hasAccessories: openingToEdit.hasAccessories,
-                notes: openingToEdit.notes,
-            });
-        } else if (!isEditing) {
-            resetForm();
+        if (isOpen) {
+            const defaultValues = {
+                method: 'direct' as 'direct' | 'measure',
+                width: undefined,
+                height: undefined,
+                codeLength: undefined,
+                numberOfCodes: undefined,
+                hasEndCap: false,
+                hasAccessories: false,
+                notes: '',
+            };
+
+            if (isEditing && openingToEdit) {
+                const isMeasureMethod = openingToEdit.width && openingToEdit.height;
+                defaultValues.method = isMeasureMethod ? 'measure' : 'direct';
+                defaultValues.width = openingToEdit.width;
+                defaultValues.height = openingToEdit.height;
+                // Don't set codeLength/numberOfCodes if it was a measure-based opening initially
+                if (!isMeasureMethod) {
+                    defaultValues.codeLength = openingToEdit.codeLength;
+                    defaultValues.numberOfCodes = openingToEdit.numberOfCodes;
+                }
+                defaultValues.hasEndCap = openingToEdit.hasEndCap;
+                defaultValues.hasAccessories = openingToEdit.hasAccessories;
+                defaultValues.notes = openingToEdit.notes;
+            }
+            form.reset(defaultValues);
         }
     }, [isOpen, isEditing, openingToEdit, form]);
 
@@ -108,10 +122,25 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     
     // --- Calculations for 'measure' method ---
     const finalWidth = (watchWidth || 0) - 3.5;
-    const finalHeight = (watchHeight || 0) + 10;
     const calculatedCodeLength = finalWidth > 0 ? finalWidth : 0;
+    
+    const finalHeight = (watchHeight || 0) + 10;
     const calculatedNumberOfCodes = (bladeWidth > 0 && finalHeight > 0) ? Math.ceil(finalHeight / bladeWidth) : 0;
+    
     const channelLength = (watchHeight || 0) > 0 ? ((watchHeight || 0) + 5) * 2 : 0;
+
+     useEffect(() => {
+        if (watchMethod === 'measure') {
+            form.setValue('codeLength', calculatedCodeLength > 0 ? parseFloat(calculatedCodeLength.toFixed(2)) : undefined);
+            form.setValue('numberOfCodes', calculatedNumberOfCodes > 0 ? calculatedNumberOfCodes : undefined);
+        } else {
+             if (!isEditing || !(openingToEdit?.width && openingToEdit?.height)) {
+                form.setValue('codeLength', form.getValues('codeLength') || undefined);
+                form.setValue('numberOfCodes', form.getValues('numberOfCodes') || undefined);
+             }
+        }
+    }, [watchMethod, calculatedCodeLength, calculatedNumberOfCodes, form, isEditing, openingToEdit]);
+
 
     const resetForm = () => {
         form.reset({
@@ -221,36 +250,36 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 {isEditing ? 'قم بتعديل تفاصيل الفتحة أدناه.' : 'أضف الفتحات واحدة تلو الأخرى. ستظهر في جدول بالأسفل.'}
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-6 max-h-[70vh] overflow-y-auto p-1 pr-4">
+                        <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
                             {/* Step 1: Input Method */}
                             <FormField
                                 control={form.control}
                                 name="method"
                                 render={({ field }) => (
-                                    <FormItem className="space-y-3">
+                                    <FormItem className="space-y-2">
                                         <FormLabel>الخطوة 1: اختر طريقة الإدخال</FormLabel>
                                         <FormControl>
                                             <RadioGroup
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
-                                                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                                className="grid grid-cols-2 gap-2"
                                             >
                                                 <FormItem>
                                                     <FormControl>
                                                         <RadioGroupItem value="direct" id="direct" className="sr-only" />
                                                     </FormControl>
-                                                    <FormLabel htmlFor="direct" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${field.value === 'direct' ? 'border-primary' : ''}`}>
-                                                        طريقة مباشرة
-                                                        <span className="text-xs text-muted-foreground mt-1">طول الشفرة + عدد الشفرات</span>
+                                                    <FormLabel htmlFor="direct" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-sm hover:bg-accent hover:text-accent-foreground ${field.value === 'direct' ? 'border-primary' : ''}`}>
+                                                        مباشرة
+                                                        <span className="text-xs text-muted-foreground mt-1 hidden sm:inline">طول وعدد</span>
                                                     </FormLabel>
                                                 </FormItem>
                                                 <FormItem>
                                                     <FormControl>
                                                         <RadioGroupItem value="measure" id="measure" className="sr-only"/>
                                                     </FormControl>
-                                                    <FormLabel htmlFor="measure" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${field.value === 'measure' ? 'border-primary' : ''}`}>
-                                                        طريقة القياس
-                                                        <span className="text-xs text-muted-foreground mt-1">عرض × ارتفاع الفتحة</span>
+                                                    <FormLabel htmlFor="measure" className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-sm hover:bg-accent hover:text-accent-foreground ${field.value === 'measure' ? 'border-primary' : ''}`}>
+                                                        قياس
+                                                        <span className="text-xs text-muted-foreground mt-1 hidden sm:inline">عرض × ارتفاع</span>
                                                     </FormLabel>
                                                 </FormItem>
                                             </RadioGroup>
@@ -261,79 +290,61 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                             />
 
                             {/* Step 2: Input Fields */}
-                            <div>
+                             <div>
                                 <FormLabel>الخطوة 2: أدخل الأبعاد (بالسنتيمتر)</FormLabel>
-                                <div className="p-4 border rounded-lg mt-2">
-                                    {watchMethod === 'direct' ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="codeLength"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>طول الشفرة (سم)</FormLabel>
-                                                        <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="numberOfCodes"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>عدد الشفرات</FormLabel>
-                                                        <FormControl>
-                                                            <Input type="number" {...field} value={field.value ?? ''} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="width"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>عرض الفتحة (سم)</FormLabel>
-                                                            <FormControl>
-                                                                <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="height"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>ارتفاع الفتحة (سم)</FormLabel>
-                                                            <FormControl>
-                                                                <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-                                            {(watchWidth || 0) > 0 && (watchHeight || 0) > 0 && bladeWidth > 0 && (
-                                                <div className="p-3 bg-muted/50 rounded-md text-sm space-y-2">
-                                                    <h4 className="font-semibold text-center">الحسابات التلقائية</h4>
-                                                    <div className="flex justify-between"><span>العرض النهائي:</span> <span className="font-mono">{finalWidth.toFixed(2)} سم</span></div>
-                                                    <div className="flex justify-between"><span>الارتفاع النهائي:</span> <span className="font-mono">{finalHeight.toFixed(2)} سم</span></div>
-                                                    <div className="flex justify-between font-bold text-primary"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{calculatedCodeLength.toFixed(2)} سم</span></div>
-                                                    <div className="flex justify-between font-bold text-primary"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes}</span></div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                <div className="p-4 border rounded-lg mt-2 grid grid-cols-2 gap-4">
+                                     <FormField
+                                        control={form.control}
+                                        name="width"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>عرض الفتحة</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod !== 'measure'} placeholder="للقياس فقط" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="height"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>ارتفاع الفتحة</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod !== 'measure'} placeholder="للقياس فقط" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name="codeLength"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>طول الشفرة</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} disabled={watchMethod === 'measure'} placeholder={watchMethod === 'measure' ? 'محسوب' : ''}/>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="numberOfCodes"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>عدد الشفرات</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" {...field} value={field.value ?? ''} disabled={watchMethod === 'measure'} placeholder={watchMethod === 'measure' ? 'محسوب' : ''} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                             </div>
 
@@ -402,3 +413,5 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
         </Dialog>
     );
 }
+
+    
