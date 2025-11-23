@@ -180,26 +180,6 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     }
 
 
-    if (isDisabled && !isEditing) {
-        return (
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                             <Button type="button" disabled>
-                                <PlusCircle className="w-4 h-4 ml-2" />
-                                أضف فتحة جديدة
-                            </Button>
-                        </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>الرجاء اختيار نوع الأباجور واللون أولاً</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        );
-    }
-
     const triggerButton = isEditing ? (
         <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setIsOpen(true)}>
             <Pencil className="h-4 w-4" />
@@ -210,7 +190,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
             <PlusCircle className="w-4 h-4 ml-2" />
             أضف فتحة جديدة
         </Button>
-    )
+    );
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>

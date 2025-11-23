@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, Truck } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck, PlusCircle } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -46,6 +46,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 const openingSchema = z.object({
@@ -140,6 +141,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
+  const watchMainColor = useWatch({ control: form.control, name: 'mainColor' });
   const watchUserId = useWatch({ control: form.control, name: 'userId'});
   const watchHasDelivery = useWatch({ control: form.control, name: 'hasDelivery' });
 
@@ -263,6 +265,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
         }
      });
   };
+
+  const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
+
 
   return (
     <Form {...form}>
@@ -482,38 +487,66 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             </Card>
 
             <div className="space-y-4">
-                <Card>
-                    <CardHeader>
-                        <div className='flex items-center justify-between'>
-                            <div className="flex items-center gap-3">
-                                <CardTitle>فتحات الطلب</CardTitle>
-                                {watchedOpenings.length > 0 && <Badge variant="secondary">{watchedOpenings.length}</Badge>}
-                            </div>
-                            <AddOpeningForm 
+              <Card>
+                  <CardHeader>
+                      <div className='flex items-center gap-3'>
+                          <CardTitle>فتحات الطلب</CardTitle>
+                           {watchedOpenings.length > 0 && <Badge variant="secondary">{watchedOpenings.length}</Badge>}
+                      </div>
+                      <CardDescription>
+                          أضف الفتحات الخاصة بهذا الطلب. يجب تحديد النوع واللون أولاً.
+                      </CardDescription>
+                  </CardHeader>
+                  {watchedOpenings.length === 0 && (
+                      <CardContent>
+                          {!isPrimaryInfoSelected ? (
+                              <Alert variant="default" className="border-dashed">
+                                <Info className="h-4 w-4" />
+                                <AlertTitle>خطوة أولى</AlertTitle>
+                                <AlertDescription>
+                                  الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً لبدء إضافة الفتحات.
+                                </AlertDescription>
+                              </Alert>
+                          ) : (
+                             <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
+                                <h3 className="text-lg font-medium text-muted-foreground">أنت جاهز الآن!</h3>
+                                <p className="text-sm text-muted-foreground mb-4">انقر أدناه لإضافة أول فتحة لطلبك.</p>
+                                <AddOpeningForm 
+                                    onSave={handleAddOpening} 
+                                    bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                                    isDisabled={false}
+                                    openingsCount={watchedOpenings.length}
+                                />
+                             </div>
+                          )}
+                      </CardContent>
+                  )}
+              </Card>
+
+              {form.formState.errors.openings && (
+                  <p className="text-sm font-medium text-destructive px-4">
+                  {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
+                  </p>
+              )}
+
+              {watchedOpenings.length > 0 && (
+                  <div className="space-y-4">
+                      <OpeningsTable 
+                          openings={watchedOpenings}
+                          bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                          onUpdateOpening={handleUpdateOpening}
+                          onDeleteOpening={handleDeleteOpening}
+                      />
+                       <div className="flex justify-start px-4">
+                           <AddOpeningForm 
                                 onSave={handleAddOpening} 
                                 bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                                isDisabled={!watchMainAbjourType || !form.getValues('mainColor')}
+                                isDisabled={!isPrimaryInfoSelected}
                                 openingsCount={watchedOpenings.length}
                             />
-                        </div>
-                        <CardDescription>أضف الفتحات الخاصة بهذا الطلب.</CardDescription>
-                    </CardHeader>
-                </Card>
-                {form.formState.errors.openings && (
-                    <p className="text-sm font-medium text-destructive px-4">
-                    {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                    </p>
-                )}
-                {watchedOpenings.length > 0 && (
-                    <div className="mt-6">
-                        <OpeningsTable 
-                            openings={watchedOpenings}
-                            bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                            onUpdateOpening={handleUpdateOpening}
-                            onDeleteOpening={handleDeleteOpening}
-                        />
-                    </div>
-                )}
+                       </div>
+                  </div>
+              )}
             </div>
             
           </div>
