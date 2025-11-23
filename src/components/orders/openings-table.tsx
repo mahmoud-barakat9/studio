@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 interface OpeningsTableProps {
     openings: Opening[];
@@ -62,7 +63,48 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
     
     return (
         <div className="w-full">
-            <div className="overflow-x-auto border rounded-lg">
+            {/* Mobile View - List of Cards */}
+            <div className="grid gap-4 md:hidden">
+                {openings.map((opening, index) => (
+                    <Card key={opening.serial}>
+                        <CardHeader>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>الفتحة #{index + 1}</CardTitle>
+                                    <CardDescription>
+                                        {opening.codeLength.toFixed(2)} سم × {opening.numberOfCodes} شفرات
+                                    </CardDescription>
+                                </div>
+                                 <div className="flex gap-2">
+                                    <AddOpeningForm
+                                        isEditing={true}
+                                        openingToEdit={opening}
+                                        onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
+                                        bladeWidth={bladeWidth}
+                                        isDisabled={false}
+                                        openingsCount={0}
+                                    />
+                                    <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                             <div className="text-sm text-muted-foreground">
+                                {opening.notes || 'لا توجد ملاحظات.'}
+                             </div>
+                             {(opening.hasEndCap || opening.hasAccessories) && (
+                                <div className="flex flex-wrap gap-1 pt-2">
+                                    {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
+                                    {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
+                                </div>
+                             )}
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Desktop View - Table */}
+            <div className="hidden md:block overflow-x-auto border rounded-lg">
                 <Table>
                     <TableHeader>
                         <TableRow>
