@@ -46,7 +46,7 @@ export function OrderTracker({ order }: { order: Order }) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {stagesToShow.map((stage, index) => {
         const originalIndex = STAGES.findIndex(s => s.name === stage.name);
         
@@ -69,7 +69,7 @@ export function OrderTracker({ order }: { order: Order }) {
                      {index < stagesToShow.length - 1 && (
                         <div
                             className={cn(
-                            'w-0.5 h-16 mt-2 transition-colors duration-300',
+                            'w-0.5 h-12 mt-2 transition-colors duration-300',
                             isCompleted ? 'bg-primary' : 'bg-border'
                             )}
                         />
