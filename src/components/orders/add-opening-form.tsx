@@ -130,15 +130,22 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
      useEffect(() => {
         if (watchMethod === 'measure') {
-            form.setValue('codeLength', calculatedCodeLength > 0 ? parseFloat(calculatedCodeLength.toFixed(2)) : undefined);
-            form.setValue('numberOfCodes', calculatedNumberOfCodes > 0 ? calculatedNumberOfCodes : undefined);
+            const widthVal = form.getValues('width');
+            const heightVal = form.getValues('height');
+
+            const newCodeLength = (widthVal || 0) - 3.5;
+            const newNumberOfCodes = (bladeWidth > 0 && heightVal && heightVal > 0) ? Math.ceil(((heightVal || 0) + 10) / bladeWidth) : 0;
+
+            form.setValue('codeLength', newCodeLength > 0 ? parseFloat(newCodeLength.toFixed(2)) : undefined);
+            form.setValue('numberOfCodes', newNumberOfCodes > 0 ? newNumberOfCodes : undefined);
+
         } else {
              if (!isEditing || !(openingToEdit?.width && openingToEdit?.height)) {
                 form.setValue('codeLength', form.getValues('codeLength') || undefined);
                 form.setValue('numberOfCodes', form.getValues('numberOfCodes') || undefined);
              }
         }
-    }, [watchMethod, calculatedCodeLength, calculatedNumberOfCodes, form, isEditing, openingToEdit]);
+    }, [watchMethod, form, isEditing, openingToEdit, bladeWidth]);
 
 
     const resetForm = () => {
@@ -156,13 +163,16 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
     const processSubmit = (data: OpeningFormValues) => {
         let finalOpeningData: Omit<Opening, 'serial' | 'abjourType'>;
+        const currentCodeLength = (data.width || 0) - 3.5;
+        const currentNumberOfCodes = (bladeWidth > 0 && data.height && data.height > 0) ? Math.ceil(((data.height || 0) + 10) / bladeWidth) : 0;
 
-        if (data.method === 'measure' && calculatedCodeLength > 0 && calculatedNumberOfCodes > 0) {
+
+        if (data.method === 'measure' && currentCodeLength > 0 && currentNumberOfCodes > 0) {
             finalOpeningData = {
                 width: data.width,
                 height: data.height,
-                codeLength: calculatedCodeLength,
-                numberOfCodes: calculatedNumberOfCodes,
+                codeLength: currentCodeLength,
+                numberOfCodes: currentNumberOfCodes,
                 hasEndCap: data.hasEndCap,
                 hasAccessories: data.hasAccessories,
                 notes: data.notes,
@@ -293,7 +303,11 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                                     <FormItem>
                                                         <FormLabel>عرض الفتحة</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
+                                                                field.onChange(e.target.valueAsNumber);
+                                                                const newCodeLength = e.target.valueAsNumber - 3.5;
+                                                                form.setValue('codeLength', newCodeLength > 0 ? parseFloat(newCodeLength.toFixed(2)) : undefined);
+                                                            }}/>
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -306,15 +320,19 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                                     <FormItem>
                                                         <FormLabel>ارتفاع الفتحة</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
+                                                                field.onChange(e.target.valueAsNumber);
+                                                                const newNumberOfCodes = (bladeWidth > 0 && e.target.valueAsNumber > 0) ? Math.ceil((e.target.valueAsNumber + 10) / bladeWidth) : 0;
+                                                                form.setValue('numberOfCodes', newNumberOfCodes > 0 ? newNumberOfCodes : undefined);
+                                                            }}/>
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
                                              <div className="col-span-2 p-3 bg-muted/50 rounded-md text-sm space-y-2">
-                                                <div className="flex justify-between font-bold"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{calculatedCodeLength.toFixed(2)} سم</span></div>
-                                                <div className="flex justify-between font-bold"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{calculatedNumberOfCodes > 0 ? calculatedNumberOfCodes : '-'}</span></div>
+                                                <div className="flex justify-between font-bold"><span>طول الشفرة المحسوب:</span> <span className="font-mono">{(form.watch('codeLength') || 0).toFixed(2)} سم</span></div>
+                                                <div className="flex justify-between font-bold"><span>عدد الشفرات المحسوب:</span> <span className="font-mono">{form.watch('numberOfCodes') || '-'}</span></div>
                                             </div>
                                         </div>
                                      )}
@@ -397,11 +415,8 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t flex-col-reverse sm:flex-row sm:justify-between">
-                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-                                إلغاء
-                            </Button>
-                             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                        <DialogFooter className="gap-2 pt-4 border-t sm:flex-row sm:justify-end">
+                            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
                                 {!isEditing && (
                                     <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
                                         إضافة والمتابعة
