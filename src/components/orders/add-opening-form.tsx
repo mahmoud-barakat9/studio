@@ -69,7 +69,7 @@ const addOpeningButtonVariants = cva(
     {
       variants: {
         variant: {
-          default: "outline",
+          default: "default",
           secondary: "secondary",
         },
       },
@@ -86,9 +86,21 @@ interface AddOpeningFormProps extends VariantProps<typeof addOpeningButtonVarian
     openingsCount: number;
     openingToEdit?: Opening | null;
     isEditing?: boolean;
+    asChild?: boolean;
+    children?: React.ReactNode;
 }
 
-export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, openingToEdit, isEditing = false, variant }: AddOpeningFormProps) {
+export function AddOpeningForm({ 
+    onSave, 
+    bladeWidth, 
+    isDisabled, 
+    openingsCount, 
+    openingToEdit, 
+    isEditing = false, 
+    variant,
+    asChild,
+    children
+}: AddOpeningFormProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
     const form = useForm<OpeningFormValues>({
@@ -185,7 +197,7 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
         let currentNumberOfCodes: number;
         
         if (data.method === 'measure') {
-            currentCodeLength = (data.width || 0) - 3.5;
+            currentCodeLength = (data.width || 0) > 0 ? (data.width || 0) - 3.5 : 0;
             currentNumberOfCodes = (bladeWidth > 0 && data.height && data.height > 0) ? Math.ceil(((data.height || 0) + 10) / bladeWidth) : 0;
         } else {
             currentCodeLength = data.codeLength || 0;
@@ -221,15 +233,8 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     };
 
     const handleSaveAndContinue = () => {
+        if (isEditing) return; // This action is only for adding new openings
         form.handleSubmit(data => {
-            if (isEditing) {
-                 toast({
-                    variant: "destructive",
-                    title: "غير مسموح",
-                    description: "لا يمكن استخدام 'إضافة والمتابعة' في وضع التعديل.",
-                });
-                return;
-            }
             processSubmit(data);
             resetForm();
         })();
@@ -244,8 +249,8 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
     }
 
 
-    const triggerButton = isEditing ? (
-        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setIsOpen(true)}>
+    const triggerButton = children ? children : isEditing ? (
+        <Button size="icon" variant="outline" className="h-8 w-8">
             <Pencil className="h-4 w-4" />
             <span className="sr-only">تعديل</span>
         </Button>
@@ -273,8 +278,8 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                 {isEditing ? triggerButton : dialogTrigger}
+            <DialogTrigger asChild={asChild || isEditing}>
+                 {dialogTrigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl">
                  <Form {...form}>
@@ -443,24 +448,18 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
                                 </div>
                             </div>
                         </div>
-                        <DialogFooter className="gap-2 pt-4 border-t">
-                             <div className="flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">
-                                <div>
-                                    {!isEditing && (
-                                        <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
-                                            إضافة والمتابعة
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="flex justify-end gap-2">
-                                    <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-                                        إلغاء
-                                    </Button>
-                                    <Button type="button" onClick={handleSaveAndClose}>
-                                        {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
-                                    </Button>
-                                </div>
-                            </div>
+                        <DialogFooter className="gap-2 pt-4 border-t flex-row justify-end">
+                            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+                                إلغاء
+                            </Button>
+                            {!isEditing && (
+                                <Button type="button" variant="secondary" onClick={handleSaveAndContinue}>
+                                    إضافة والمتابعة
+                                </Button>
+                            )}
+                             <Button type="button" onClick={handleSaveAndClose}>
+                                {isEditing ? 'حفظ التعديلات' : 'إضافة وإغلاق'}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

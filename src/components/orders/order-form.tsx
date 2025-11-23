@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, Truck } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck, PlusCircle } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
@@ -324,6 +324,28 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
 
+  const addOpeningButton = (
+    <AddOpeningForm 
+        onSave={handleAddOpening} 
+        bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+        isDisabled={!isPrimaryInfoSelected}
+        openingsCount={watchedOpenings.length}
+        variant={watchedOpenings.length > 0 ? 'secondary' : 'default'}
+        asChild={watchedOpenings.length > 0}
+    >
+      {watchedOpenings.length > 0 ? (
+           <Button type="button" variant="secondary">
+                <PlusCircle className="w-4 h-4 ml-2" />
+                أضف فتحة أخرى
+            </Button>
+      ) : (
+        <Button type="button" variant="default" disabled={!isPrimaryInfoSelected}>
+            <PlusCircle className="w-4 h-4 ml-2" />
+            أضف فتحة جديدة
+        </Button>
+      )}
+    </AddOpeningForm>
+  );
 
   return (
     <Form {...form}>
@@ -564,12 +586,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                                     ? "انقر أدناه لإضافة أول فتحة لطلبك." 
                                     : "الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً."}
                             </p>
-                            <AddOpeningForm 
-                                onSave={handleAddOpening} 
-                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                                isDisabled={!isPrimaryInfoSelected}
-                                openingsCount={watchedOpenings.length}
-                            />
+                            {addOpeningButton}
                          </div>
                       </CardContent>
                   )}
@@ -590,13 +607,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                           onDeleteOpening={handleDeleteOpening}
                       />
                        <div className="flex justify-center pt-2">
-                           <AddOpeningForm 
-                                onSave={handleAddOpening} 
-                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                                isDisabled={!isPrimaryInfoSelected}
-                                openingsCount={watchedOpenings.length}
-                                variant="secondary"
-                            />
+                           {addOpeningButton}
                        </div>
                   </div>
               )}
