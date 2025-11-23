@@ -186,16 +186,31 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
             <span className="sr-only">تعديل</span>
         </Button>
     ) : (
-         <Button type="button" variant="outline">
+         <Button type="button" variant="outline" disabled={isDisabled}>
             <PlusCircle className="w-4 h-4 ml-2" />
             أضف فتحة جديدة
         </Button>
     );
 
+    const dialogTrigger = isDisabled ? (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span tabIndex={0}>{triggerButton}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>الرجاء اختيار نوع الأباجور واللون أولاً.</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    ) : (
+        triggerButton
+    );
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                 {triggerButton}
+                 {isEditing ? triggerButton : dialogTrigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl">
                  <Form {...form}>

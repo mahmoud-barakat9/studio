@@ -499,26 +499,25 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   </CardHeader>
                   {watchedOpenings.length === 0 && (
                       <CardContent>
-                          {!isPrimaryInfoSelected ? (
-                              <Alert variant="default" className="border-dashed">
-                                <Info className="h-4 w-4" />
-                                <AlertTitle>خطوة أولى</AlertTitle>
-                                <AlertDescription>
-                                  الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً لبدء إضافة الفتحات.
-                                </AlertDescription>
-                              </Alert>
-                          ) : (
-                             <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
-                                <h3 className="text-lg font-medium text-muted-foreground">أنت جاهز الآن!</h3>
-                                <p className="text-sm text-muted-foreground mb-4">انقر أدناه لإضافة أول فتحة لطلبك.</p>
-                                <AddOpeningForm 
-                                    onSave={handleAddOpening} 
-                                    bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                                    isDisabled={false}
-                                    openingsCount={watchedOpenings.length}
-                                />
-                             </div>
-                          )}
+                          <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
+                            {!isPrimaryInfoSelected ? (
+                                <>
+                                  <h3 className="text-lg font-medium text-muted-foreground">خطوة أولى</h3>
+                                  <p className="text-sm text-muted-foreground mb-4">الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً.</p>
+                                </>
+                            ) : (
+                                <>
+                                  <h3 className="text-lg font-medium text-muted-foreground">أنت جاهز الآن!</h3>
+                                  <p className="text-sm text-muted-foreground mb-4">انقر أدناه لإضافة أول فتحة لطلبك.</p>
+                                </>
+                            )}
+                            <AddOpeningForm 
+                                onSave={handleAddOpening} 
+                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                                isDisabled={!isPrimaryInfoSelected}
+                                openingsCount={watchedOpenings.length}
+                            />
+                         </div>
                       </CardContent>
                   )}
               </Card>
