@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -29,6 +30,12 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Textarea } from '../ui/textarea';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+  } from "@/components/ui/tooltip";
 
 const openingSchema = z.object({
     method: z.enum(['direct', 'measure']),
@@ -175,10 +182,21 @@ export function AddOpeningForm({ onSave, bladeWidth, isDisabled, openingsCount, 
 
     if (isDisabled && !isEditing) {
         return (
-            <Button type="button" disabled>
-                <PlusCircle className="w-4 h-4 ml-2" />
-                أضف فتحة جديدة
-            </Button>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                             <Button type="button" disabled>
+                                <PlusCircle className="w-4 h-4 ml-2" />
+                                أضف فتحة جديدة
+                            </Button>
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>الرجاء اختيار نوع الأباجور واللون أولاً</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         );
     }
 
