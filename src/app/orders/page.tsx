@@ -2,17 +2,11 @@ import { MainFooter } from "@/components/layout/main-footer";
 import { MainHeader } from "@/components/layout/main-header";
 import type { User, Order } from "@/lib/definitions";
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card";
 import { OrdersTable } from "@/components/orders/orders-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DUMMY_USER_ID = "5"; 
 
@@ -22,6 +16,10 @@ export default async function OrdersPage() {
   if (currentUser) {
       userOrders = await getOrdersByUserId(currentUser.id);
   }
+
+  const currentOrders = userOrders.filter(o => !['Delivered', 'Rejected'].includes(o.status) && !o.isArchived);
+  const completedOrders = userOrders.filter(o => o.status === 'Delivered' && !o.isArchived);
+  const archivedAndRejectedOrders = userOrders.filter(o => o.isArchived || o.status === 'Rejected');
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -45,15 +43,29 @@ export default async function OrdersPage() {
                 </Link>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>كل طلباتك</CardTitle>
-                    <CardDescription>هنا يمكنك عرض وإدارة جميع طلباتك.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <OrdersTable orders={userOrders} />
-                </CardContent>
-            </Card>
+            <Tabs defaultValue="current" className="w-full">
+              <div className="overflow-x-auto pb-2">
+                <TabsList className="inline-flex w-max">
+                  <TabsTrigger value="current">الطلبات الحالية ({currentOrders.length})</TabsTrigger>
+                  <TabsTrigger value="completed">الطلبات المكتملة ({completedOrders.length})</TabsTrigger>
+                  {archivedAndRejectedOrders.length > 0 && (
+                    <TabsTrigger value="archived">المرفوضة والمؤرشفة ({archivedAndRejectedOrders.length})</TabsTrigger>
+                  )}
+                </TabsList>
+              </div>
+
+              <TabsContent value="current">
+                <OrdersTable orders={currentOrders} />
+              </TabsContent>
+              <TabsContent value="completed">
+                <OrdersTable orders={completedOrders} />
+              </TabsContent>
+               {archivedAndRejectedOrders.length > 0 && (
+                  <TabsContent value="archived">
+                    <OrdersTable orders={archivedAndRejectedOrders} />
+                  </TabsContent>
+               )}
+            </Tabs>
         </div>
       </main>
       <MainFooter />

@@ -106,7 +106,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     userId,
     customerName: finalCustomerData.name,
     customerPhone: finalCustomerData.phone,
-    status: asAdmin ? 'FactoryOrdered' : 'Pending',
+    status: 'Pending', // All new orders start as Pending
     date: new Date().toISOString().split('T')[0],
     totalArea,
     totalCost: productsCost,
@@ -155,6 +155,7 @@ export async function approveOrder(orderId: string) {
 
   await updateOrderStatusDB(orderId, 'FactoryOrdered');
   revalidatePath('/admin/orders');
+  revalidatePath('/orders');
 
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وتم إرساله إلى المعمل.`);
@@ -168,6 +169,7 @@ export async function rejectOrder(orderId: string) {
 
   await updateOrderStatusDB(orderId, 'Rejected');
   revalidatePath('/admin/orders');
+  revalidatePath('/orders');
   
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
@@ -216,11 +218,13 @@ export async function deleteUser(userId: string) {
 export async function archiveOrder(orderId: string) {
     await updateOrderArchivedStatus(orderId, true);
     revalidatePath('/admin/orders');
+    revalidatePath('/orders');
   }
   
   export async function restoreOrder(orderId: string) {
     await updateOrderArchivedStatus(orderId, false);
     revalidatePath('/admin/orders');
+    revalidatePath('/orders');
   }
 
 const materialSchema = z.object({

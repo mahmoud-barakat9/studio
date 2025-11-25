@@ -12,20 +12,27 @@ import { Button } from "@/components/ui/button";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import type { Order } from "@/lib/definitions";
 import { Eye } from "lucide-react";
+import React from "react";
 
 interface OrderDetailsDialogProps {
   order: Order;
+  asChild?: boolean;
+  children?: React.ReactNode;
 }
 
-export function OrderDetailsDialog({ order }: OrderDetailsDialogProps) {
+export function OrderDetailsDialog({ order, asChild, children }: OrderDetailsDialogProps) {
+  const trigger = asChild ? (
+    children
+  ) : (
+    <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Eye className="h-4 w-4" />
+        <span className="sr-only">عرض حالة التتبع</span>
+    </Button>
+  );
+
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Eye className="h-4 w-4" />
-            <span className="sr-only">عرض حالة التتبع</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild={asChild}>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>تتبع الطلب: {order.orderName}</DialogTitle>

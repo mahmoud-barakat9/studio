@@ -225,8 +225,8 @@ export function OrdersTable({
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
                         <TableCell>
-                          <Badge variant={statusStyle.variant}>
-                            {statusStyle.text}
+                          <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
+                            {order.isArchived ? "مؤرشف" : statusStyle.text}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-left font-mono">
@@ -237,15 +237,46 @@ export function OrdersTable({
                               {isAdmin ? (
                                  <AdminOrderActions order={order} />
                               ) : (
-                                <>
-                                  <OrderDetailsDialog order={order} />
-                                  <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                                    <Link href={`/orders/${order.id}`}>
-                                      <FileText className="h-4 w-4" />
-                                      <span className="sr-only">عرض التفاصيل الكاملة</span>
-                                    </Link>
-                                  </Button>
-                                </>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <span className="sr-only">فتح القائمة</span>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                      <DropdownMenuItem asChild>
+                                          <Link href={`/orders/${order.id}`}>
+                                              <FileText className="ml-2 h-4 w-4" />
+                                              عرض التفاصيل الكاملة
+                                          </Link>
+                                      </DropdownMenuItem>
+                                      <OrderDetailsDialog order={order} asChild>
+                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                              <Eye className="ml-2 h-4 w-4" />
+                                              عرض حالة التتبع
+                                          </DropdownMenuItem>
+                                      </OrderDetailsDialog>
+                                      {order.status === 'Pending' && !order.isArchived && (
+                                          <DropdownMenuItem asChild>
+                                              <Link href={`/orders/${order.id}/edit`}>
+                                                  <Pencil className="ml-2 h-4 w-4" />
+                                                  تعديل الطلب
+                                              </Link>
+                                          </DropdownMenuItem>
+                                      )}
+                                      {!order.isArchived && (
+                                        <form action={archiveOrder.bind(null, order.id)} className="w-full">
+                                          <DropdownMenuItem asChild>
+                                            <button type="submit" className="w-full">
+                                                <Archive className="ml-2 h-4 w-4" />
+                                                أرشفة
+                                              </button>
+                                          </DropdownMenuItem>
+                                        </form>
+                                      )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               )}
                             </div>
                         </TableCell>
