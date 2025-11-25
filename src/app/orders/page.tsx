@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MainFooter } from "@/components/layout/main-footer";
 import { MainHeader } from "@/components/layout/main-header";
-import type { User, Order } from "@/lib/definitions";
+import type { Order } from "@/lib/definitions";
 import { OrdersTable } from "@/components/orders/orders-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -58,10 +58,7 @@ export default function OrdersPage() {
 
   const renderTabContent = (tabKey: keyof typeof tabsData, tabName: string) => {
     const orders = tabsData[tabKey];
-    const currentPage = currentTabs[tabKey] || 1;
-    const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
-    const paginatedOrders = orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
+    
     if (orders.length === 0 && tabKey === 'archived') {
       return null;
     }

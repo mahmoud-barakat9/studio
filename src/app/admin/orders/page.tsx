@@ -5,9 +5,8 @@ import { OrdersTable } from "@/components/orders/orders-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
-import { getOrders, getUsers } from "@/lib/firebase-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Order, User } from "@/lib/definitions";
+import type { Order } from "@/lib/definitions";
 import { Pagination } from "@/components/pagination";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 
