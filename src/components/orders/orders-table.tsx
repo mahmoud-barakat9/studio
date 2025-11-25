@@ -190,7 +190,7 @@ export function OrdersTable({
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
                     <TableHead>الحالة</TableHead>
                     <TableHead className="text-left">التكلفة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead className="text-left w-[50px]">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
