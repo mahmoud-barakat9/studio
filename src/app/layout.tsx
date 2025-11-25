@@ -6,10 +6,10 @@ import { Cairo } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { PageTransition } from '@/components/page-transition';
 import { SplashScreen } from '@/components/splash-screen';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { PageTransitionLoader } from '@/components/page-transition-loader';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -70,12 +70,9 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={cn('antialiased', cairo.variable)}>
+        <PageTransitionLoader />
         <SplashScreen isVisible={isLoading} />
-        {!isLoading && (
-          <PageTransition>
-            {children}
-          </PageTransition>
-        )}
+        {!isLoading && children}
         <Toaster />
       </body>
     </html>
