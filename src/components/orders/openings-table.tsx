@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, ChevronDown, Pencil } from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
 import type { Opening } from "@/lib/definitions";
 import { Badge } from "../ui/badge";
 import { AddOpeningForm } from "./add-opening-form";
@@ -82,9 +82,10 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                         <TableHead className="text-left w-[120px]">الإجراءات</TableHead>
                     </TableRow>
                 </TableHeader>
-                <TableBody>
+                
                     {openings.map((opening, index) => (
-                       <Collapsible asChild key={opening.serial} open={openRow === opening.serial} onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}>
+                       <TableBody key={opening.serial}>
+                        <Collapsible asChild open={openRow === opening.serial} onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}>
                             <>
                                 <TableRow className="align-top">
                                     <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
@@ -143,8 +144,9 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                 </CollapsibleContent>
                             </>
                         </Collapsible>
+                       </TableBody>
                     ))}
-                </TableBody>
+                
             </Table>
         </div>
     );
