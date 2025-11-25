@@ -28,6 +28,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 interface OpeningsTableProps {
     openings: Opening[];
@@ -82,11 +83,15 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                         <TableHead className="text-left w-[120px]">الإجراءات</TableHead>
                     </TableRow>
                 </TableHeader>
-                
+                <TableBody>
                     {openings.map((opening, index) => (
-                       <TableBody key={opening.serial}>
-                        <Collapsible asChild open={openRow === opening.serial} onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}>
-                            <>
+                        <Collapsible 
+                            asChild 
+                            key={opening.serial} 
+                            open={openRow === opening.serial} 
+                            onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}
+                        >
+                            <React.Fragment>
                                 <TableRow className="align-top">
                                     <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
                                     <TableCell className="font-medium">
@@ -142,11 +147,10 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                         </TableCell>
                                     </tr>
                                 </CollapsibleContent>
-                            </>
+                            </React.Fragment>
                         </Collapsible>
-                       </TableBody>
                     ))}
-                
+                </TableBody>
             </Table>
         </div>
     );
