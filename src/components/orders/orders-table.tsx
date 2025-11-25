@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
-import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder } from "@/lib/actions";
+import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest } from "@/lib/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -241,7 +241,7 @@ export function OrdersTable({
                                   <OrderDetailsDialog order={order} />
                                   <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                     <Link href={`/orders/${order.id}`}>
-                                      <FileText className="h-4 w-4" />
+                                      <Eye className="h-4 w-4" />
                                       <span className="sr-only">عرض التفاصيل الكاملة</span>
                                     </Link>
                                   </Button>
@@ -253,34 +253,23 @@ export function OrdersTable({
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                      {order.status === 'Pending' && !order.isArchived && (
+                                      {order.status === 'Pending' && !order.isArchived ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={`/orders/${order.id}/edit`}>
                                             <Pencil className="ml-2 h-4 w-4" />
                                             تعديل الطلب
                                           </Link>
                                         </DropdownMenuItem>
-                                      )}
-                                      {!order.isArchived && (
-                                        <form action={archiveOrder.bind(null, order.id)} className="w-full">
-                                          <DropdownMenuItem asChild>
-                                            <button type="submit" className="w-full">
-                                              <Archive className="ml-2 h-4 w-4" />
-                                              أرشفة
-                                            </button>
-                                          </DropdownMenuItem>
-                                        </form>
-                                      )}
-                                      {order.isArchived && (
-                                        <form action={restoreOrder.bind(null, order.id)} className="w-full">
-                                          <DropdownMenuItem asChild>
-                                            <button type="submit" className="w-full">
-                                              <ArchiveRestore className="ml-2 h-4 w-4" />
-                                              استعادة
-                                            </button>
-                                          </DropdownMenuItem>
-                                        </form>
-                                      )}
+                                      ) : !order.isArchived ? (
+                                         <form action={generateWhatsAppEditRequest.bind(null, order.id, order.orderName)} className="w-full">
+                                            <DropdownMenuItem asChild>
+                                               <button type="submit" className="w-full">
+                                                  <MessageSquareQuote className="ml-2 h-4 w-4" />
+                                                  طلب تعديل من الإدارة
+                                                </button>
+                                            </DropdownMenuItem>
+                                          </form>
+                                      ) : null}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </>

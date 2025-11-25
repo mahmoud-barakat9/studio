@@ -12,6 +12,8 @@ import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updat
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
+const ADMIN_WHATSAPP_NUMBER = "963123456789"; // Replace with the actual admin WhatsApp number
+
 export async function calculateAbjourDimensions(
   prevState: any,
   formData: { width: number; abjourType: string }
@@ -142,7 +144,10 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
     revalidatePath('/admin/orders');
     redirect('/admin/orders');
   } else {
-    // non-admin updates not implemented
+    // non-admin updates
+    revalidatePath(`/orders/${orderId}`);
+    revalidatePath('/orders');
+    redirect(`/orders/${orderId}`);
   }
   
   return { success: true };
@@ -176,6 +181,15 @@ export async function rejectOrder(orderId: string) {
   const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
   redirect(whatsappUrl);
 }
+
+export async function generateWhatsAppEditRequest(orderId: string, orderName: string) {
+  const message = encodeURIComponent(
+    `مرحبًا، أود طلب تعديل على الطلب رقم ${orderId} (الاسم: ${orderName}). الرجاء التواصل معي لمناقشة التغييرات المطلوبة.`
+  );
+  const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${message}`;
+  redirect(whatsappUrl);
+}
+
 
 // The formData parameter is kept for compatibility with form actions, even if not used.
 export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
