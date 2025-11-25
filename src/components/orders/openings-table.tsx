@@ -84,64 +84,62 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                 </TableHeader>
                 <TableBody>
                     {openings.map((opening, index) => (
-                        <Collapsible asChild key={opening.serial} open={openRow === opening.serial} onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}>
-                            <>
-                                <TableRow className="align-top">
-                                    <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
-                                    <TableCell className="font-medium">
-                                        <div className="md:hidden text-sm font-bold mb-2">الفتحة #{index + 1}</div>
-                                        {opening.codeLength.toFixed(2)}
-                                    </TableCell>
-                                    <TableCell className="font-medium">{opening.numberOfCodes}</TableCell>
-                                    <TableCell className="hidden md:table-cell">
-                                         <div className="flex flex-col gap-1 items-start">
-                                            {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
-                                            {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
-                                            {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">-</span>}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
-                                    <TableCell className="text-left">
-                                        <div className="flex gap-2 justify-end">
-                                            <AddOpeningForm
-                                                isEditing={true}
-                                                openingToEdit={opening}
-                                                onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
-                                                bladeWidth={bladeWidth}
-                                                isDisabled={false}
-                                                openingsCount={0}
-                                            />
-                                            <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent md:hidden">
-                                                    <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
-                                                     <span className="sr-only">عرض التفاصيل</span>
-                                                </Button>
-                                            </CollapsibleTrigger>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                                <CollapsibleContent asChild>
-                                   <tr className="bg-muted/50 md:hidden">
-                                        <TableCell colSpan={6} className="p-0">
-                                            <div className="p-4 space-y-4">
-                                                <div>
-                                                    <h4 className="font-semibold text-sm mb-1">الإضافات</h4>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
-                                                        {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
-                                                        {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">لا توجد</span>}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-semibold text-sm mb-1">الملاحظات</h4>
-                                                    <p className="text-sm text-muted-foreground">{opening.notes || 'لا توجد ملاحظات.'}</p>
+                        <Collapsible as="tbody" key={opening.serial} open={openRow === opening.serial} onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}>
+                            <TableRow className="align-top">
+                                <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
+                                <TableCell className="font-medium">
+                                    <div className="md:hidden text-sm font-bold mb-2">الفتحة #{index + 1}</div>
+                                    {opening.codeLength.toFixed(2)}
+                                </TableCell>
+                                <TableCell className="font-medium">{opening.numberOfCodes}</TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                        <div className="flex flex-col gap-1 items-start">
+                                        {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
+                                        {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
+                                        {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">-</span>}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
+                                <TableCell className="text-left">
+                                    <div className="flex gap-2 justify-end">
+                                        <AddOpeningForm
+                                            isEditing={true}
+                                            openingToEdit={opening}
+                                            onSave={(updatedOpening) => onUpdateOpening(index, updatedOpening)}
+                                            bladeWidth={bladeWidth}
+                                            isDisabled={false}
+                                            openingsCount={0}
+                                        />
+                                        <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
+                                        <CollapsibleTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent md:hidden">
+                                                <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+                                                    <span className="sr-only">عرض التفاصيل</span>
+                                            </Button>
+                                        </CollapsibleTrigger>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                            <CollapsibleContent asChild>
+                                <tr className="bg-muted/50 md:hidden">
+                                    <TableCell colSpan={6} className="p-0">
+                                        <div className="p-4 space-y-4">
+                                            <div>
+                                                <h4 className="font-semibold text-sm mb-1">الإضافات</h4>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
+                                                    {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
+                                                    {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">لا توجد</span>}
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                    </tr>
-                                </CollapsibleContent>
-                            </>
+                                            <div>
+                                                <h4 className="font-semibold text-sm mb-1">الملاحظات</h4>
+                                                <p className="text-sm text-muted-foreground">{opening.notes || 'لا توجد ملاحظات.'}</p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                </tr>
+                            </CollapsibleContent>
                         </Collapsible>
                     ))}
                 </TableBody>
