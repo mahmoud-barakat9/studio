@@ -15,6 +15,16 @@ import { Pagination } from "@/components/pagination";
 const DUMMY_USER_ID = "5"; 
 const ITEMS_PER_PAGE = 5;
 
+const statusTranslations: Record<string, string> = {
+  "Pending": "تم الاستلام",
+  "FactoryOrdered": "تم الطلب من المعمل",
+  "Processing": "قيد التجهيز",
+  "FactoryShipped": "تم الشحن من المعمل",
+  "ReadyForDelivery": "جاهز للتسليم",
+  "Delivered": "تم التوصيل",
+  "Rejected": "مرفوض",
+};
+
 export default function OrdersPage() {
   const { orders: allOrders, loading } = useOrdersAndUsers(DUMMY_USER_ID);
   const [currentTabs, setCurrentTabs] = useState<Record<string, number>>({});
@@ -42,53 +52,23 @@ export default function OrdersPage() {
 
   const userOrders = allOrders.filter(o => o.userId === DUMMY_USER_ID);
 
-  const currentOrders = userOrders.filter(o => !['Delivered', 'Rejected'].includes(o.status) && !o.isArchived);
-  const completedOrders = userOrders.filter(o => o.status === 'Delivered' && !o.isArchived);
-  const archivedAndRejectedOrders = userOrders.filter(o => o.isArchived || o.status === 'Rejected');
-
-  const tabsData = {
-    current: currentOrders,
-    completed: completedOrders,
-    archived: archivedAndRejectedOrders,
-  };
+  const ordersByStatus = (Object.keys(statusTranslations) as Array<Order['status']>).reduce((acc, status) => {
+    const filteredOrders = userOrders.filter(order => order.status === status && !order.isArchived);
+    if(filteredOrders.length > 0){
+        acc[status] = filteredOrders;
+    }
+    return acc;
+  }, {} as Record<string, Order[]>);
+  
+  const archivedOrders = userOrders.filter(order => order.isArchived);
+  const rejectedOrders = userOrders.filter(order => order.status === 'Rejected' && !order.isArchived);
+  const archivedAndRejectedOrders = [...archivedOrders, ...rejectedOrders];
 
   const handlePageChange = (tab: string, page: number) => {
     setCurrentTabs(prev => ({ ...prev, [tab]: page }));
   };
 
-  const renderTabContent = (tabKey: keyof typeof tabsData, tabName: string) => {
-    const orders = tabsData[tabKey];
-    
-    if (orders.length === 0 && tabKey === 'archived') {
-      return null;
-    }
-
-    return (
-      <TabsTrigger value={tabKey}>{tabName} ({orders.length})</TabsTrigger>
-    );
-  };
-  
-  const renderOrdersTable = (tabKey: keyof typeof tabsData) => {
-    const orders = tabsData[tabKey];
-    const currentPage = currentTabs[tabKey] || 1;
-    const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
-    const paginatedOrders = orders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-    return (
-        <TabsContent value={tabKey}>
-            <div className="space-y-4">
-                <OrdersTable orders={paginatedOrders} />
-                {totalPages > 1 && (
-                    <Pagination 
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={(page) => handlePageChange(tabKey, page)}
-                    />
-                )}
-            </div>
-        </TabsContent>
-    )
-  }
+  const defaultTab = Object.keys(ordersByStatus)[0] || (archivedAndRejectedOrders.length > 0 ? 'archived' : '');
 
 
   return (
@@ -113,18 +93,59 @@ export default function OrdersPage() {
                 </Link>
             </div>
 
-            <Tabs defaultValue="current" className="w-full">
+            <Tabs defaultValue={defaultTab} className="w-full">
               <div className="overflow-x-auto pb-2">
                 <TabsList className="inline-flex w-max">
-                  {renderTabContent('current', 'الطلبات الحالية')}
-                  {renderTabContent('completed', 'الطلبات المكتملة')}
-                  {renderTabContent('archived', 'المرفوضة والمؤرشفة')}
+                  {Object.keys(ordersByStatus).map(status => (
+                    <TabsTrigger key={status} value={status}>
+                      {statusTranslations[status]} ({ordersByStatus[status].length})
+                    </TabsTrigger>
+                  ))}
+                  {archivedAndRejectedOrders.length > 0 && <TabsTrigger value="archived">المؤرشفة والمرفوضة ({archivedAndRejectedOrders.length})</TabsTrigger>}
                 </TabsList>
               </div>
 
-              {renderOrdersTable('current')}
-              {renderOrdersTable('completed')}
-              {tabsData.archived.length > 0 && renderOrdersTable('archived')}
+              {Object.keys(ordersByStatus).map(status => {
+                const currentPage = currentTabs[status] || 1;
+                const totalPages = Math.ceil(ordersByStatus[status].length / ITEMS_PER_PAGE);
+                const paginatedOrders = ordersByStatus[status].slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+                return (
+                    <TabsContent key={status} value={status}>
+                        <div className="space-y-4">
+                            <OrdersTable orders={paginatedOrders} />
+                            {totalPages > 1 && (
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page) => handlePageChange(status, page)}
+                                />
+                            )}
+                        </div>
+                    </TabsContent>
+                );
+              })}
+
+              {archivedAndRejectedOrders.length > 0 && (() => {
+                  const currentPage = currentTabs['archived'] || 1;
+                  const totalPages = Math.ceil(archivedAndRejectedOrders.length / ITEMS_PER_PAGE);
+                  const paginatedOrders = archivedAndRejectedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+                  return (
+                    <TabsContent value="archived">
+                        <div className="space-y-4">
+                            <OrdersTable orders={paginatedOrders} />
+                            {totalPages > 1 && (
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page) => handlePageChange('archived', page)}
+                                />
+                            )}
+                        </div>
+                    </TabsContent>
+                  )
+              })()}
             </Tabs>
         </div>
       </main>
