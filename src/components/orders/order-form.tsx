@@ -36,7 +36,7 @@ import {
   generateOrderName,
   createOrder as createOrderAction,
 } from '@/lib/actions';
-import React, { useActionState, useEffect, useState, useTransition } from 'react';
+import React, { useActionState, useEffect, useState, useTransition, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
@@ -213,17 +213,29 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     }
   }, [isAdmin, currentUser, form]);
 
-  const selectedAbjourTypeData = abjourTypesData.find(t => t.name === watchMainAbjourType);
-  const availableColors = selectedAbjourTypeData?.colors || [];
+  const selectedAbjourTypeData = useMemo(() => {
+    return abjourTypesData.find(t => t.name === watchMainAbjourType);
+  }, [watchMainAbjourType]);
 
-  const totalArea = watchedOpenings.reduce(
-    (acc, op) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0)) / 10000,
-    0
-  );
+  const availableColors = useMemo(() => {
+    return selectedAbjourTypeData?.colors || [];
+  }, [selectedAbjourTypeData]);
+
+  const totalArea = useMemo(() => {
+    return watchedOpenings.reduce(
+      (acc, op) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (selectedAbjourTypeData?.bladeWidth || 0)) / 10000,
+      0
+    );
+  }, [watchedOpenings, selectedAbjourTypeData]);
   
-  const productsCost = totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
+  const productsCost = useMemo(() => {
+    return totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
+  }, [totalArea, selectedAbjourTypeData]);
+  
+  const deliveryCost = useMemo(() => {
+    return watchHasDelivery ? (5 + (totalArea * 0.5)) : 0;
+  }, [watchHasDelivery, totalArea]);
 
-  const deliveryCost = watchHasDelivery ? (5 + (totalArea * 0.5)) : 0;
   const totalCost = productsCost + deliveryCost;
 
   useEffect(() => {
