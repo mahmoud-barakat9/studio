@@ -10,6 +10,7 @@ import { SplashScreen } from '@/components/splash-screen';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
+import { OnlineStatusIndicator } from '@/components/online-status-indicator';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -68,6 +69,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={cn('antialiased', cairo.variable)}>
+        <OnlineStatusIndicator />
         <PageTransitionLoader />
         <SplashScreen isVisible={isLoading} />
         {!isLoading && children}
