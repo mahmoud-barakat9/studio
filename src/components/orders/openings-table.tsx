@@ -91,7 +91,7 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                             open={openRow === opening.serial} 
                             onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}
                         >
-                            <React.Fragment>
+                           <React.Fragment>
                                 <TableRow className="align-top">
                                     <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
                                     <TableCell className="font-medium">
