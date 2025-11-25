@@ -241,7 +241,7 @@ export function OrdersTable({
                                   <OrderDetailsDialog order={order} />
                                   <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                     <Link href={`/orders/${order.id}`}>
-                                      <Eye className="h-4 w-4" />
+                                      <FileText className="h-4 w-4" />
                                       <span className="sr-only">عرض التفاصيل الكاملة</span>
                                     </Link>
                                   </Button>
