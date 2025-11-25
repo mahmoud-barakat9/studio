@@ -16,23 +16,17 @@ import React from "react";
 
 interface OrderDetailsDialogProps {
   order: Order;
-  asChild?: boolean;
-  children?: React.ReactNode;
 }
 
-export function OrderDetailsDialog({ order, asChild, children }: OrderDetailsDialogProps) {
-  const trigger = asChild ? (
-    children
-  ) : (
-    <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Eye className="h-4 w-4" />
-        <span className="sr-only">عرض حالة التتبع</span>
-    </Button>
-  );
-
+export function OrderDetailsDialog({ order }: OrderDetailsDialogProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild={asChild}>{trigger}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">عرض حالة التتبع</span>
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>تتبع الطلب: {order.orderName}</DialogTitle>
