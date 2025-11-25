@@ -237,46 +237,53 @@ export function OrdersTable({
                               {isAdmin ? (
                                  <AdminOrderActions order={order} />
                               ) : (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <span className="sr-only">فتح القائمة</span>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                      <DropdownMenuItem asChild>
-                                          <Link href={`/orders/${order.id}`}>
-                                              <FileText className="ml-2 h-4 w-4" />
-                                              عرض التفاصيل الكاملة
-                                          </Link>
-                                      </DropdownMenuItem>
-                                      <OrderDetailsDialog order={order} asChild>
-                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                              <Eye className="ml-2 h-4 w-4" />
-                                              عرض حالة التتبع
-                                          </DropdownMenuItem>
-                                      </OrderDetailsDialog>
+                                <>
+                                  <OrderDetailsDialog order={order} />
+                                  <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                    <Link href={`/orders/${order.id}`}>
+                                      <FileText className="h-4 w-4" />
+                                      <span className="sr-only">عرض التفاصيل الكاملة</span>
+                                    </Link>
+                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">فتح القائمة</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
                                       {order.status === 'Pending' && !order.isArchived && (
-                                          <DropdownMenuItem asChild>
-                                              <Link href={`/orders/${order.id}/edit`}>
-                                                  <Pencil className="ml-2 h-4 w-4" />
-                                                  تعديل الطلب
-                                              </Link>
-                                          </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                          <Link href={`/orders/${order.id}/edit`}>
+                                            <Pencil className="ml-2 h-4 w-4" />
+                                            تعديل الطلب
+                                          </Link>
+                                        </DropdownMenuItem>
                                       )}
                                       {!order.isArchived && (
                                         <form action={archiveOrder.bind(null, order.id)} className="w-full">
                                           <DropdownMenuItem asChild>
                                             <button type="submit" className="w-full">
-                                                <Archive className="ml-2 h-4 w-4" />
-                                                أرشفة
-                                              </button>
+                                              <Archive className="ml-2 h-4 w-4" />
+                                              أرشفة
+                                            </button>
                                           </DropdownMenuItem>
                                         </form>
                                       )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                      {order.isArchived && (
+                                        <form action={restoreOrder.bind(null, order.id)} className="w-full">
+                                          <DropdownMenuItem asChild>
+                                            <button type="submit" className="w-full">
+                                              <ArchiveRestore className="ml-2 h-4 w-4" />
+                                              استعادة
+                                            </button>
+                                          </DropdownMenuItem>
+                                        </form>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </>
                               )}
                             </div>
                         </TableCell>
