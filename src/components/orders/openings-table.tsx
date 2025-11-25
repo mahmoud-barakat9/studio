@@ -84,31 +84,42 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {openings.map((opening, index) => (
-                        <Collapsible 
-                            asChild 
-                            key={opening.serial} 
-                            open={openRow === opening.serial} 
-                            onOpenChange={() => setOpenRow(openRow === opening.serial ? null : opening.serial)}
-                        >
-                           <React.Fragment>
-                                <TableRow className="align-top">
+                    {openings.map((opening, index) => {
+                        const isCollapsibleOpen = openRow === opening.serial;
+                        return (
+                            <React.Fragment key={opening.serial}>
+                                <TableRow className="align-top md:hover:bg-muted/50 data-[state=selected]:bg-muted">
                                     <TableCell className="font-medium hidden md:table-cell">{index + 1}</TableCell>
-                                    <TableCell className="font-medium">
-                                        <div className="md:hidden text-sm font-bold mb-2">الفتحة #{index + 1}</div>
-                                        {opening.codeLength.toFixed(2)}
+                                    
+                                    {/* Mobile View Cells */}
+                                    <TableCell className="font-medium md:hidden w-[60px] align-middle">
+                                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-muted-foreground font-bold">{index + 1}</div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{opening.numberOfCodes}</TableCell>
+                                    <TableCell className="font-medium md:hidden align-middle">
+                                        <div>
+                                            <div className="text-xs text-muted-foreground">طول الشفرة</div>
+                                            <div className="font-bold">{opening.codeLength.toFixed(2)} سم</div>
+                                        </div>
+                                         <div className="mt-1">
+                                            <div className="text-xs text-muted-foreground">عدد الشفرات</div>
+                                            <div className="font-bold">{opening.numberOfCodes}</div>
+                                        </div>
+                                    </TableCell>
+                                    
+                                    {/* Desktop View Cells */}
+                                    <TableCell className="font-medium hidden md:table-cell">{opening.codeLength.toFixed(2)}</TableCell>
+                                    <TableCell className="font-medium hidden md:table-cell">{opening.numberOfCodes}</TableCell>
                                     <TableCell className="hidden md:table-cell">
-                                            <div className="flex flex-col gap-1 items-start">
+                                        <div className="flex flex-col gap-1 items-start">
                                             {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
                                             {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
                                             {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">-</span>}
                                         </div>
                                     </TableCell>
                                     <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{opening.notes || '-'}</TableCell>
-                                    <TableCell className="text-left">
-                                        <div className="flex gap-2 justify-end">
+                                    
+                                    <TableCell className="text-left align-middle">
+                                        <div className="flex gap-1 justify-end">
                                             <AddOpeningForm
                                                 isEditing={true}
                                                 openingToEdit={opening}
@@ -118,38 +129,42 @@ export function OpeningsTable({ openings, bladeWidth, onUpdateOpening, onDeleteO
                                                 openingsCount={0}
                                             />
                                             <DeleteOpeningAlert onDelete={() => onDeleteOpening(index)} />
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 data-[state=open]:bg-accent md:hidden">
-                                                    <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
-                                                        <span className="sr-only">عرض التفاصيل</span>
-                                                </Button>
-                                            </CollapsibleTrigger>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 data-[state=open]:bg-accent md:hidden"
+                                                data-state={isCollapsibleOpen ? 'open' : 'closed'}
+                                                onClick={() => setOpenRow(isCollapsibleOpen ? null : opening.serial)}
+                                            >
+                                                <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+                                                <span className="sr-only">عرض التفاصيل</span>
+                                            </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                                <CollapsibleContent asChild>
-                                    <tr className="bg-muted/50 md:hidden">
-                                        <TableCell colSpan={6} className="p-0">
+                                {isCollapsibleOpen && (
+                                     <tr className="bg-muted/50 md:hidden">
+                                        <TableCell colSpan={3} className="p-0">
                                             <div className="p-4 space-y-4">
                                                 <div>
-                                                    <h4 className="font-semibold text-sm mb-1">الإضافات</h4>
+                                                    <h4 className="font-semibold text-sm mb-2">الإضافات</h4>
                                                     <div className="flex flex-wrap gap-1">
                                                         {opening.hasEndCap && <Badge variant="secondary">نهاية</Badge>}
                                                         {opening.hasAccessories && <Badge variant="secondary">مجاري</Badge>}
-                                                        {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">لا توجد</span>}
+                                                        {!opening.hasEndCap && !opening.hasAccessories && <p className="text-xs text-muted-foreground">لا توجد إضافات</p>}
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-semibold text-sm mb-1">الملاحظات</h4>
+                                                    <h4 className="font-semibold text-sm mb-2">الملاحظات</h4>
                                                     <p className="text-sm text-muted-foreground">{opening.notes || 'لا توجد ملاحظات.'}</p>
                                                 </div>
                                             </div>
                                         </TableCell>
                                     </tr>
-                                </CollapsibleContent>
+                                )}
                             </React.Fragment>
-                        </Collapsible>
-                    ))}
+                        );
+                    })}
                 </TableBody>
             </Table>
         </div>
