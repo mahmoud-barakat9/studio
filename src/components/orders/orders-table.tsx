@@ -179,66 +179,82 @@ export function OrdersTable({
   return (
     <Card>
       <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden md:table-cell">رقم الطلب</TableHead>
-                <TableHead>اسم الطلب</TableHead>
-                {isAdmin && <TableHead className="hidden md:table-cell">العميل</TableHead>}
-                <TableHead>النوع واللون</TableHead>
-                <TableHead className="hidden md:table-cell">التاريخ</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead className="text-left">التكلفة</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => {
-                const statusStyle =
-                  statusStyles[order.status] || statusStyles["Pending"];
-                const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
-                    <TableCell>{order.orderName}</TableCell>
-                    {isAdmin && <TableCell className="hidden md:table-cell">{getUserName(order.userId)}</TableCell>}
-                    <TableCell>
-                        <div className="flex flex-col">
-                          <span>{order.mainAbjourType}</span>
-                          <span className="text-xs text-muted-foreground">{order.mainColor}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{order.date}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusStyle.variant}>
-                        {statusStyle.text}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-left">
-                      ${finalTotalCost.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-left">
-                       <div className="flex items-center gap-1">
-                          {isAdmin ? (
-                             <AdminOrderActions order={order} />
-                          ) : (
-                            <>
-                              <OrderDetailsDialog order={order} />
-                              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                                <Link href={`/orders/${order.id}`}>
-                                  <FileText className="h-4 w-4" />
-                                  <span className="sr-only">عرض التفاصيل الكاملة</span>
-                                </Link>
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                    </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="hidden md:table-cell">رقم الطلب</TableHead>
+                    <TableHead>اسم الطلب</TableHead>
+                    {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
+                    <TableHead className="hidden sm:table-cell">النوع واللون</TableHead>
+                    <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-left">التكلفة</TableHead>
+                    <TableHead className="text-left">الإجراءات</TableHead>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {orders.map((order) => {
+                    const statusStyle =
+                      statusStyles[order.status] || statusStyles["Pending"];
+                    const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{order.orderName}</span>
+                            {!isAdmin && (
+                               <span className="text-xs text-muted-foreground sm:hidden">
+                                {order.mainAbjourType} ({order.mainColor})
+                              </span>
+                            )}
+                             {isAdmin && (
+                               <span className="text-xs text-muted-foreground lg:hidden">
+                                {getUserName(order.userId)}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
+                        <TableCell className="hidden sm:table-cell">
+                            <div className="flex flex-col">
+                              <span>{order.mainAbjourType}</span>
+                              <span className="text-xs text-muted-foreground">{order.mainColor}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusStyle.variant}>
+                            {statusStyle.text}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-left font-mono">
+                          ${finalTotalCost.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-left">
+                           <div className="flex items-center gap-1 justify-end">
+                              {isAdmin ? (
+                                 <AdminOrderActions order={order} />
+                              ) : (
+                                <>
+                                  <OrderDetailsDialog order={order} />
+                                  <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                                    <Link href={`/orders/${order.id}`}>
+                                      <FileText className="h-4 w-4" />
+                                      <span className="sr-only">عرض التفاصيل الكاملة</span>
+                                    </Link>
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+            </Table>
+          </div>
       </CardContent>
     </Card>
   );

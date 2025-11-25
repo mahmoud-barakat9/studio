@@ -53,7 +53,7 @@ export default async function AdminOrdersPage() {
                         {statusTranslations[status]} ({ordersByStatus[status].length})
                     </TabsTrigger>
                 ))}
-                <TabsTrigger value="archived">المؤرشفة ({archivedOrders.length})</TabsTrigger>
+                {archivedOrders.length > 0 && <TabsTrigger value="archived">المؤرشفة ({archivedOrders.length})</TabsTrigger>}
             </TabsList>
         </div>
 
@@ -62,10 +62,13 @@ export default async function AdminOrdersPage() {
                 <OrdersTable orders={ordersByStatus[status]} users={users} isAdmin={true} />
              </TabsContent>
         ))}
+        
+        {archivedOrders.length > 0 && (
+            <TabsContent value="archived">
+              <OrdersTable orders={archivedOrders} users={users} isAdmin={true} />
+            </TabsContent>
+        )}
 
-        <TabsContent value="archived">
-          <OrdersTable orders={archivedOrders} users={users} isAdmin={true} />
-        </TabsContent>
       </Tabs>
     </main>
   );
