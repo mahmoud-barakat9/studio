@@ -96,11 +96,11 @@ export default async function UserDetailsPage({
                     <Shield className="h-5 w-5 text-muted-foreground" />
                     <div>
                         <p className="text-muted-foreground">الدور</p>
-                        <p className="font-medium">
+                        <div className="font-medium">
                             <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                                 {user.role === 'admin' ? 'مسؤول' : 'مستخدم'}
                             </Badge>
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
