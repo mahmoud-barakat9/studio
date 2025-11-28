@@ -7,10 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -59,6 +59,7 @@ export default async function AdminUsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>إدارة المستخدمين</CardTitle>
+          <CardDescription>عرض وتعديل جميع المستخدمين في النظام.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -74,13 +75,23 @@ export default async function AdminUsersPage() {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/admin/users/${user.id}`} className="hover:underline">
+                            {user.name}
+                        </Link>
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? 'مسؤول' : 'مستخدم'}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                             <Link href={`/admin/users/${user.id}`}>
+                                <Button size="icon" variant="outline" className="h-8 w-8">
+                                    <Eye className="h-4 w-4" />
+                                    <span className="sr-only">عرض التفاصيل</span>
+                                </Button>
+                            </Link>
                             <Link href={`/admin/users/${user.id}/edit`}>
                                 <Button size="icon" variant="outline" className="h-8 w-8">
                                     <Pencil className="h-4 w-4" />
