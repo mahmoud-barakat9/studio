@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   Table,
@@ -37,7 +38,7 @@ import { OrderDetailsDialog } from "./order-details-dialog";
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
-  Pending: { variant: "outline", text: "تم الاستلام" },
+  Pending: { variant: "outline", text: "بانتظار الموافقة" },
   FactoryOrdered: { variant: "secondary", text: "تم الطلب من المعمل" },
   Processing: { variant: "default", text: "قيد التجهيز" },
   FactoryShipped: { variant: "outline", text: "تم الشحن من المعمل" },

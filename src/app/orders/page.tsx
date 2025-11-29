@@ -16,7 +16,7 @@ const DUMMY_USER_ID = "5";
 const ITEMS_PER_PAGE = 5;
 
 const statusTranslations: Record<string, string> = {
-  "Pending": "تم الاستلام",
+  "Pending": "بانتظار الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",

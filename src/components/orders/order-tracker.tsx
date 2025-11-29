@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -7,7 +8,7 @@ import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, 
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
-    { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
+    { name: "Pending", label: "بانتظار الموافقة", icon: FileQuestion },
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: Truck },
@@ -16,7 +17,7 @@ const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = 
 ];
 
 const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
-    { name: "Pending", label: "تم الاستلام", icon: FileQuestion },
+    { name: "Pending", label: "بانتظار الموافقة", icon: FileQuestion },
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: Home },

@@ -12,7 +12,7 @@ import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 
 
 const statusTranslations: Record<string, string> = {
-  "Pending": "تم الاستلام",
+  "Pending": "بانتظار الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",
