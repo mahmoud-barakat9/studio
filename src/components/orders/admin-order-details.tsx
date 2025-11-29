@@ -4,8 +4,8 @@ import { useState } from 'react';
 import type { Order, OrderStatus, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { XCircle } from 'lucide-react';
-import { updateOrderStatus as updateOrderStatusAction, approveOrder, rejectOrder } from '@/lib/actions';
+import { XCircle, MessageSquareQuote } from 'lucide-react';
+import { updateOrderStatus as updateOrderStatusAction, approveOrder, rejectOrder, sendToFactory } from '@/lib/actions';
 import { OrderTracker } from './order-tracker';
 
 
@@ -19,22 +19,27 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
 
     const handleStatusUpdate = async (newStatus: OrderStatus, orderId: string) => {
         if (!isAdmin) return;
+        
+        let result: { success: boolean; whatsappUrl?: string; error?: string; } | undefined;
 
-        if (newStatus === 'FactoryOrdered') {
-            const result = await approveOrder(orderId);
-            if (result.success && result.whatsappUrl) {
-                setOrder(prevOrder => ({ ...prevOrder, status: 'FactoryOrdered' }));
-                window.open(result.whatsappUrl, '_blank');
-            }
+        if (newStatus === 'Approved') {
+            result = await approveOrder(orderId);
+        } else if (newStatus === 'FactoryOrdered') {
+            result = await sendToFactory(orderId);
         } else if (newStatus === 'Rejected') {
-            const result = await rejectOrder(orderId);
-            if (result.success && result.whatsappUrl) {
-                setOrder(prevOrder => ({ ...prevOrder, status: 'Rejected' }));
+            result = await rejectOrder(orderId);
+        } else {
+             // For other status updates that don't need a WhatsApp redirect
+            await updateOrderStatusAction(orderId, newStatus);
+            setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+            return;
+        }
+
+        if (result?.success) {
+            setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+            if (result.whatsappUrl) {
                 window.open(result.whatsappUrl, '_blank');
             }
-        } else {
-            setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
-            await updateOrderStatusAction(orderId, newStatus);
         }
     };
 
@@ -62,8 +67,9 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
 }
 
 
-const ADMIN_STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } }[] = [
-    { name: "Pending", label: "بانتظار الموافقة", icon: 'FileQuestion', action: { label: "موافقة وبدء الطلب", nextStatus: "FactoryOrdered" } },
+const ADMIN_STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus, icon?: React.ElementType } }[] = [
+    { name: "Pending", label: "بانتظار الموافقة", icon: 'FileQuestion', action: { label: "موافقة وإبلاغ العميل", nextStatus: "Approved" } },
+    { name: "Approved", label: "جاهز للإرسال للمعمل", icon: 'PackageCheck', action: { label: "إرسال للمعمل عبر WhatsApp", nextStatus: "FactoryOrdered", icon: MessageSquareQuote } },
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: 'Factory', action: { label: "نقل إلى التجهيز", nextStatus: "Processing" } },
     { name: "Processing", label: "قيد التجهيز", icon: 'Cog', action: { label: "شحن من المعمل", nextStatus: "FactoryShipped" } },
     { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: 'Truck', action: { label: "تأكيد الاستلام وجاهزية التوصيل", nextStatus: "ReadyForDelivery" } },
