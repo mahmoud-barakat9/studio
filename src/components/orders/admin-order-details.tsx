@@ -5,7 +5,7 @@ import type { Order, OrderStatus, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { XCircle } from 'lucide-react';
-import { updateOrderStatus as updateOrderStatusAction } from '@/lib/actions';
+import { updateOrderStatus as updateOrderStatusAction, approveOrder, rejectOrder } from '@/lib/actions';
 import { OrderTracker } from './order-tracker';
 
 
@@ -17,11 +17,25 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
     const isOwner = currentUser?.id === order.userId;
     const isAdmin = currentUser?.role === 'admin';
 
-    const handleStatusUpdate = async (newStatus: OrderStatus) => {
-        if (isAdmin) {
+    const handleStatusUpdate = async (newStatus: OrderStatus, orderId: string) => {
+        if (!isAdmin) return;
+
+        if (newStatus === 'FactoryOrdered') {
+            const result = await approveOrder(orderId);
+            if (result.success && result.whatsappUrl) {
+                setOrder(prevOrder => ({ ...prevOrder, status: 'FactoryOrdered' }));
+                window.open(result.whatsappUrl, '_blank');
+            }
+        } else if (newStatus === 'Rejected') {
+            const result = await rejectOrder(orderId);
+            if (result.success && result.whatsappUrl) {
+                setOrder(prevOrder => ({ ...prevOrder, status: 'Rejected' }));
+                window.open(result.whatsappUrl, '_blank');
+            }
+        } else {
             setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+            await updateOrderStatusAction(orderId, newStatus);
         }
-        await updateOrderStatusAction(order.id, newStatus);
     };
 
     return (
@@ -57,7 +71,7 @@ const ADMIN_STAGES: { name: OrderStatus; label: string; icon: StageIconName, act
     { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
 
-function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUpdate: (newStatus: OrderStatus) => Promise<void> }) {
+function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUpdate: (newStatus: OrderStatus, orderId: string) => Promise<void> }) {
     const currentStatusIndex = ADMIN_STAGES.findIndex(s => s.name === order.status);
 
     return (

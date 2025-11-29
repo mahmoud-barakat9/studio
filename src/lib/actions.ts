@@ -156,7 +156,7 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
 
 export async function approveOrder(orderId: string) {
   const order = await getOrderById(orderId);
-  if (!order) throw new Error('Order not found');
+  if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
 
   await updateOrderStatusDB(orderId, 'FactoryOrdered');
   revalidatePath('/admin/orders');
@@ -165,12 +165,13 @@ export async function approveOrder(orderId: string) {
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وتم إرساله إلى المعمل.`);
   const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
-  redirect(whatsappUrl);
+  
+  return { success: true, whatsappUrl };
 }
 
 export async function rejectOrder(orderId: string) {
   const order = await getOrderById(orderId);
-  if (!order) throw new Error('Order not found');
+  if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
 
   await updateOrderStatusDB(orderId, 'Rejected');
   revalidatePath('/admin/orders');
@@ -179,7 +180,8 @@ export async function rejectOrder(orderId: string) {
   const customerPhone = order.customerPhone?.replace(/\D/g, '');
   const message = encodeURIComponent(`مرحبًا ${order.customerName}, نأسف لإبلاغك بأنه تم رفض طلبك "${order.orderName}". الرجاء التواصل معنا للمزيد من التفاصيل.`);
   const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
-  redirect(whatsappUrl);
+
+  return { success: true, whatsappUrl };
 }
 
 export async function generateWhatsAppEditRequest(orderId: string, orderName: string) {

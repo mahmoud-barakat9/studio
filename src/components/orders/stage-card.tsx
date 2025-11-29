@@ -6,7 +6,6 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2, Home } from "lucide-react";
-import { updateOrderStatus } from "@/lib/actions";
 import type { OrderStatus } from "@/lib/definitions";
 import React, { useTransition } from "react";
 
@@ -29,7 +28,7 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
     isFuture: boolean, 
     orderId: string,
     showRejectButton?: boolean,
-    onStatusUpdate: (newStatus: OrderStatus) => Promise<void>;
+    onStatusUpdate: (newStatus: OrderStatus, orderId: string) => Promise<void>;
 }) {
     
     const IconComponent = icons[stage.icon];
@@ -37,7 +36,7 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
 
     const handleAction = (newStatus: OrderStatus) => {
         startTransition(async () => {
-            await onStatusUpdate(newStatus);
+            await onStatusUpdate(newStatus, orderId);
         });
     };
 
@@ -81,5 +80,3 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
         </Card>
     );
 }
-
-    

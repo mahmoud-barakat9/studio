@@ -78,6 +78,22 @@ function DeleteOrderAlert({ orderId, asChild = false, children }: { orderId: str
 
 
 function AdminOrderActions({ order }: { order: Order }) {
+  
+  const handleApprove = async () => {
+    const result = await approveOrder(order.id);
+    if (result.success && result.whatsappUrl) {
+      window.open(result.whatsappUrl, '_blank');
+      // Re-fetching or revalidating data would be ideal here if the table doesn't auto-update
+    }
+  };
+
+  const handleReject = async () => {
+    const result = await rejectOrder(order.id);
+    if (result.success && result.whatsappUrl) {
+      window.open(result.whatsappUrl, '_blank');
+    }
+  };
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -100,22 +116,14 @@ function AdminOrderActions({ order }: { order: Order }) {
           <>
             {order.status === "Pending" && (
               <>
-                <form action={approveOrder.bind(null, order.id)} className="w-full">
-                   <DropdownMenuItem asChild>
-                     <button type="submit" className="w-full text-green-600 focus:text-green-700">
-                        <Check className="ml-2 h-4 w-4" />
-                        موافقة
-                      </button>
-                  </DropdownMenuItem>
-                </form>
-                 <form action={rejectOrder.bind(null, order.id)} className="w-full">
-                   <DropdownMenuItem asChild>
-                      <button type="submit" className="w-full text-red-600 focus:text-red-700">
-                        <X className="ml-2 h-4 w-4" />
-                        رفض
-                      </button>
-                  </DropdownMenuItem>
-                </form>
+                <DropdownMenuItem onClick={handleApprove} className="w-full text-green-600 focus:text-green-700 cursor-pointer">
+                  <Check className="ml-2 h-4 w-4" />
+                  موافقة
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReject} className="w-full text-red-600 focus:text-red-700 cursor-pointer">
+                  <X className="ml-2 h-4 w-4" />
+                  رفض
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
             )}
