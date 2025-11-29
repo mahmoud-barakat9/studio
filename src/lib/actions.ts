@@ -178,13 +178,10 @@ export async function sendToFactory(orderId: string) {
     revalidatePath('/admin/orders');
     revalidatePath(`/admin/orders/${orderId}`);
     
-    // This should be the factory's WhatsApp number in a real app
     const factoryWhatsAppNumber = ADMIN_WHATSAPP_NUMBER; 
 
-    // Generate a direct link to the factory invoice page
-    // In a real app, this URL should be publicly accessible or use a secure token
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
-    const factoryInvoiceUrl = `${appBaseUrl}/admin/orders/${orderId}/view`; 
+    const factoryInvoiceUrl = `${appBaseUrl}/admin/orders/${orderId}/view?type=factory`; 
 
     const message = encodeURIComponent(`طلب تصنيع جديد: ${order.orderName}\nرقم الطلب: ${order.id}\nالرجاء مراجعة التفاصيل وبدء الإنتاج.\n\nرابط الفاتورة الفنية: ${factoryInvoiceUrl}`);
     const whatsappUrl = `https://wa.me/${factoryWhatsAppNumber}?text=${message}`;

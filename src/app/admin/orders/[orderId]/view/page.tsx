@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
 import type { Order, User } from "@/lib/definitions";
-import React, { useEffect, useState, use } from "react";
-import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,11 @@ async function getOrderAndUsers(orderId: string) {
 
 export default function OrderInvoicesPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const orderId = params.orderId as string;
+  
+  const initialTab = searchParams.get('type') || 'customer';
+  
   const [data, setData] = useState<{orderData: Order | null | undefined, usersData: User[]}>({ orderData: undefined, usersData: [] });
 
   useEffect(() => {
@@ -79,7 +83,7 @@ export default function OrderInvoicesPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <Tabs defaultValue="customer" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                 <div className="flex-grow">
                     <h1 className="text-2xl font-bold">فواتير الطلب: {order.orderName}</h1>
