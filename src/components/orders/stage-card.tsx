@@ -5,7 +5,7 @@
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2, Home } from "lucide-react";
+import { Check, X, FileQuestion, Factory, Cog, Truck, PackageCheck, CheckCircle2, Loader2, Home, MessageSquareQuote } from "lucide-react";
 import type { OrderStatus } from "@/lib/definitions";
 import React, { useTransition } from "react";
 
@@ -17,12 +17,13 @@ const icons = {
     PackageCheck,
     CheckCircle2,
     Home,
+    MessageSquareQuote
 }
 export type StageIconName = keyof typeof icons;
 
 
 export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, showRejectButton = false, onStatusUpdate } : { 
-    stage: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus } },
+    stage: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus, icon?: React.ElementType } },
     isCompleted: boolean, 
     isCurrent: boolean, 
     isFuture: boolean, 
@@ -31,7 +32,9 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
     onStatusUpdate: (newStatus: OrderStatus, orderId: string) => Promise<void>;
 }) {
     
-    const IconComponent = icons[stage.icon];
+    const IconComponent = stage.icon ? icons[stage.icon] : Check;
+    const ActionIconComponent = stage.action?.icon || Check;
+
     const [isPending, startTransition] = useTransition();
 
     const handleAction = (newStatus: OrderStatus) => {
@@ -71,7 +74,7 @@ export function StageCard({ stage, isCompleted, isCurrent, isFuture, orderId, sh
                             </Button>
                         )}
                         <Button type="button" className="w-full" onClick={() => handleAction(stage.action!.nextStatus)} disabled={isPending}>
-                            {isPending ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Check className="ml-2 h-4 w-4" />}
+                            {isPending ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ActionIconComponent className="ml-2 h-4 w-4" />}
                             {stage.action.label}
                         </Button>
                     </div>
