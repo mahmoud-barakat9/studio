@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
-import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest } from "@/lib/actions";
+import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest, sendToFactory } from "@/lib/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +40,7 @@ type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
   Pending: { variant: "outline", text: "بانتظار الموافقة" },
+  Approved: { variant: "secondary", text: "جاهزة للإرسال للمعمل" },
   FactoryOrdered: { variant: "secondary", text: "تم الطلب من المعمل" },
   Processing: { variant: "default", text: "قيد التجهيز" },
   FactoryShipped: { variant: "outline", text: "تم الشحن من المعمل" },
@@ -94,6 +95,13 @@ function AdminOrderActions({ order }: { order: Order }) {
       window.open(result.whatsappUrl, '_blank');
     }
   };
+
+  const handleSendToFactory = async () => {
+    const result = await sendToFactory(order.id);
+    if (result.success && result.whatsappUrl) {
+        window.open(result.whatsappUrl, '_blank');
+    }
+  };
   
   return (
     <DropdownMenu>
@@ -127,6 +135,15 @@ function AdminOrderActions({ order }: { order: Order }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
+            )}
+             {order.status === 'Approved' && (
+                <>
+                    <DropdownMenuItem onClick={handleSendToFactory} className="w-full cursor-pointer">
+                       <MessageSquareQuote className="ml-2 h-4 w-4" />
+                        إرسال للمعمل
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                </>
             )}
             <DropdownMenuItem asChild>
               <Link href={`/admin/orders/${order.id}/edit`}>
@@ -247,7 +264,7 @@ export function OrdersTable({
                               {isAdmin ? (
                                  <AdminOrderActions order={order} />
                               ) : (
-                                <div className="flex items-center">
+                                <>
                                   <OrderDetailsDialog order={order} />
                                   <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                     <Link href={`/orders/${order.id}`}>
@@ -282,7 +299,7 @@ export function OrdersTable({
                                       ) : null}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
-                                </div>
+                                </>
                               )}
                             </div>
                         </TableCell>

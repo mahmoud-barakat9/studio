@@ -82,7 +82,7 @@ const adminOrderSchema = baseOrderSchema.extend({
     newUserName: z.string().optional(),
     newUserEmail: z.string().email({ message: "البريد الإلكتروني غير صالح" }).optional().or(z.literal('')),
     newUserPhone: z.string().optional(),
-    status: z.nativeEnum(z.enum(["Pending", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"])),
+    status: z.nativeEnum(z.enum(["Pending", "Approved", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"])),
   })
   .refine(
     (data) => {
@@ -110,9 +110,10 @@ interface OrderFormProps {
   users?: User[];
 }
 
-const statuses: Order['status'][] = ["Pending", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"];
+const statuses: Order['status'][] = ["Pending", "Approved", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"];
 const statusTranslations: Record<Order['status'], string> = {
   "Pending": "بانتظار الموافقة",
+  "Approved": "تمت الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",

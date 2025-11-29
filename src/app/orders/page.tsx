@@ -18,6 +18,7 @@ const ITEMS_PER_PAGE = 5;
 
 const statusTranslations: Record<string, string> = {
   "Pending": "بانتظار الموافقة",
+  "Approved": "تمت الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",
