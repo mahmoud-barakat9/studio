@@ -155,18 +155,41 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
 
 
 export async function approveOrder(orderId: string) {
-  const order = await getOrderById(orderId);
-  if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
+    const order = await getOrderById(orderId);
+    if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
 
-  await updateOrderStatusDB(orderId, 'FactoryOrdered');
-  revalidatePath('/admin/orders');
-  revalidatePath('/orders');
+    await updateOrderStatusDB(orderId, 'Approved');
+    revalidatePath('/admin/orders');
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath('/orders');
 
-  const customerPhone = order.customerPhone?.replace(/\D/g, '');
-  const message = encodeURIComponent(`مرحبًا ${order.customerName}, تم قبول طلبك "${order.orderName}" وتم إرساله إلى المعمل.`);
-  const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
-  
-  return { success: true, whatsappUrl };
+    const customerPhone = order.customerPhone?.replace(/\D/g, '');
+    const message = encodeURIComponent(`مرحبًا ${order.customerName}, تمت الموافقة على طلبك "${order.orderName}" وهو الآن قيد المراجعة النهائية قبل إرساله للمعمل.`);
+    const whatsappUrl = `https://wa.me/${customerPhone}?text=${message}`;
+    
+    return { success: true, whatsappUrl };
+}
+
+export async function sendToFactory(orderId: string) {
+    const order = await getOrderById(orderId);
+    if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
+
+    await updateOrderStatusDB(orderId, 'FactoryOrdered');
+    revalidatePath('/admin/orders');
+    revalidatePath(`/admin/orders/${orderId}`);
+    
+    // This should be the factory's WhatsApp number in a real app
+    const factoryWhatsAppNumber = ADMIN_WHATSAPP_NUMBER; 
+
+    // Generate a direct link to the factory invoice page
+    // In a real app, this URL should be publicly accessible or use a secure token
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
+    const factoryInvoiceUrl = `${appBaseUrl}/admin/orders/${orderId}/view`; 
+
+    const message = encodeURIComponent(`طلب تصنيع جديد: ${order.orderName}\nرقم الطلب: ${order.id}\nالرجاء مراجعة التفاصيل وبدء الإنتاج.\n\nرابط الفاتورة الفنية: ${factoryInvoiceUrl}`);
+    const whatsappUrl = `https://wa.me/${factoryWhatsAppNumber}?text=${message}`;
+    
+    return { success: true, whatsappUrl };
 }
 
 export async function rejectOrder(orderId: string) {
@@ -198,6 +221,7 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     await updateOrderStatusDB(orderId, status);
     revalidatePath('/admin/orders');
     revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath('/orders');
 }
 
 
@@ -215,6 +239,11 @@ export async function updateUser(userId: string, formData: any) {
         role: formData.role,
         phone: formData.phone,
     };
+
+    if (formData.password) {
+        // In a real app, you would hash the password here
+        // For this mock, we'll just ignore it if it's not provided
+    }
 
     await updateUserDB(userId, dataToUpdate);
 
