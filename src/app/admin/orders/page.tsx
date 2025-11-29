@@ -22,6 +22,15 @@ const statusTranslations: Record<string, string> = {
   "Rejected": "مرفوض",
 };
 
+const activeStatuses: Array<Order['status']> = [
+    "Pending", 
+    "Approved", 
+    "FactoryOrdered", 
+    "Processing", 
+    "FactoryShipped", 
+    "ReadyForDelivery"
+];
+
 const ITEMS_PER_PAGE = 10;
 
 export default function AdminOrdersPage() {
@@ -50,11 +59,12 @@ export default function AdminOrdersPage() {
     );
   }
 
-  const archivedOrders = orders.filter(order => order.isArchived);
+  const finishedOrders = orders.filter(order => 
+      order.isArchived || order.status === 'Delivered' || order.status === 'Rejected'
+  );
   
-  const ordersByStatus = (Object.keys(statusTranslations) as Array<Order['status']>).reduce((acc, status) => {
+  const ordersByStatus = activeStatuses.reduce((acc, status) => {
     const filteredOrders = orders.filter(order => order.status === status && !order.isArchived);
-    // Always show all status tabs for admin
     acc[status] = filteredOrders;
     return acc;
   }, {} as Record<string, Order[]>);
@@ -62,6 +72,9 @@ export default function AdminOrdersPage() {
   const handlePageChange = (tab: string, page: number) => {
     setCurrentTabs(prev => ({ ...prev, [tab]: page }));
   };
+  
+  const defaultTab = activeStatuses.find(status => ordersByStatus[status].length > 0) || (finishedOrders.length > 0 ? 'archived' : 'Pending');
+
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -77,19 +90,19 @@ export default function AdminOrdersPage() {
         </div>
       </div>
       
-      <Tabs defaultValue="Pending" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <div className="overflow-x-auto pb-2">
             <TabsList className="inline-flex w-max">
-                {(Object.keys(ordersByStatus) as Array<string>).map(status => (
+                {activeStatuses.map(status => (
                     <TabsTrigger key={status} value={status}>
                         {statusTranslations[status]} ({ordersByStatus[status].length})
                     </TabsTrigger>
                 ))}
-                {archivedOrders.length > 0 && <TabsTrigger value="archived">المؤرشفة ({archivedOrders.length})</TabsTrigger>}
+                {finishedOrders.length > 0 && <TabsTrigger value="archived">الأرشيف ({finishedOrders.length})</TabsTrigger>}
             </TabsList>
         </div>
 
-        {(Object.keys(ordersByStatus) as Array<string>).map(status => {
+        {activeStatuses.map(status => {
             const currentPage = currentTabs[status] || 1;
             const totalPages = Math.ceil(ordersByStatus[status].length / ITEMS_PER_PAGE);
             const paginatedOrders = ordersByStatus[status].slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -110,10 +123,10 @@ export default function AdminOrdersPage() {
             );
         })}
         
-        {archivedOrders.length > 0 && (() => {
+        {finishedOrders.length > 0 && (() => {
             const currentPage = currentTabs['archived'] || 1;
-            const totalPages = Math.ceil(archivedOrders.length / ITEMS_PER_PAGE);
-            const paginatedOrders = archivedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(finishedOrders.length / ITEMS_PER_PAGE);
+            const paginatedOrders = finishedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
             
             return (
                 <TabsContent value="archived">
