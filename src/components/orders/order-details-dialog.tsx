@@ -22,7 +22,7 @@ export function OrderDetailsDialog({ order }: OrderDetailsDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
           <Eye className="h-4 w-4" />
           <span className="sr-only">عرض حالة التتبع</span>
         </Button>

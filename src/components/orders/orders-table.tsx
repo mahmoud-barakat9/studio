@@ -1,6 +1,8 @@
 
 
+'use client';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -52,7 +54,7 @@ const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
 function DeleteOrderAlert({ orderId, asChild = false, children }: { orderId: string, asChild?: boolean, children?: React.ReactNode }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild={asChild}>
+      <AlertDialogTrigger asChild={asChild} onClick={(e) => e.stopPropagation()}>
         {asChild ? children : 
           <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
               <Trash2 className="h-4 w-4" />
@@ -85,7 +87,6 @@ function AdminOrderActions({ order }: { order: Order }) {
     const result = await approveOrder(order.id);
     if (result.success && result.whatsappUrl) {
       window.open(result.whatsappUrl, '_blank');
-      // Re-fetching or revalidating data would be ideal here if the table doesn't auto-update
     }
   };
 
@@ -106,12 +107,12 @@ function AdminOrderActions({ order }: { order: Order }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
           <span className="sr-only">فتح القائمة</span>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
         {order.isArchived ? (
           <form action={restoreOrder.bind(null, order.id)} className="w-full">
             <DropdownMenuItem asChild>
@@ -189,8 +190,15 @@ export function OrdersTable({
   users?: User[];
   isAdmin?: boolean;
 }) {
+  const router = useRouter();
+
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.name || "غير معروف";
+  };
+
+  const handleRowClick = (orderId: string) => {
+    const path = isAdmin ? `/admin/orders/${orderId}` : `/orders/${orderId}`;
+    router.push(path);
   };
   
   if (orders.length === 0) {
@@ -226,7 +234,11 @@ export function OrdersTable({
                       statusStyles[order.status] || statusStyles["Pending"];
                     const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
                     return (
-                      <TableRow key={order.id}>
+                      <TableRow 
+                        key={order.id}
+                        onClick={() => handleRowClick(order.id)}
+                        className="cursor-pointer"
+                      >
                         <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -259,7 +271,7 @@ export function OrdersTable({
                         <TableCell className="text-left font-mono">
                           ${finalTotalCost.toFixed(2)}
                         </TableCell>
-                        <TableCell className="text-left">
+                        <TableCell className="text-left" onClick={(e) => e.stopPropagation()}>
                            <div className="flex items-center gap-1 justify-end">
                               {isAdmin ? (
                                  <AdminOrderActions order={order} />
