@@ -1,4 +1,5 @@
 
+
 import Link from "next/link";
 import {
   Table,
@@ -246,7 +247,7 @@ export function OrdersTable({
                               {isAdmin ? (
                                  <AdminOrderActions order={order} />
                               ) : (
-                                <>
+                                <div className="flex items-center">
                                   <OrderDetailsDialog order={order} />
                                   <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                     <Link href={`/orders/${order.id}`}>
@@ -281,7 +282,7 @@ export function OrdersTable({
                                       ) : null}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
-                                </>
+                                </div>
                               )}
                             </div>
                         </TableCell>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -111,7 +112,7 @@ interface OrderFormProps {
 
 const statuses: Order['status'][] = ["Pending", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"];
 const statusTranslations: Record<Order['status'], string> = {
-  "Pending": "تم الاستلام",
+  "Pending": "بانتظار الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",
