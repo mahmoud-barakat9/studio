@@ -4,9 +4,10 @@ import { useState } from 'react';
 import type { Order, OrderStatus, User } from "@/lib/definitions";
 import { StageCard, type StageIconName } from "@/components/orders/stage-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { XCircle, MessageSquareQuote } from 'lucide-react';
-import { updateOrderStatus as updateOrderStatusAction, approveOrder, rejectOrder, sendToFactory } from '@/lib/actions';
+import { XCircle, MessageSquareQuote, CalendarClock } from 'lucide-react';
+import { updateOrderStatus as updateOrderStatusAction, approveOrder, rejectOrder, sendToFactory, scheduleOrder } from '@/lib/actions';
 import { OrderTracker } from './order-tracker';
+import { ScheduleOrderDialog } from './schedule-order-dialog';
 
 
 const DUMMY_USER_ID = "5"; 
@@ -42,6 +43,14 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
             }
         }
     };
+    
+    const handleScheduleOrder = async (days: number) => {
+        const result = await scheduleOrder(order.id, days);
+        if (result.success && result.updatedOrder) {
+            setOrder(result.updatedOrder);
+        }
+        // Handle error toast if needed
+    };
 
     return (
         <Card>
@@ -53,7 +62,7 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
             </CardHeader>
             <CardContent className="space-y-6">
                 {isAdmin ? (
-                     <AdminStageManager order={order} onStatusUpdate={handleStatusUpdate} />
+                     <AdminStageManager order={order} onStatusUpdate={handleStatusUpdate} onSchedule={handleScheduleOrder} />
                 ) : isOwner ? (
                     <div className="py-4 pr-6">
                          <OrderTracker order={order} />
@@ -67,17 +76,22 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
 }
 
 
-const ADMIN_STAGES: { name: OrderStatus; label: string; icon: StageIconName, action?: { label: string, nextStatus: OrderStatus, icon?: React.ElementType } }[] = [
+const ADMIN_STAGES: { 
+    name: OrderStatus; 
+    label: string; 
+    icon: StageIconName; 
+    action?: { label: string, nextStatus?: OrderStatus, icon?: React.ElementType, type?: 'status_change' | 'schedule' } 
+}[] = [
     { name: "Pending", label: "بانتظار الموافقة", icon: 'FileQuestion', action: { label: "موافقة وإبلاغ العميل", nextStatus: "Approved" } },
     { name: "Approved", label: "جاهز للإرسال للمعمل", icon: 'PackageCheck', action: { label: "إرسال للمعمل عبر WhatsApp", nextStatus: "FactoryOrdered", icon: MessageSquareQuote } },
-    { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: 'Factory', action: { label: "نقل إلى التجهيز", nextStatus: "Processing" } },
+    { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: 'Factory', action: { label: "تحديد الجدول الزمني", type: 'schedule', icon: CalendarClock } },
     { name: "Processing", label: "قيد التجهيز", icon: 'Cog', action: { label: "شحن من المعمل", nextStatus: "FactoryShipped" } },
     { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: 'Truck', action: { label: "تأكيد الاستلام وجاهزية التوصيل", nextStatus: "ReadyForDelivery" } },
     { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: 'PackageCheck', action: { label: "تأكيد التوصيل", nextStatus: "Delivered" } },
     { name: "Delivered", label: "تم التوصيل", icon: 'CheckCircle2' },
 ];
 
-function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUpdate: (newStatus: OrderStatus, orderId: string) => Promise<void> }) {
+function AdminStageManager({ order, onStatusUpdate, onSchedule }: { order: Order; onStatusUpdate: (newStatus: OrderStatus, orderId: string) => Promise<void>; onSchedule: (days: number) => Promise<void>; }) {
     const currentStatusIndex = ADMIN_STAGES.findIndex(s => s.name === order.status);
 
     return (
@@ -144,6 +158,23 @@ function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUp
                         }
                     }
 
+                    // Schedule action rendering
+                     if (isCurrent && stage.action?.type === 'schedule') {
+                        return (
+                             <StageCard 
+                                key={stage.name} 
+                                stage={stage} 
+                                isCompleted={isCompleted}
+                                isCurrent={isCurrent}
+                                isFuture={isFuture}
+                                orderId={order.id}
+                                onStatusUpdate={onStatusUpdate}
+                             >
+                                <ScheduleOrderDialog onSchedule={onSchedule} />
+                             </StageCard>
+                        )
+                    }
+
                     // Default rendering for delivery orders or other stages
                     return (
                         <StageCard 
@@ -162,3 +193,5 @@ function AdminStageManager({ order, onStatusUpdate }: { order: Order; onStatusUp
         </>
     );
 }
+
+    

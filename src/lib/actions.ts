@@ -213,6 +213,31 @@ export async function generateWhatsAppEditRequest(orderId: string, orderName: st
   redirect(whatsappUrl);
 }
 
+export async function scheduleOrder(orderId: string, days: number) {
+    try {
+        const order = await getOrderById(orderId);
+        if (!order) {
+            throw new Error("Order not found.");
+        }
+
+        const deliveryDate = new Date();
+        deliveryDate.setDate(deliveryDate.getDate() + days);
+
+        const updatedOrder = await updateOrderDB(orderId, { 
+            scheduledDeliveryDate: deliveryDate.toISOString().split('T')[0],
+            status: 'Processing',
+        });
+
+        revalidatePath(`/admin/orders/${orderId}`);
+        revalidatePath('/admin/orders');
+
+        return { success: true, updatedOrder };
+    } catch (error) {
+        // console.error("Failed to schedule order:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}
+
 
 // The formData parameter is kept for compatibility with form actions, even if not used.
 export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
@@ -329,3 +354,5 @@ export async function deleteMaterial(materialName: string) {
         return { error: error.message };
     }
 }
+
+    
