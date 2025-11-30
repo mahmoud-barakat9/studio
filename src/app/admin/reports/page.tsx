@@ -1,6 +1,8 @@
+
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell } from "recharts";
+import { useMemo } from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -9,6 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table";
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -16,48 +26,128 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { OrderStatus } from "@/lib/definitions";
 
-const revenueData = [
-  { month: "يناير", revenue: 11860 },
-  { month: "فبراير", revenue: 13050 },
-  { month: "مارس", revenue: 9370 },
-  { month: "أبريل", revenue: 12730 },
-  { month: "مايو", revenue: 15090 },
-  { month: "يونيو", revenue: 11140 },
-];
+const statusTranslations: Record<OrderStatus, string> = {
+    "Pending": "بانتظار الموافقة",
+    "Approved": "تمت الموافقة",
+    "FactoryOrdered": "تم الطلب من المعمل",
+    "Processing": "قيد التجهيز",
+    "FactoryShipped": "تم الشحن من المعمل",
+    "ReadyForDelivery": "جاهز للتسليم",
+    "Delivered": "تم التوصيل",
+    "Rejected": "مرفوض",
+  };
 
-const revenueChartConfig = {
-  revenue: {
-    label: "الإيرادات",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
+const statusColors: Record<OrderStatus, string> = {
+    "Pending": "hsl(var(--chart-1))",
+    "Approved": "hsl(var(--chart-2))",
+    "FactoryOrdered": "hsl(var(--chart-3))",
+    "Processing": "hsl(var(--chart-4))",
+    "FactoryShipped": "hsl(var(--chart-5))",
+    "ReadyForDelivery": "hsl(var(--primary))",
+    "Delivered": "hsl(220, 80%, 60%)",
+    "Rejected": "hsl(var(--destructive))",
+};
 
-const orderTypeData = [
-  { type: "قياسي", count: 251, fill: "var(--color-standard)" },
-  { type: "ضيق", count: 124, fill: "var(--color-narrow)" },
-  { type: "عريض", count: 86, fill: "var(--color-wide)" },
-];
-
-const orderTypeConfig = {
-  count: {
-    label: "العدد",
-  },
-  standard: {
-    label: "قياسي",
-    color: "hsl(var(--chart-1))",
-  },
-  narrow: {
-    label: "ضيق",
-    color: "hsl(var(--chart-2))",
-  },
-  wide: {
-    label: "عريض",
-    color: "hsl(var(--chart-3))",
-  },
-} satisfies ChartConfig;
 
 export default function AdminReportsPage() {
+    const { orders, loading } = useOrdersAndUsers();
+
+    const { monthlyRevenueData, statusDistributionData, materialPerformanceData, revenueChartConfig, statusChartConfig } = useMemo(() => {
+        if (loading || orders.length === 0) {
+            return { monthlyRevenueData: [], statusDistributionData: [], materialPerformanceData: [], revenueChartConfig: {}, statusChartConfig: {} };
+        }
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Monthly Revenue for last 12 months
+        const monthlyRevenueData = Array.from({length: 12}, (_, i) => {
+            const d = new Date(currentYear, currentMonth - 11 + i, 1);
+            const monthName = d.toLocaleString('ar-EG', { month: 'short' });
+            
+            const monthOrders = orders.filter(o => {
+                const orderDate = new Date(o.date);
+                return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
+            });
+
+            const revenue = monthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+            return { month: monthName, revenue: parseFloat(revenue.toFixed(0)) };
+        });
+
+        const revenueChartConfig = {
+            revenue: { label: "الإيرادات", color: "hsl(var(--primary))" },
+        } satisfies ChartConfig;
+
+
+        // Status Distribution
+        const statusCounts = orders.reduce((acc, order) => {
+            if (!order.isArchived) {
+                acc[order.status] = (acc[order.status] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<OrderStatus, number>);
+
+        const statusDistributionData = Object.entries(statusCounts).map(([status, count]) => ({
+            status: statusTranslations[status as OrderStatus],
+            count,
+            fill: statusColors[status as OrderStatus],
+        }));
+
+        const statusChartConfig: ChartConfig = Object.entries(statusTranslations).reduce((acc, [key, label]) => {
+            acc[label] = { label, color: statusColors[key as OrderStatus] };
+            return acc;
+        }, {} as ChartConfig);
+
+
+        // Material Performance
+        const materialData = orders.reduce((acc, order) => {
+            const type = order.mainAbjourType;
+            if (!acc[type]) {
+                acc[type] = { name: type, totalSales: 0, orderCount: 0, totalArea: 0 };
+            }
+            acc[type].totalSales += order.totalCost + (order.deliveryCost || 0);
+            acc[type].orderCount += 1;
+            acc[type].totalArea += order.totalArea;
+            return acc;
+        }, {} as Record<string, {name: string, totalSales: number, orderCount: number, totalArea: number}>);
+
+        const materialPerformanceData = Object.values(materialData).map(m => ({
+            ...m,
+            avgOrderValue: m.totalSales / m.orderCount,
+        })).sort((a, b) => b.totalSales - a.totalSales);
+
+
+        return { monthlyRevenueData, statusDistributionData, materialPerformanceData, revenueChartConfig, statusChartConfig };
+    }, [orders, loading]);
+
+
+    if (loading) {
+        return (
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+                <h1 className="font-semibold text-lg md:text-2xl">التقارير</h1>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
+                        <CardContent><Skeleton className="h-72 w-full" /></CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
+                        <CardContent className="flex items-center justify-center"><Skeleton className="h-64 w-64 rounded-full" /></CardContent>
+                    </Card>
+                </div>
+                 <Card>
+                    <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
+                    <CardContent><Skeleton className="h-48 w-full" /></CardContent>
+                </Card>
+            </main>
+        )
+    }
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <h1 className="font-semibold text-lg md:text-2xl">التقارير</h1>
@@ -65,11 +155,11 @@ export default function AdminReportsPage() {
         <Card>
           <CardHeader>
             <CardTitle>الإيرادات الشهرية</CardTitle>
-            <CardDescription>إيرادات آخر 6 أشهر.</CardDescription>
+            <CardDescription>إيرادات آخر 12 شهرًا.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={revenueChartConfig} className="h-72 w-full">
-              <BarChart accessibilityLayer data={revenueData}>
+              <BarChart accessibilityLayer data={monthlyRevenueData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="month"
@@ -77,6 +167,7 @@ export default function AdminReportsPage() {
                   tickMargin={10}
                   axisLine={false}
                 />
+                 <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
                 <ChartTooltip
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
@@ -92,14 +183,14 @@ export default function AdminReportsPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>توزيع أنواع الطلبات</CardTitle>
+            <CardTitle>توزيع حالات الطلبات</CardTitle>
             <CardDescription>
-              توزيع أنواع الأباجور المختلفة المطلوبة.
+              توزيع جميع الطلبات النشطة على حالاتها المختلفة.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center">
             <ChartContainer
-              config={orderTypeConfig}
+              config={statusChartConfig}
               className="mx-auto aspect-square h-64"
             >
               <PieChart>
@@ -107,20 +198,50 @@ export default function AdminReportsPage() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Pie data={orderTypeData} dataKey="count" nameKey="type" innerRadius={60}>
-                     {orderTypeData.map((entry) => (
-                        <Cell key={`cell-${entry.type}`} fill={entry.fill} />
+                <Pie data={statusDistributionData} dataKey="count" nameKey="status" innerRadius={60}>
+                     {statusDistributionData.map((entry) => (
+                        <Cell key={`cell-${entry.status}`} fill={entry.fill} />
                       ))}
                 </Pie>
                 <ChartLegend
-                  content={<ChartLegendContent nameKey="type" />}
-                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                  content={<ChartLegendContent nameKey="status" />}
+                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/3 [&>*]:justify-center"
                 />
               </PieChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader>
+            <CardTitle>تقرير أداء المواد</CardTitle>
+            <CardDescription>تحليل لمبيعات كل نوع من أنواع الأباجور.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>نوع المادة</TableHead>
+                        <TableHead>إجمالي المبيعات</TableHead>
+                        <TableHead>عدد الطلبات</TableHead>
+                        <TableHead>متوسط سعر الطلب</TableHead>
+                        <TableHead>إجمالي م²</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {materialPerformanceData.map(material => (
+                        <TableRow key={material.name}>
+                            <TableCell className="font-medium">{material.name}</TableCell>
+                            <TableCell className="font-mono">${material.totalSales.toFixed(2)}</TableCell>
+                            <TableCell>{material.orderCount}</TableCell>
+                            <TableCell className="font-mono">${material.avgOrderValue.toFixed(2)}</TableCell>
+                            <TableCell>{material.totalArea.toFixed(2)} م²</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
     </main>
   );
 }
