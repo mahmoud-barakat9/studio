@@ -1,5 +1,4 @@
 
-
 'use client';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -240,13 +239,14 @@ export function OrdersTable({
             <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sm:hidden">تفاصيل الطلب</TableHead>
+                    <TableHead className="sm:hidden w-[65%]">تفاصيل الطلب</TableHead>
+                    <TableHead className="sm:hidden text-left">التكلفة</TableHead>
                     <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
                     <TableHead className="hidden sm:table-cell">اسم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-left">التكلفة</TableHead>
+                    <TableHead className="hidden sm:table-cell">الحالة</TableHead>
+                    <TableHead className="hidden sm:table-cell text-left">التكلفة</TableHead>
                     <TableHead className="text-left w-[50px]">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -264,7 +264,7 @@ export function OrdersTable({
                         className="cursor-pointer"
                       >
                         {/* Mobile View */}
-                        <TableCell className="font-medium sm:hidden">
+                        <TableCell className="font-medium sm:hidden align-top">
                             <div className="flex flex-col gap-1">
                                 <span className="font-bold text-primary">{order.id}</span>
                                 <span className="text-sm">{order.orderName}</span>
@@ -276,7 +276,15 @@ export function OrdersTable({
                                         {getUserName(order.userId)}
                                     </span>
                                 )}
+                                <div className="pt-1">
+                                  <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
+                                      {order.isArchived ? "مؤرشف" : statusStyle.text}
+                                  </Badge>
+                                </div>
                             </div>
+                        </TableCell>
+                         <TableCell className="text-left font-mono sm:hidden align-top">
+                          ${finalTotalCost.toFixed(2)}
                         </TableCell>
                         
                         {/* Desktop View */}
@@ -286,7 +294,7 @@ export function OrdersTable({
                         </TableCell>
                         {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                             <div className="flex items-center gap-2">
                                 <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
                                     {order.isArchived ? "مؤرشف" : statusStyle.text}
@@ -299,7 +307,7 @@ export function OrdersTable({
                                 )}
                            </div>
                         </TableCell>
-                        <TableCell className="text-left font-mono">
+                        <TableCell className="text-left font-mono hidden sm:table-cell">
                           ${finalTotalCost.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-left" onClick={(e) => e.stopPropagation()}>
@@ -356,3 +364,5 @@ export function OrdersTable({
     </Card>
   );
 }
+
+    
