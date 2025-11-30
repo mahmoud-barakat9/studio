@@ -23,7 +23,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks } from "lucide-react";
+import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, Sparkles, CalendarCheck } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -126,9 +126,9 @@ function KpiCardSkeleton() {
 export default function AdminDashboardPage() {
     const { orders, users, loading } = useOrdersAndUsers();
     
-    const { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers } = useMemo(() => {
+    const { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts } = useMemo(() => {
         if (loading || orders.length === 0) {
-            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [], criticalOrders: [], topCustomers: [] };
+            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [], criticalOrders: [], topCustomers: [], forecasts: {} };
         }
 
         const now = new Date();
@@ -193,12 +193,16 @@ export default function AdminDashboardPage() {
         const monthlyTrendsData = Array.from({length: 12}, (_, i) => {
             const d = new Date(currentYear, currentMonth - 11 + i, 1);
             const month = d.toLocaleString('ar-EG', { month: 'short' });
+            const year = d.getFullYear();
+            const monthKey = `${month} ${year}`
+
             const monthOrders = orders.filter(o => {
                 const orderDate = new Date(o.date);
                 return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
             });
             return {
-                name: month,
+                name: monthKey,
+                monthName: month,
                 orders: monthOrders.length,
                 totalArea: parseFloat(monthOrders.reduce((sum, o) => sum + o.totalArea, 0).toFixed(2)),
             };
@@ -242,8 +246,20 @@ export default function AdminDashboardPage() {
 
         const topCustomers = customersData.sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
 
+        // AI Forecasting
+        const last3Months = monthlyTrendsData.slice(-3);
+        const nextMonthOrdersForecast = Math.round(last3Months.reduce((sum, m) => sum + m.orders, 0) / (last3Months.length || 1));
+        const nextMonthAreaForecast = parseFloat((last3Months.reduce((sum, m) => sum + m.totalArea, 0) / (last3Months.length || 1)).toFixed(1));
+        
+        const peakPeriods = [...monthlyTrendsData].sort((a, b) => b.orders - a.orders).slice(0, 3).map(m => m.monthName);
 
-        return { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers };
+        const forecasts = {
+            nextMonthOrdersForecast,
+            nextMonthAreaForecast,
+            peakPeriods,
+        };
+
+        return { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts };
 
     }, [orders, users, loading]);
 
@@ -299,111 +315,82 @@ export default function AdminDashboardPage() {
         <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
         <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive" : ""} />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 md:gap-8">
-         <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
-            <CardDescription>
-              نظرة عامة على عدد الطلبات وإجمالي المتر المربع لآخر 12 شهرًا.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={trendsChartConfig} className="h-72 w-full">
-              <LineChart
-                accessibilityLayer
-                data={monthlyTrendsData}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  bottom: 5,
-                  left: 0,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                />
-                <YAxis
-                    yAxisId="left"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    allowDecimals={false}
-                />
-                 <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    allowDecimals={false}
-                    tickFormatter={(value) => `${value}م²`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Line
-                  dataKey="orders"
-                  type="monotone"
-                  stroke="var(--color-orders)"
-                  strokeWidth={2}
-                  dot={true}
-                  yAxisId="left"
-                />
-                 <Line
-                  dataKey="totalArea"
-                  type="monotone"
-                  stroke="var(--color-totalArea)"
-                  strokeWidth={2}
-                  dot={true}
-                  yAxisId="right"
-                />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
-            <CardDescription>
-                إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
-              <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10, right: 30 }}>
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  width={60}
-                />
-                <XAxis dataKey="totalArea" type="number" hide />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="line" />}
-                />
-                <Bar dataKey="totalArea" fill="var(--color-totalArea)" radius={4}>
-                    {topMaterialsData.map((entry, index) => (
-                        <rect key={`bar-${index}`} width={entry.totalArea} height={10} />
-                    ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
+                    <CardDescription>نظرة عامة على عدد الطلبات وإجمالي المتر المربع لآخر 12 شهرًا.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={trendsChartConfig} className="h-72 w-full">
+                        <LineChart accessibilityLayer data={monthlyTrendsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                            <YAxis yAxisId="left" tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
+                            <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} tickFormatter={(value) => `${value}م²`} />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                            <ChartLegend content={<ChartLegendContent />} />
+                            <Line dataKey="orders" type="monotone" stroke="var(--color-orders)" strokeWidth={2} dot={true} yAxisId="left" name="الطلبات" />
+                            <Line dataKey="totalArea" type="monotone" stroke="var(--color-totalArea)" strokeWidth={2} dot={true} yAxisId="right" name="إجمالي م²" />
+                        </LineChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><BrainCircuit /> توقعات وتحليلات ذكية</CardTitle>
+                    <CardDescription>تقديرات للشهر القادم بناءً على بيانات آخر 3 أشهر.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <TrendingUp className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium">توقع عدد الطلبات الشهر المقبل</p>
+                            <p className="text-2xl font-bold">~{forecasts.nextMonthOrdersForecast} طلب</p>
+                        </div>
+                    </div>
+                     <div className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                             <Ruler className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium">توقع إجمالي المتر المربع</p>
+                            <p className="text-2xl font-bold">≈ {forecasts.nextMonthAreaForecast} م²</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                           <CalendarCheck className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium">فترات الذروة (أعلى 3 أشهر)</p>
+                            <p className="text-lg font-bold">{forecasts.peakPeriods?.join('، ')}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
       </div>
-
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-8">
+        <Card className="col-span-1 md:col-span-4">
+            <CardHeader>
+                <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
+                <CardDescription>إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
+                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                        <CartesianGrid horizontal={false} />
+                        <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={60} />
+                        <XAxis dataKey="totalArea" type="number" hide />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                        <Bar dataKey="totalArea" fill="var(--color-totalArea)" radius={4} name="إجمالي م²" />
+                    </BarChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+         <Card className="col-span-1 md:col-span-3">
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
                     <CardTitle className="flex items-center gap-2"><ListChecks /> الطلبات الحرجة</CardTitle>
@@ -426,7 +413,7 @@ export default function AdminDashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {criticalOrders.length > 0 ? criticalOrders.map(order => (
+                        {criticalOrders.length > 0 ? criticalOrders.slice(0, 5).map(order => (
                              <TableRow key={order.id}>
                                 <TableCell>
                                     <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">{order.orderName}</Link>
@@ -444,6 +431,9 @@ export default function AdminDashboardPage() {
                 </Table>
             </CardContent>
         </Card>
+      </div>
+
+       <div className="grid grid-cols-1 gap-4 md:gap-8">
         <Card>
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
@@ -490,5 +480,7 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+    
 
     
