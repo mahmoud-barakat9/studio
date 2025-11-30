@@ -1,6 +1,6 @@
 
 "use client";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { LineChart, Line, Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import {
   Card,
   CardContent,
@@ -12,17 +12,31 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart";
-import { DollarSign, Users, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays } from "lucide-react";
+import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/lib/definitions";
+import { useMemo } from "react";
 
-const chartConfig = {
+const trendsChartConfig = {
   orders: {
     label: "الطلبات",
+    color: "hsl(var(--chart-1))",
+  },
+  totalArea: {
+    label: "م²",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
+const topMaterialsChartConfig = {
+  totalArea: {
+    label: "إجمالي م²",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
@@ -100,6 +114,103 @@ function KpiCardSkeleton() {
 export default function AdminDashboardPage() {
     const { orders, loading } = useOrdersAndUsers();
     
+    const { kpiData, monthlyTrendsData, topMaterialsData } = useMemo(() => {
+        if (loading || orders.length === 0) {
+            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [] };
+        }
+
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonth = lastMonthDate.getMonth();
+        const lastMonthYear = lastMonthDate.getFullYear();
+
+        // KPIs for today
+        const todaysOrdersCount = orders.filter(o => o.date === today).length;
+
+        // KPIs for current month
+        const thisMonthOrders = orders.filter(o => {
+            const orderDate = new Date(o.date);
+            return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+        });
+        const monthlyOrdersCount = thisMonthOrders.length;
+        const monthlyTotalArea = thisMonthOrders.reduce((sum, o) => sum + o.totalArea, 0);
+        const monthlySales = thisMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+
+        // KPIs for last month
+        const lastMonthOrders = orders.filter(o => {
+            const orderDate = new Date(o.date);
+            return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+        });
+        const lastMonthOrdersCount = lastMonthOrders.length;
+        const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+
+        // Operational KPIs
+        const inProductionCount = orders.filter(o => o.status === 'Processing').length;
+        const lateOrdersCount = orders.filter(isOrderDelayed).length;
+
+
+        // Comparison logic
+        const getComparison = (current: number, previous: number) => {
+            if (previous === 0) return { text: current > 0 ? "زيادة" : "لا تغيير", isPositive: current > 0 ? true : null };
+            const percentageChange = ((current - previous) / previous) * 100;
+            return {
+                text: `${Math.abs(percentageChange).toFixed(1)}% عن الشهر الماضي`,
+                isPositive: percentageChange >= 0
+            };
+        };
+        
+        const monthlyOrdersComparison = getComparison(monthlyOrdersCount, lastMonthOrdersCount);
+        const monthlySalesComparison = getComparison(monthlySales, lastMonthSales);
+        
+        const kpiData = {
+            todaysOrdersCount,
+            monthlyOrdersCount,
+            monthlyTotalArea,
+            monthlySales,
+            inProductionCount,
+            lateOrdersCount,
+            monthlyOrdersComparison,
+            monthlySalesComparison,
+        };
+
+        // Monthly trends for the last 12 months
+        const monthlyTrendsData = Array.from({length: 12}, (_, i) => {
+            const d = new Date(currentYear, currentMonth - 11 + i, 1);
+            const month = d.toLocaleString('ar-EG', { month: 'short' });
+            const monthOrders = orders.filter(o => {
+                const orderDate = new Date(o.date);
+                return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
+            });
+            return {
+                name: month,
+                orders: monthOrders.length,
+                totalArea: parseFloat(monthOrders.reduce((sum, o) => sum + o.totalArea, 0).toFixed(2)),
+            };
+        });
+        
+        // Top materials by totalArea
+        const materialsData = orders.reduce((acc, order) => {
+            const type = order.mainAbjourType;
+            if (!acc[type]) {
+                acc[type] = { name: type, totalArea: 0 };
+            }
+            acc[type].totalArea += order.totalArea;
+            return acc;
+        }, {} as Record<string, {name: string, totalArea: number}>);
+
+        const topMaterialsData = Object.values(materialsData)
+            .sort((a,b) => b.totalArea - a.totalArea)
+            .map(m => ({ ...m, totalArea: parseFloat(m.totalArea.toFixed(2))}));
+
+        return { kpiData, monthlyTrendsData, topMaterialsData };
+
+    }, [orders, loading]);
+
+
     if (loading) {
         return (
              <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -113,8 +224,8 @@ export default function AdminDashboardPage() {
                     <KpiCardSkeleton />
                     <KpiCardSkeleton />
                  </div>
-                 <div>
-                    <Card>
+                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <Card className="col-span-full lg:col-span-4">
                         <CardHeader>
                             <Skeleton className="h-6 w-48"/>
                              <Skeleton className="h-4 w-64"/>
@@ -123,103 +234,50 @@ export default function AdminDashboardPage() {
                             <Skeleton className="h-72 w-full"/>
                         </CardContent>
                     </Card>
-                </div>
+                    <Card className="col-span-full lg:col-span-3">
+                        <CardHeader>
+                            <Skeleton className="h-6 w-48"/>
+                             <Skeleton className="h-4 w-64"/>
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-72 w-full"/>
+                        </CardContent>
+                    </Card>
+                 </div>
             </main>
         )
     }
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonth = lastMonthDate.getMonth();
-    const lastMonthYear = lastMonthDate.getFullYear();
-
-    // KPIs for today
-    const todaysOrdersCount = orders.filter(o => o.date === today).length;
-
-    // KPIs for current month
-    const thisMonthOrders = orders.filter(o => {
-        const orderDate = new Date(o.date);
-        return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
-    });
-    const monthlyOrdersCount = thisMonthOrders.length;
-    const monthlyTotalArea = thisMonthOrders.reduce((sum, o) => sum + o.totalArea, 0);
-    const monthlySales = thisMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-
-    // KPIs for last month
-    const lastMonthOrders = orders.filter(o => {
-        const orderDate = new Date(o.date);
-        return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
-    });
-    const lastMonthOrdersCount = lastMonthOrders.length;
-    const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-
-    // Operational KPIs
-    const inProductionCount = orders.filter(o => o.status === 'Processing').length;
-    const lateOrdersCount = orders.filter(isOrderDelayed).length;
-
-
-    // Comparison logic
-    const getComparison = (current: number, previous: number) => {
-        if (previous === 0) return { text: current > 0 ? "زيادة" : "لا تغيير", isPositive: current > 0 ? true : null };
-        const percentageChange = ((current - previous) / previous) * 100;
-        return {
-            text: `${Math.abs(percentageChange).toFixed(1)}% عن الشهر الماضي`,
-            isPositive: percentageChange >= 0
-        };
-    };
-    
-    const monthlyOrdersComparison = getComparison(monthlyOrdersCount, lastMonthOrdersCount);
-    const monthlySalesComparison = getComparison(monthlySales, lastMonthSales);
-    
-
-    const monthlyChartData = Array.from({length: 6}, (_, i) => {
-        const d = new Date(currentYear, currentMonth - 5 + i, 1);
-        const month = d.toLocaleString('ar-EG', { month: 'short' });
-        const year = d.getFullYear();
-        return {
-            name: month,
-            orders: orders.filter(o => {
-                const orderDate = new Date(o.date);
-                return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === year;
-            }).length,
-        };
-    });
-
-
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <KpiCard title="الطلبات الجديدة اليوم" value={`${todaysOrdersCount}`} comparisonText="" isPositive={null} Icon={CalendarDays} />
-        <KpiCard title="الطلبات الشهرية" value={`${monthlyOrdersCount}`} comparisonText={monthlyOrdersComparison.text} isPositive={monthlyOrdersComparison.isPositive} Icon={ClipboardList} />
-        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${monthlyTotalArea.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
+        <KpiCard title="الطلبات الجديدة اليوم" value={`${kpiData.todaysOrdersCount}`} comparisonText="" isPositive={null} Icon={CalendarDays} />
+        <KpiCard title="الطلبات الشهرية" value={`${kpiData.monthlyOrdersCount}`} comparisonText={kpiData.monthlyOrdersComparison.text} isPositive={kpiData.monthlyOrdersComparison.isPositive} Icon={ClipboardList} />
+        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <KpiCard title="قيمة المبيعات الشهرية" value={`$${monthlySales.toFixed(2)}`} comparisonText={monthlySalesComparison.text} isPositive={monthlySalesComparison.isPositive} Icon={DollarSign} />
-        <KpiCard title="طلبات قيد التنفيذ" value={`${inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
-        <KpiCard title="الطلبات المتأخرة" value={`${lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={lateOrdersCount > 0 ? "border-destructive text-destructive" : ""} />
+        <KpiCard title="قيمة المبيعات الشهرية" value={`$${kpiData.monthlySales?.toFixed(2)}`} comparisonText={kpiData.monthlySalesComparison.text} isPositive={kpiData.monthlySalesComparison.isPositive} Icon={DollarSign} />
+        <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
+        <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive" : ""} />
       </div>
-      <div>
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 md:gap-8">
+         <Card className="col-span-1 md:col-span-2 lg:col-span-4">
           <CardHeader>
-            <CardTitle>نظرة عامة على الطلبات</CardTitle>
+            <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
             <CardDescription>
-              نظرة عامة على الطلبات في آخر 6 أشهر.
+              نظرة عامة على عدد الطلبات وإجمالي المتر المربع لآخر 12 شهرًا.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-72 w-full">
-              <BarChart
+            <ChartContainer config={trendsChartConfig} className="h-72 w-full">
+              <LineChart
                 accessibilityLayer
-                data={monthlyChartData}
+                data={monthlyTrendsData}
                 margin={{
-                  top: 20,
+                  top: 5,
                   right: 20,
-                  bottom: 20,
-                  left: 20,
+                  bottom: 5,
+                  left: 0,
                 }}
               >
                 <CartesianGrid vertical={false} />
@@ -229,17 +287,76 @@ export default function AdminDashboardPage() {
                   tickMargin={10}
                   axisLine={false}
                 />
+                <YAxis
+                    yAxisId="left"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={10}
+                    allowDecimals={false}
+                />
                  <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={10}
-                  allowDecimals={false}
-                  />
+                    yAxisId="right"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={10}
+                    allowDecimals={false}
+                    tickFormatter={(value) => `${value}م²`}
+                />
                 <ChartTooltip
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line
+                  dataKey="orders"
+                  type="monotone"
+                  stroke="var(--color-orders)"
+                  strokeWidth={2}
+                  dot={true}
+                  yAxisId="left"
+                />
+                 <Line
+                  dataKey="totalArea"
+                  type="monotone"
+                  stroke="var(--color-totalArea)"
+                  strokeWidth={2}
+                  dot={true}
+                  yAxisId="right"
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+          <CardHeader>
+            <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
+            <CardDescription>
+                إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+             <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
+              <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  width={60}
+                />
+                <XAxis dataKey="totalArea" type="number" hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="line" />}
+                />
+                <Bar dataKey="totalArea" fill="var(--color-totalArea)" radius={4}>
+                    {topMaterialsData.map((entry, index) => (
+                        <rect key={`bar-${index}`} width={entry.totalArea} height={10} />
+                    ))}
+                </Bar>
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -249,5 +366,3 @@ export default function AdminDashboardPage() {
   );
 }
 
-
-    
