@@ -240,10 +240,10 @@ export function OrdersTable({
             <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="hidden md:table-cell">رقم الطلب</TableHead>
-                    <TableHead>اسم الطلب</TableHead>
+                    <TableHead className="sm:hidden">تفاصيل الطلب</TableHead>
+                    <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
+                    <TableHead className="hidden sm:table-cell">اسم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
-                    <TableHead className="hidden sm:table-cell">النوع واللون</TableHead>
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
                     <TableHead>الحالة</TableHead>
                     <TableHead className="text-left">التكلفة</TableHead>
@@ -263,29 +263,28 @@ export function OrdersTable({
                         onClick={() => handleRowClick(order.id)}
                         className="cursor-pointer"
                       >
-                        <TableCell className="font-medium hidden md:table-cell">{order.id}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{order.orderName}</span>
-                            {!isAdmin && (
-                               <span className="text-xs text-muted-foreground sm:hidden">
-                                {order.mainAbjourType} ({order.mainColor})
-                              </span>
-                            )}
-                             {isAdmin && (
-                               <span className="text-xs text-muted-foreground lg:hidden">
-                                {getUserName(order.userId)}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
-                        <TableCell className="hidden sm:table-cell">
-                            <div className="flex flex-col">
-                              <span>{order.mainAbjourType}</span>
-                              <span className="text-xs text-muted-foreground">{order.mainColor}</span>
+                        {/* Mobile View */}
+                        <TableCell className="font-medium sm:hidden">
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-primary">{order.id}</span>
+                                <span className="text-sm">{order.orderName}</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {order.mainAbjourType} ({order.mainColor})
+                                </span>
+                                {isAdmin && (
+                                    <span className="text-xs text-muted-foreground font-semibold">
+                                        {getUserName(order.userId)}
+                                    </span>
+                                )}
                             </div>
                         </TableCell>
+                        
+                        {/* Desktop View */}
+                        <TableCell className="font-medium hidden sm:table-cell">{order.id}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {order.orderName}
+                        </TableCell>
+                        {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2">
