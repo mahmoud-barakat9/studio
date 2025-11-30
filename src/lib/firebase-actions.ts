@@ -82,6 +82,9 @@ export const updateOrderStatus = async (orderId: string, status: Order['status']
     if (orderIndex === -1) throw new Error("Order not found");
     
     orders[orderIndex].status = status;
+    if (status === 'Delivered') {
+        orders[orderIndex].deliveryDate = new Date().toISOString().split('T')[0];
+    }
     
     console.log(`Updated order ${orderId} status to ${status} (mock)`);
     revalidatePath('/admin/orders');

@@ -147,9 +147,15 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                 <span>{order.mainAbjourType} ({order.mainColor})</span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">التاريخ</span>
+                                <span className="text-muted-foreground">تاريخ الطلب</span>
                                 <span>{order.date}</span>
                             </div>
+                            {order.deliveryDate && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground">تاريخ التسليم</span>
+                                    <span>{order.deliveryDate}</span>
+                                </div>
+                            )}
                              <div className="flex items-center justify-between border-t pt-4">
                                 <span className="text-muted-foreground">تكلفة المنتجات</span>
                                 <span className="font-semibold">${order.totalCost.toFixed(2)}</span>

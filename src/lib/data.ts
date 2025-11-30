@@ -21,6 +21,7 @@ export const orders: Order[] = [
     pricePerSquareMeter: 120,
     status: "Delivered",
     date: "2024-05-01",
+    deliveryDate: "2024-05-08",
     totalArea: 12.5,
     totalCost: 1500.0,
     openings: [
