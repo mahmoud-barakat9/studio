@@ -41,14 +41,14 @@ import { OrderDetailsDialog } from "./order-details-dialog";
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
-  Pending: { variant: "outline", text: "بانتظار الموافقة" },
-  Approved: { variant: "secondary", text: "جاهزة للإرسال للمعمل" },
-  FactoryOrdered: { variant: "secondary", text: "تم الطلب من المعمل" },
-  Processing: { variant: "default", text: "قيد التجهيز" },
-  FactoryShipped: { variant: "outline", text: "تم الشحن من المعمل" },
-  ReadyForDelivery: { variant: "default", text: "جاهز للتسليم" },
-  Delivered: { variant: "default", text: "تم التوصيل" },
-  Rejected: { variant: "destructive", text: "مرفوض" },
+  "Pending": { variant: "outline", text: "بانتظار الموافقة" },
+  "Approved": { variant: "secondary", text: "جاهزة للإرسال للمعمل" },
+  "FactoryOrdered": { variant: "secondary", text: "تم الطلب من المعمل" },
+  "Processing": { variant: "default", text: "قيد التجهيز" },
+  "FactoryShipped": { variant: "outline", text: "تم الشحن من المعمل" },
+  "ReadyForDelivery": { variant: "default", text: "جاهز للتسليم" },
+  "Delivered": { variant: "default", text: "تم التوصيل" },
+  "Rejected": { variant: "destructive", text: "مرفوض" },
 };
 
 // Define delay thresholds in days for each active status
@@ -292,7 +292,7 @@ export function OrdersTable({
                                 <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
                                     {order.isArchived ? "مؤرشف" : statusStyle.text}
                                 </Badge>
-                                {delayed && (
+                                {isAdmin && delayed && (
                                     <Badge variant="destructive" className="hidden sm:inline-flex items-center gap-1">
                                         <AlertTriangle className="h-3 w-3" />
                                         متأخر

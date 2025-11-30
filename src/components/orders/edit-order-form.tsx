@@ -122,7 +122,7 @@ interface OrderFormProps {
 const statuses: Order['status'][] = ["Pending", "Approved", "FactoryOrdered", "Processing", "FactoryShipped", "ReadyForDelivery", "Delivered", "Rejected"];
 const statusTranslations: Record<Order['status'], string> = {
   "Pending": "بانتظار الموافقة",
-  "Approved": "تمت الموافقة",
+  "Approved": "جاهزة للإرسال للمعمل",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",
@@ -248,18 +248,72 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
               <Card>
                 <CardHeader>
                   <CardTitle>
-                      معلومات المستخدم
+                      الإعدادات الإدارية للطلب
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <FormLabel>اسم العميل</FormLabel>
-                        <p className="text-sm text-muted-foreground">{customer?.name}</p>
-                    </div>
-                     <div className="space-y-1">
-                        <FormLabel>البريد الإلكتروني للعميل</FormLabel>
-                        <p className="text-sm text-muted-foreground">{customer?.email}</p>
-                    </div>
+                <CardContent className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>حالة الطلب</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="اختر حالة الطلب" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                {statuses.map((status) => (
+                                    <SelectItem key={status} value={status}>
+                                    {statusTranslations[status]}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="scheduledDeliveryDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>تاريخ التسليم المجدول</FormLabel>
+                           <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="ml-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(new Date(field.value), "PPP")
+                                  ) : (
+                                    <span>اختر تاريخًا</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </CardContent>
               </Card>
             )}
@@ -407,71 +461,17 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                     </FormItem>
                   )}
                 />
-                 {isAdmin && (
-                    <>
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>حالة الطلب</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value as string}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="اختر حالة الطلب" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {statuses.map((status) => (
-                                    <SelectItem key={status} value={status}>
-                                    {statusTranslations[status]}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="scheduledDeliveryDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>تاريخ التسليم المجدول</FormLabel>
-                           <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP")
-                                  ) : (
-                                    <span>اختر تاريخًا</span>
-                                  )}
-                                  <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    </>
+                 {isAdmin && customer && (
+                    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                         <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">اسم العميل</span>
+                            <span className="font-medium">{customer.name}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">البريد الإلكتروني</span>
+                            <span className="font-medium">{customer.email}</span>
+                        </div>
+                    </div>
                  )}
                  <Separator />
                 <div className="space-y-2 text-sm">
