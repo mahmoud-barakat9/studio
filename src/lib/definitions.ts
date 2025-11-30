@@ -25,7 +25,8 @@ export type Order = {
   pricePerSquareMeter: number;
   status: OrderStatus;
   date: string;
-  deliveryDate?: string;
+  scheduledDeliveryDate?: string;
+  actualDeliveryDate?: string;
   totalArea: number;
   totalCost: number;
   openings: Opening[];

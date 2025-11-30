@@ -30,6 +30,9 @@ export function FactoryInvoice({ order }: { order: Order }) {
                         <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">نوع الأباجور</span> <span className="font-semibold">{order.mainAbjourType}</span></div>
                         <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">اللون</span> <span className="font-semibold">{order.mainColor}</span></div>
                         <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">عرض الشفرة</span> <span>{order.bladeWidth} سم</span></div>
+                        {order.scheduledDeliveryDate && (
+                             <div className="flex flex-col lg:col-span-3 font-bold text-primary"><span className="font-bold text-muted-foreground text-sm">تاريخ الجاهزية المطلوب</span> <span>{order.scheduledDeliveryDate}</span></div>
+                        )}
                     </div>
                 </section>
 

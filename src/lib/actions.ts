@@ -135,6 +135,7 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
   const orderData = {
     ...formData,
     status: formData.status, 
+    scheduledDeliveryDate: formData.scheduledDeliveryDate,
   };
 
   await updateOrderDB(orderId, orderData);

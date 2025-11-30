@@ -150,10 +150,16 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                 <span className="text-muted-foreground">تاريخ الطلب</span>
                                 <span>{order.date}</span>
                             </div>
-                            {order.deliveryDate && (
+                             {order.scheduledDeliveryDate && (
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">تاريخ التسليم</span>
-                                    <span>{order.deliveryDate}</span>
+                                    <span className="text-muted-foreground">تاريخ التسليم المتوقع</span>
+                                    <span>{order.scheduledDeliveryDate}</span>
+                                </div>
+                            )}
+                            {order.actualDeliveryDate && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground">تاريخ التسليم الفعلي</span>
+                                    <span>{order.actualDeliveryDate}</span>
                                 </div>
                             )}
                              <div className="flex items-center justify-between border-t pt-4">

@@ -146,6 +146,12 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
                         <span className="text-muted-foreground">التاريخ</span>
                         <span>{order.date}</span>
                     </div>
+                    {order.scheduledDeliveryDate && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">تاريخ التسليم المجدول</span>
+                            <span className="font-semibold">{order.scheduledDeliveryDate}</span>
+                        </div>
+                    )}
                      <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">تكلفة المنتجات</span>
                         <span className="font-semibold">${order.totalCost.toFixed(2)}</span>

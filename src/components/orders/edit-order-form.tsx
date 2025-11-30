@@ -31,8 +31,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Info } from 'lucide-react';
+import { Loader2, Info, CalendarIcon } from 'lucide-react';
+import { format } from "date-fns"
 import {
   updateOrder,
 } from '@/lib/actions';
@@ -45,6 +52,7 @@ import { OpeningsTable } from './openings-table';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -66,6 +74,7 @@ const baseOrderSchema = z.object({
   openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
   hasDelivery: z.boolean().default(false),
   deliveryAddress: z.string().optional(),
+  scheduledDeliveryDate: z.string().optional(),
 });
 
 const userOrderSchema = baseOrderSchema.extend({
@@ -130,6 +139,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
     resolver: zodResolver(orderSchema),
     defaultValues: {
       ...order,
+      scheduledDeliveryDate: order.scheduledDeliveryDate || undefined,
       openings: order.openings.map(o => ({...o, width: o.width || undefined, height: o.height || undefined, notes: o.notes || '' }))
     },
   });
@@ -202,6 +212,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
+          scheduledDeliveryDate: data.scheduledDeliveryDate,
         };
         
         const result = await updateOrder(order.id, payload, isAdmin);
@@ -397,6 +408,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                   )}
                 />
                  {isAdmin && (
+                    <>
                     <FormField
                         control={form.control}
                         name="status"
@@ -421,6 +433,45 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                             </FormItem>
                         )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="scheduledDeliveryDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>تاريخ التسليم المجدول</FormLabel>
+                           <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(new Date(field.value), "PPP")
+                                  ) : (
+                                    <span>اختر تاريخًا</span>
+                                  )}
+                                  <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    </>
                  )}
                  <Separator />
                 <div className="space-y-2 text-sm">

@@ -21,7 +21,8 @@ export const orders: Order[] = [
     pricePerSquareMeter: 120,
     status: "Delivered",
     date: "2024-05-01",
-    deliveryDate: "2024-05-08",
+    scheduledDeliveryDate: "2024-05-08",
+    actualDeliveryDate: "2024-05-08",
     totalArea: 12.5,
     totalCost: 1500.0,
     openings: [
@@ -59,6 +60,7 @@ export const orders: Order[] = [
     pricePerSquareMeter: 130,
     status: "Processing",
     date: "2024-05-10",
+    scheduledDeliveryDate: "2024-05-25",
     totalArea: 25.0,
     totalCost: 3250.0,
     openings: [
