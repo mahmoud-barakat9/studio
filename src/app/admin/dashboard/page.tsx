@@ -373,7 +373,7 @@ export default function AdminDashboardPage() {
             </Card>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-8">
-        <Card className="col-span-1 md:col-span-4">
+        <Card className="md:col-span-4">
             <CardHeader>
                 <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
                 <CardDescription>إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.</CardDescription>
@@ -390,7 +390,7 @@ export default function AdminDashboardPage() {
                 </ChartContainer>
             </CardContent>
         </Card>
-         <Card className="col-span-1 md:col-span-3">
+         <Card className="md:col-span-3">
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
                     <CardTitle className="flex items-center gap-2"><ListChecks /> الطلبات الحرجة</CardTitle>

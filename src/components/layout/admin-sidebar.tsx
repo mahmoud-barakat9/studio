@@ -21,6 +21,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarMenuBadge,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import {
   Avatar,
@@ -44,6 +45,7 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
 
   return (
     <Sidebar side="right">
+      <SidebarRail />
       <SidebarHeader>
         <div className="flex items-center gap-2">
             <BrandLogo />

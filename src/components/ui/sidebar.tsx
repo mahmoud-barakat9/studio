@@ -317,7 +317,8 @@ SidebarRail.displayName = "SidebarRail"
 const SidebarInset = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"main">
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
+  const { isMobile } = useSidebar();
   return (
     <main
       ref={ref}
@@ -327,9 +328,16 @@ const SidebarInset = React.forwardRef<
         className
       )}
       {...props}
-    />
-  )
-})
+    >
+      {isMobile && (
+        <div className="flex items-center gap-2 border-b p-2">
+          <SidebarTrigger />
+        </div>
+      )}
+      {children}
+    </main>
+  );
+});
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
