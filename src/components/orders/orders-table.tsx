@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest, sendToFactory } from "@/lib/actions";
 import {
   AlertDialog,
@@ -35,6 +35,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { OrderDetailsDialog } from "./order-details-dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import React from "react";
 
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
@@ -200,6 +202,7 @@ export function OrdersTable({
   isAdmin?: boolean;
 }) {
   const router = useRouter();
+  const isDesktop = useMediaQuery("(min-width: 640px)");
 
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.name || "غير معروف";
@@ -232,6 +235,88 @@ export function OrdersTable({
     )
   }
 
+  if (!isDesktop) {
+    return (
+      <div className="grid gap-4">
+        {orders.map((order) => {
+          const statusStyle = statusStyles[order.status] || statusStyles["Pending"];
+          const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+
+          return (
+            <Card key={order.id} onClick={() => handleRowClick(order.id)} className="cursor-pointer">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{order.orderName}</CardTitle>
+                    <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
+                        {order.isArchived ? "مؤرشف" : statusStyle.text}
+                    </Badge>
+                </div>
+                <div className="text-sm text-muted-foreground font-mono">{order.id}</div>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {isAdmin && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">العميل:</span>
+                    <span className="font-medium">{getUserName(order.userId)}</span>
+                  </div>
+                )}
+                 <div className="flex justify-between">
+                    <span className="text-muted-foreground">التاريخ:</span>
+                    <span className="font-medium">{order.date}</span>
+                  </div>
+                 <div className="flex justify-between">
+                    <span className="text-muted-foreground">التكلفة:</span>
+                    <span className="font-bold font-mono">${finalTotalCost.toFixed(2)}</span>
+                  </div>
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    {isAdmin ? (
+                        <AdminOrderActions order={order} />
+                    ) : (
+                        <>
+                        <OrderDetailsDialog order={order} />
+                        <Button asChild variant="outline" size="sm">
+                            <Link href={`/orders/${order.id}`}>
+                            عرض التفاصيل
+                            </Link>
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">فتح القائمة</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                            {order.status === 'Pending' && !order.isArchived ? (
+                                <DropdownMenuItem asChild>
+                                <Link href={`/orders/${order.id}/edit`}>
+                                    <Pencil className="ml-2 h-4 w-4" />
+                                    تعديل الطلب
+                                </Link>
+                                </DropdownMenuItem>
+                            ) : !order.isArchived ? (
+                                <form action={generateWhatsAppEditRequest.bind(null, order.id, order.orderName)} className="w-full">
+                                    <DropdownMenuItem asChild>
+                                    <button type="submit" className="w-full">
+                                        <MessageSquareQuote className="ml-2 h-4 w-4" />
+                                        طلب تعديل من الإدارة
+                                    </button>
+                                    </DropdownMenuItem>
+                                </form>
+                            ) : null}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        </>
+                    )}
+              </CardFooter>
+            </Card>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -239,14 +324,11 @@ export function OrdersTable({
             <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sm:hidden w-[65%]">تفاصيل الطلب</TableHead>
-                    <TableHead className="sm:hidden text-left">التكلفة</TableHead>
-                    <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
-                    <TableHead className="hidden sm:table-cell">اسم الطلب</TableHead>
+                    <TableHead>اسم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
-                    <TableHead className="hidden sm:table-cell">الحالة</TableHead>
-                    <TableHead className="hidden sm:table-cell text-left">التكلفة</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-left">التكلفة</TableHead>
                     <TableHead className="text-left w-[50px]">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -263,38 +345,13 @@ export function OrdersTable({
                         onClick={() => handleRowClick(order.id)}
                         className="cursor-pointer"
                       >
-                        {/* Mobile View */}
-                        <TableCell className="font-medium sm:hidden align-top">
-                            <div className="flex flex-col gap-1">
-                                <span className="font-bold text-primary">{order.id}</span>
-                                <span className="text-sm">{order.orderName}</span>
-                                <span className="text-xs text-muted-foreground">
-                                    {order.mainAbjourType} ({order.mainColor})
-                                </span>
-                                {isAdmin && (
-                                    <span className="text-xs text-muted-foreground font-semibold">
-                                        {getUserName(order.userId)}
-                                    </span>
-                                )}
-                                <div className="pt-1">
-                                  <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
-                                      {order.isArchived ? "مؤرشف" : statusStyle.text}
-                                  </Badge>
-                                </div>
-                            </div>
-                        </TableCell>
-                         <TableCell className="text-left font-mono sm:hidden align-top">
-                          ${finalTotalCost.toFixed(2)}
-                        </TableCell>
-                        
-                        {/* Desktop View */}
-                        <TableCell className="font-medium hidden sm:table-cell">{order.id}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {order.orderName}
+                        <TableCell>
+                          <div className="font-medium">{order.orderName}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                         </TableCell>
                         {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
+                        <TableCell>
                             <div className="flex items-center gap-2">
                                 <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
                                     {order.isArchived ? "مؤرشف" : statusStyle.text}
@@ -307,7 +364,7 @@ export function OrdersTable({
                                 )}
                            </div>
                         </TableCell>
-                        <TableCell className="text-left font-mono hidden sm:table-cell">
+                        <TableCell className="text-left font-mono">
                           ${finalTotalCost.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-left" onClick={(e) => e.stopPropagation()}>
@@ -364,5 +421,3 @@ export function OrdersTable({
     </Card>
   );
 }
-
-    
