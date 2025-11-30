@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest, sendToFactory } from "@/lib/actions";
@@ -49,6 +49,16 @@ const statusStyles: Record<string, { variant: StatusVariant; text: string }> = {
   ReadyForDelivery: { variant: "default", text: "جاهز للتسليم" },
   Delivered: { variant: "default", text: "تم التوصيل" },
   Rejected: { variant: "destructive", text: "مرفوض" },
+};
+
+// Define delay thresholds in days for each active status
+const delayThresholds: Partial<Record<Order['status'], number>> = {
+    Pending: 2,
+    Approved: 1,
+    FactoryOrdered: 2,
+    Processing: 7,
+    FactoryShipped: 3,
+    ReadyForDelivery: 2,
 };
 
 function DeleteOrderAlert({ orderId, asChild = false, children }: { orderId: string, asChild?: boolean, children?: React.ReactNode }) {
@@ -200,6 +210,18 @@ export function OrdersTable({
     const path = isAdmin ? `/admin/orders/${orderId}` : `/orders/${orderId}`;
     router.push(path);
   };
+
+  const isOrderDelayed = (order: Order): boolean => {
+    const threshold = delayThresholds[order.status];
+    if (threshold === undefined || order.isArchived || order.status === 'Delivered' || order.status === 'Rejected') {
+        return false;
+    }
+    const orderDate = new Date(order.date);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - orderDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > threshold;
+};
   
   if (orders.length === 0) {
     return (
@@ -233,6 +255,8 @@ export function OrdersTable({
                     const statusStyle =
                       statusStyles[order.status] || statusStyles["Pending"];
                     const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+                    const delayed = isOrderDelayed(order);
+
                     return (
                       <TableRow 
                         key={order.id}
@@ -264,9 +288,17 @@ export function OrdersTable({
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
                         <TableCell>
-                          <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
-                            {order.isArchived ? "مؤرشف" : statusStyle.text}
-                          </Badge>
+                            <div className="flex items-center gap-2">
+                                <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
+                                    {order.isArchived ? "مؤرشف" : statusStyle.text}
+                                </Badge>
+                                {delayed && (
+                                    <Badge variant="destructive" className="hidden sm:inline-flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        متأخر
+                                    </Badge>
+                                )}
+                           </div>
                         </TableCell>
                         <TableCell className="text-left font-mono">
                           ${finalTotalCost.toFixed(2)}

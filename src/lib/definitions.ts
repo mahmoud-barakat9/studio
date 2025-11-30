@@ -10,7 +10,7 @@ export type Opening = {
   notes?: string;
 };
 
-export type OrderStatus = "Pending" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
+export type OrderStatus = "Pending" | "Approved" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
 
 
 export type Order = {
@@ -32,6 +32,7 @@ export type Order = {
   hasDelivery: boolean;
   deliveryCost: number;
   deliveryAddress: string;
+  delayed?: boolean;
 };
 
 export type User = {
