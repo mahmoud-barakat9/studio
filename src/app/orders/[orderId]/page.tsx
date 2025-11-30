@@ -1,3 +1,4 @@
+
 import { getOrderById } from "@/lib/firebase-actions";
 import {
   Card,
@@ -153,13 +154,13 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                              {order.scheduledDeliveryDate && (
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground">تاريخ التسليم المتوقع</span>
-                                    <span>{order.scheduledDeliveryDate}</span>
+                                    <span className="font-semibold">{order.scheduledDeliveryDate}</span>
                                 </div>
                             )}
                             {order.actualDeliveryDate && (
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground">تاريخ التسليم الفعلي</span>
-                                    <span>{order.actualDeliveryDate}</span>
+                                    <span className="font-semibold">{order.actualDeliveryDate}</span>
                                 </div>
                             )}
                              <div className="flex items-center justify-between border-t pt-4">
