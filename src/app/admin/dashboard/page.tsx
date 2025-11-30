@@ -23,7 +23,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, Sparkles, CalendarCheck } from "lucide-react";
+import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, CalendarCheck } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -480,7 +480,5 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
-
-    
 
     
