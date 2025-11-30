@@ -9,19 +9,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays } from "lucide-react";
+import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 import { useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 
 const trendsChartConfig = {
   orders: {
@@ -112,11 +124,11 @@ function KpiCardSkeleton() {
 }
 
 export default function AdminDashboardPage() {
-    const { orders, loading } = useOrdersAndUsers();
+    const { orders, users, loading } = useOrdersAndUsers();
     
-    const { kpiData, monthlyTrendsData, topMaterialsData } = useMemo(() => {
+    const { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers } = useMemo(() => {
         if (loading || orders.length === 0) {
-            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [] };
+            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [], criticalOrders: [], topCustomers: [] };
         }
 
         const now = new Date();
@@ -206,9 +218,36 @@ export default function AdminDashboardPage() {
             .sort((a,b) => b.totalArea - a.totalArea)
             .map(m => ({ ...m, totalArea: parseFloat(m.totalArea.toFixed(2))}));
 
-        return { kpiData, monthlyTrendsData, topMaterialsData };
+        
+        // Critical Orders
+        const criticalOrders = orders.filter(isOrderDelayed);
 
-    }, [orders, loading]);
+        // Top Customers
+        const customersData = users.map(user => {
+            const userOrders = orders.filter(o => o.userId === user.id);
+            if (userOrders.length === 0) return null;
+            
+            const totalOrders = userOrders.length;
+            const totalArea = userOrders.reduce((sum, o) => sum + o.totalArea, 0);
+            const totalSpent = userOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+
+            return {
+                id: user.id,
+                name: user.name,
+                totalOrders,
+                totalArea,
+                totalSpent,
+            };
+        }).filter(Boolean) as { id: string; name: string; totalOrders: number; totalArea: number; totalSpent: number; }[];
+
+        const topCustomers = customersData.sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
+
+
+        return { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers };
+
+    }, [orders, users, loading]);
+
+    const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
 
 
     if (loading) {
@@ -362,7 +401,94 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        <Card>
+            <CardHeader className="flex flex-row items-center">
+                <div className="grid gap-2">
+                    <CardTitle className="flex items-center gap-2"><ListChecks /> الطلبات الحرجة</CardTitle>
+                    <CardDescription>الطلبات المتأخرة التي تحتاج إلى متابعة فورية.</CardDescription>
+                </div>
+                 <Button asChild size="sm" className="mr-auto gap-1">
+                    <Link href="/admin/orders">
+                        عرض الكل
+                    </Link>
+                </Button>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>اسم الطلب</TableHead>
+                            <TableHead className="hidden sm:table-cell">العميل</TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead>تاريخ الطلب</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {criticalOrders.length > 0 ? criticalOrders.map(order => (
+                             <TableRow key={order.id}>
+                                <TableCell>
+                                    <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">{order.orderName}</Link>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">{getUserName(order.userId)}</TableCell>
+                                <TableCell><Badge variant="destructive">{order.status}</Badge></TableCell>
+                                <TableCell>{order.date}</TableCell>
+                            </TableRow>
+                        )) : (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">لا توجد طلبات حرجة حاليًا.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center">
+                <div className="grid gap-2">
+                    <CardTitle className="flex items-center gap-2"><Users /> أفضل العملاء</CardTitle>
+                    <CardDescription>العملاء الأكثر طلبًا وقيمة.</CardDescription>
+                </div>
+                <Button asChild size="sm" className="mr-auto gap-1">
+                    <Link href="/admin/users">
+                        عرض الكل
+                    </Link>
+                </Button>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>العميل</TableHead>
+                            <TableHead>إجمالي الطلبات</TableHead>
+                            <TableHead className="hidden sm:table-cell">إجمالي م²</TableHead>
+                            <TableHead>إجمالي المبيعات</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {topCustomers.length > 0 ? topCustomers.map(customer => (
+                            <TableRow key={customer.id}>
+                                <TableCell>
+                                     <Link href={`/admin/users/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
+                                </TableCell>
+                                <TableCell>{customer.totalOrders}</TableCell>
+                                <TableCell className="hidden sm:table-cell">{customer.totalArea.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${customer.totalSpent.toFixed(2)}</TableCell>
+                            </TableRow>
+                        )) : (
+                             <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">لا توجد بيانات كافية لعرض أفضل العملاء.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+      </div>
+
     </main>
   );
 }
 
+    
