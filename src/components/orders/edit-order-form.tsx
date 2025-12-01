@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Info, CalendarIcon, BadgeDollarSign, Truck } from 'lucide-react';
+import { Loader2, Info, CalendarIcon, BadgeDollarSign, Truck, Edit, User as UserIcon } from 'lucide-react';
 import { format } from "date-fns"
 import {
   updateOrder,
@@ -51,7 +51,6 @@ import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import {
@@ -60,6 +59,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { EditPriceDialog } from './edit-price-dialog';
 
 
 const openingSchema = z.object({
@@ -217,6 +217,10 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
     form.setValue('openings', newOpenings);
   };
 
+  const handlePriceUpdate = (newOrderState: Order) => {
+    form.setValue('overriddenPricePerSquareMeter', newOrderState.overriddenPricePerSquareMeter);
+  }
+
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
@@ -258,80 +262,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-8">
-            {isAdmin && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                      الإعدادات الإدارية للطلب
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>حالة الطلب</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value as string}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="اختر حالة الطلب" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {statuses.map((status) => (
-                                    <SelectItem key={status} value={status}>
-                                    {statusTranslations[status]}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="scheduledDeliveryDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>تاريخ التسليم المجدول</FormLabel>
-                           <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="ml-2 h-4 w-4" />
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP")
-                                  ) : (
-                                    <span>اختر تاريخًا</span>
-                                  )}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </CardContent>
-              </Card>
-            )}
-
+            
             <Card>
               <CardHeader>
                 <CardTitle>النوع الرئيسي للطلب</CardTitle>
@@ -408,74 +339,97 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                       </FormItem>
                   </div>
                 )}
-                 {isAdmin && selectedAbjourTypeData && (
-                    <div className="pt-4">
-                         <FormField
-                            control={form.control}
-                            name="overriddenPricePerSquareMeter"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel className="flex items-center gap-2"><BadgeDollarSign /> تعديل سعر المتر المربع (اختياري)</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        {...field}
-                                        value={field.value ?? ''}
-                                        placeholder={`الافتراضي: $${selectedAbjourTypeData.pricePerSquareMeter.toFixed(2)}`}
-                                    />
-                                </FormControl>
-                                <FormDescription>اتركه فارغًا لاستخدام السعر الافتراضي.</FormDescription>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                )}
               </CardContent>
             </Card>
 
-            <div className="space-y-4">
-               <Card>
-                  <CardHeader>
-                      <CardTitle>فتحات الطلب</CardTitle>
-                      <CardDescription>
-                          أضف أو عدّل الفتحات الخاصة بهذا الطلب.
-                      </CardDescription>
-                  </CardHeader>
-                  {watchedOpenings.length === 0 && (
-                      <CardContent>
-                          <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
-                            <h3 className="text-lg font-medium text-muted-foreground mb-2">لا توجد فتحات</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                انقر أدناه لإضافة أول فتحة لطلبك.
-                            </p>
-                            {addOpeningButton}
-                         </div>
-                      </CardContent>
-                  )}
-              </Card>
+            <Card>
+                <CardHeader>
+                    <div className='flex items-center gap-3'>
+                        <CardTitle>فتحات الطلب</CardTitle>
+                        {watchedOpenings.length > 0 && <Badge variant="secondary">{watchedOpenings.length}</Badge>}
+                    </div>
+                    <CardDescription>
+                        أضف أو عدّل الفتحات الخاصة بهذا الطلب.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {watchedOpenings.length === 0 ? (
+                        <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
+                        <h3 className="text-lg font-medium text-muted-foreground mb-2">لا توجد فتحات</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            انقر أدناه لإضافة أول فتحة لطلبك.
+                        </p>
+                        {addOpeningButton}
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <OpeningsTable 
+                                openings={watchedOpenings}
+                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                                onUpdateOpening={handleUpdateOpening}
+                                onDeleteOpening={handleDeleteOpening}
+                            />
+                            <div className="flex justify-center pt-2">
+                                {addOpeningButton}
+                            </div>
+                        </div>
+                    )}
+                     {form.formState.errors.openings && (
+                        <p className="text-sm font-medium text-destructive mt-4">
+                            {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
 
-               {form.formState.errors.openings && (
-                  <p className="text-sm font-medium text-destructive px-4">
-                  {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
-                  </p>
-              )}
-
-              {watchedOpenings.length > 0 && (
-                  <div className="space-y-4">
-                      <OpeningsTable 
-                          openings={watchedOpenings}
-                          bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                          onUpdateOpening={handleUpdateOpening}
-                          onDeleteOpening={handleDeleteOpening}
-                      />
-                       <div className="flex justify-center pt-2">
-                           {addOpeningButton}
-                       </div>
-                  </div>
-              )}
-            </div>
+            <Card>
+                <CardHeader>
+                    <FormField
+                    control={form.control}
+                    name="hasDelivery"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base flex items-center gap-2">
+                                <Truck className="h-5 w-5"/>
+                                إضافة خدمة توصيل
+                                </FormLabel>
+                                <FormDescription>
+                                تفعيل هذا الخيار سيضيف تكلفة التوصيل.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                    />
+                </CardHeader>
+                {watchHasDelivery && (
+                <CardContent>
+                        <FormField
+                        control={form.control}
+                        name="deliveryAddress"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>عنوان التوصيل</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                    {...field}
+                                    value={field.value || ''}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                </CardContent>
+                )}
+            </Card>
           </div>
 
           <div className="lg:col-span-1 lg:sticky top-4 space-y-8">
@@ -501,87 +455,116 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                 />
                  {isAdmin && customer && (
                     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">اسم العميل</span>
-                            <span className="font-medium">{customer.name}</span>
+                         <div className="flex justify-between text-sm items-center">
+                            <span className="text-muted-foreground flex items-center gap-1.5"><UserIcon className="w-4 h-4" /> العميل</span>
+                            <span className="font-medium text-right">{customer.name}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">البريد الإلكتروني</span>
-                            <span className="font-medium">{customer.email}</span>
+                            <span className="text-muted-foreground">البريد</span>
+                            <span className="font-medium text-right">{customer.email}</span>
                         </div>
                     </div>
                  )}
-                 <Card className="shadow-none">
-                    <CardHeader className="p-4">
+                {isAdmin && (
+                    <div className="space-y-4">
                         <FormField
-                        control={form.control}
-                        name="hasDelivery"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base flex items-center gap-2">
-                                    <Truck className="h-5 w-5"/>
-                                    إضافة خدمة توصيل
-                                    </FormLabel>
-                                    <FormDescription>
-                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
-                        />
-                    </CardHeader>
-                    {watchHasDelivery && (
-                    <CardContent className="p-4 pt-0">
-                         <FormField
                             control={form.control}
-                            name="deliveryAddress"
+                            name="status"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>عنوان التوصيل</FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
-                                        {...field}
-                                        value={field.value || ''}
-                                    />
-                                </FormControl>
+                                <FormLabel>حالة الطلب</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="اختر حالة الطلب" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                    {statuses.map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                        {statusTranslations[status]}
+                                        </SelectItem>
+                                    ))}
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage />
                                 </FormItem>
                             )}
-                            />
-                    </CardContent>
-                    )}
-                </Card>
+                        />
+                        <FormField
+                        control={form.control}
+                        name="scheduledDeliveryDate"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                            <FormLabel className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4" /> تاريخ التسليم المجدول</FormLabel>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                    >
+                                    <CalendarIcon className="ml-2 h-4 w-4" />
+                                    {field.value ? (
+                                        format(new Date(field.value), "PPP")
+                                    ) : (
+                                        <span>اختر تاريخًا</span>
+                                    )}
+                                    </Button>
+                                </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={field.value ? new Date(field.value) : undefined}
+                                    onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                 )}
                  <Separator />
                 <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground flex items-center gap-1.5"><BadgeDollarSign className="w-4 h-4" /> سعر المتر</span>
+                        <EditPriceDialog
+                          order={form.getValues() as Order}
+                          onPriceUpdate={(updatedOrder) => form.setValue('overriddenPricePerSquareMeter', updatedOrder.overriddenPricePerSquareMeter)}
+                          isEditable={isAdmin}
+                        >
+                            <div className="flex items-center gap-2 cursor-pointer group">
+                                {watchOverriddenPrice && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger onClick={(e) => e.stopPropagation()}>
+                                                <Badge variant="secondary">مُعدل</Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>السعر الأصلي: ${selectedAbjourTypeData?.pricePerSquareMeter.toFixed(2)}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
+                                <span className="font-semibold">${finalPricePerMeter.toFixed(2)}</span>
+                                {isAdmin && <Edit className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"/>}
+                            </div>
+                        </EditPriceDialog>
+                    </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
                   </div>
-                   <div className="flex justify-between items-center">
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">تكلفة المنتجات</span>
-                    <div className="flex items-center gap-2">
-                        {watchOverriddenPrice ? (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Badge variant="secondary">مُعدل</Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>السعر الافتراضي: ${selectedAbjourTypeData?.pricePerSquareMeter.toFixed(2)}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        ) : null}
-                        <span className="font-medium">${productsCost.toFixed(2)}</span>
-                    </div>
+                    <span className="font-medium">${productsCost.toFixed(2)}</span>
                   </div>
                   <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
                     <span className="text-muted-foreground">تكلفة التوصيل</span>
@@ -613,3 +596,4 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
     </Form>
   );
 }
+
