@@ -38,14 +38,14 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Info, CalendarIcon, BadgeDollarSign } from 'lucide-react';
+import { Loader2, Info, CalendarIcon, BadgeDollarSign, Truck } from 'lucide-react';
 import { format } from "date-fns"
 import {
   updateOrder,
 } from '@/lib/actions';
-import React, { useEffect, useTransition, useMemo } from 'react';
+import React, { useEffect, useTransition, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { User, Order } from '@/lib/definitions';
+import type { User, Order, Opening } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
@@ -54,6 +54,7 @@ import { Textarea } from '../ui/textarea';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -504,6 +505,54 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                         </div>
                     </div>
                  )}
+                 <Card className="shadow-none">
+                    <CardHeader className="p-4">
+                        <FormField
+                        control={form.control}
+                        name="hasDelivery"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                    <Truck className="h-5 w-5"/>
+                                    إضافة خدمة توصيل
+                                    </FormLabel>
+                                    <FormDescription>
+                                    تفعيل هذا الخيار سيضيف تكلفة التوصيل.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </CardHeader>
+                    {watchHasDelivery && (
+                    <CardContent className="p-4 pt-0">
+                         <FormField
+                            control={form.control}
+                            name="deliveryAddress"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>عنوان التوصيل</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                        {...field}
+                                        value={field.value || ''}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </CardContent>
+                    )}
+                </Card>
                  <Separator />
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
