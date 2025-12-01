@@ -44,6 +44,7 @@ import {
   createOrder as createOrderAction,
 } from '@/lib/actions';
 import React, { useActionState, useEffect, useState, useTransition, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
 import { abjourTypesData } from '@/lib/abjour-data';
@@ -148,6 +149,7 @@ function FloatingSubmitButton({ isVisible, isPending, totalCost, onClick }: { is
 
 export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, currentDate }: OrderFormProps) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
+  const router = useRouter();
   
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema),
@@ -324,8 +326,18 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
         };
         
         const result = await createOrderAction(payload, isAdmin);
-        if (result?.success) {
+        if (result?.success && result.orderId) {
             toast({
+                title: 'تم إرسال الطلب بنجاح!',
+                description: `تم إنشاء طلبك "${payload.orderName}".`,
+            });
+            
+            if (!isAdmin) {
+                router.push(`/orders/${result.orderId}`);
+            }
+        } else if (!isAdmin && result?.success) {
+            // Admin redirection is handled by server-side redirect()
+             toast({
                 title: 'تم إرسال الطلب بنجاح!',
                 description: `تم إنشاء طلبك "${payload.orderName}".`,
             });

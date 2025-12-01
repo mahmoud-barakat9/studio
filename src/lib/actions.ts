@@ -100,17 +100,15 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   
   const newOrder = await addOrder(orderData);
 
+  revalidatePath('/dashboard');
+  revalidatePath('/orders');
+  revalidatePath('/admin/orders');
+
   if (asAdmin) {
-    revalidatePath('/admin/orders');
     redirect('/admin/orders');
-  } else {
-    revalidatePath('/dashboard');
-    revalidatePath('/orders');
-    revalidatePath('/admin/orders'); // also revalidate admin page so they see the new order
-    redirect(`/orders/${newOrder.id}`);
-  }
+  } 
   
-  return { success: true };
+  return { success: true, orderId: newOrder.id };
 }
 
 
