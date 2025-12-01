@@ -1,4 +1,5 @@
 
+
 import { getOrderById, getUserById } from "@/lib/firebase-actions";
 import {
   Card,
@@ -18,8 +19,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, AlertTriangle, Pencil } from "lucide-react";
+import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const DUMMY_USER_ID = "4"; // Admin User ID
 
@@ -54,6 +62,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
 
   const customer = await getUserById(order.userId);
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+  const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
 
 
   return (
@@ -160,6 +169,27 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
                             <span className="font-semibold">{order.scheduledDeliveryDate}</span>
                         </div>
                     )}
+                     <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                           <BadgeDollarSign className="h-4 w-4" />
+                           سعر المتر
+                        </span>
+                         <div className="flex items-center gap-2">
+                             {order.overriddenPricePerSquareMeter && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Badge variant="secondary">مُعدل</Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>السعر الأصلي: ${order.pricePerSquareMeter.toFixed(2)}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                            <span className="font-semibold">${pricePerMeter.toFixed(2)}</span>
+                        </div>
+                    </div>
                      <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">تكلفة المنتجات</span>
                         <span className="font-semibold">${order.totalCost.toFixed(2)}</span>

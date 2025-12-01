@@ -3,10 +3,18 @@ import type { Order, User } from "@/lib/definitions";
 import { BrandLogo } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+  } from "@/components/ui/tooltip";
 
 export function CustomerInvoice({ order, customer }: { order: Order, customer?: User }) {
     const customerName = customer?.name || order.customerName;
     const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+    const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
 
     return (
         <div id="customer-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
@@ -85,6 +93,24 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                 <section>
                     <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">ملخص مالي</h3>
                     <div className="p-6 border rounded-lg bg-muted/30 space-y-3 max-w-sm mx-auto">
+                        <div className="flex justify-between items-center">
+                            <span>سعر المتر المربع:</span> 
+                             <div className="flex items-center gap-2">
+                                {order.overriddenPricePerSquareMeter && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Badge variant="secondary">مُعدل</Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>السعر الأصلي: ${order.pricePerSquareMeter.toFixed(2)}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
+                                <span className="font-mono font-semibold">${pricePerMeter.toFixed(2)}</span>
+                            </div>
+                        </div>
                         <div className="flex justify-between items-center"><span>تكلفة المنتجات:</span> <span className="font-mono font-semibold">${order.totalCost.toFixed(2)}</span></div>
                         {order.hasDelivery && <div className="flex justify-between items-center"><span>تكلفة التوصيل:</span> <span className="font-mono font-semibold">${(order.deliveryCost || 0).toFixed(2)}</span></div>}
                         <Separator className="my-2" />

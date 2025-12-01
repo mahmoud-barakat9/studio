@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Info, CalendarIcon } from 'lucide-react';
+import { Loader2, Info, CalendarIcon, BadgeDollarSign } from 'lucide-react';
 import { format } from "date-fns"
 import {
   updateOrder,
@@ -53,6 +53,7 @@ import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
+import { Badge } from '../ui/badge';
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -75,6 +76,7 @@ const baseOrderSchema = z.object({
   hasDelivery: z.boolean().default(false),
   deliveryAddress: z.string().optional(),
   scheduledDeliveryDate: z.string().optional(),
+  overriddenPricePerSquareMeter: z.coerce.number().optional(),
 });
 
 const userOrderSchema = baseOrderSchema.extend({
@@ -139,6 +141,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
     resolver: zodResolver(orderSchema),
     defaultValues: {
       ...order,
+      overriddenPricePerSquareMeter: order.overriddenPricePerSquareMeter || undefined,
       scheduledDeliveryDate: order.scheduledDeliveryDate || undefined,
       openings: order.openings.map(o => ({...o, width: o.width || undefined, height: o.height || undefined, notes: o.notes || '' }))
     },
@@ -150,6 +153,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
   const watchHasDelivery = useWatch({ control: form.control, name: 'hasDelivery' });
+  const watchOverriddenPrice = useWatch({ control: form.control, name: 'overriddenPricePerSquareMeter' });
 
 
   const selectedAbjourTypeData = useMemo(() => {
@@ -166,10 +170,12 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
       0
     );
   }, [watchedOpenings, selectedAbjourTypeData]);
+
+  const finalPricePerMeter = watchOverriddenPrice || selectedAbjourTypeData?.pricePerSquareMeter || 0;
   
   const productsCost = useMemo(() => {
-    return totalArea * (selectedAbjourTypeData?.pricePerSquareMeter || 0);
-  }, [totalArea, selectedAbjourTypeData]);
+    return totalArea * finalPricePerMeter;
+  }, [totalArea, finalPricePerMeter]);
   
   const deliveryCost = useMemo(() => {
     return watchHasDelivery ? (5 + (totalArea * 0.5)) : 0;
@@ -212,6 +218,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
+          overriddenPricePerSquareMeter: data.overriddenPricePerSquareMeter,
           scheduledDeliveryDate: data.scheduledDeliveryDate,
         };
         
@@ -385,7 +392,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                            </FormDescription>
                       </FormItem>
                        <FormItem>
-                          <FormLabel>سعر المتر المربع</FormLabel>
+                          <FormLabel>سعر المتر المربع الافتراضي</FormLabel>
                           <Input readOnly value={`$${selectedAbjourTypeData.pricePerSquareMeter.toFixed(2)}`} />
                           <FormDescription className='flex items-center gap-1'>
                              <Info className='w-3 h-3' />
@@ -393,6 +400,30 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                            </FormDescription>
                       </FormItem>
                   </div>
+                )}
+                 {isAdmin && selectedAbjourTypeData && (
+                    <div className="pt-4">
+                         <FormField
+                            control={form.control}
+                            name="overriddenPricePerSquareMeter"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="flex items-center gap-2"><BadgeDollarSign /> تعديل سعر المتر المربع (اختياري)</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        {...field}
+                                        value={field.value ?? ''}
+                                        placeholder={`الافتراضي: $${selectedAbjourTypeData.pricePerSquareMeter.toFixed(2)}`}
+                                    />
+                                </FormControl>
+                                <FormDescription>اتركه فارغًا لاستخدام السعر الافتراضي.</FormDescription>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 )}
               </CardContent>
             </Card>
@@ -479,9 +510,23 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                     <span className="text-muted-foreground">المساحة الإجمالية</span>
                     <span className="font-medium">{totalArea.toFixed(2)} م²</span>
                   </div>
-                   <div className="flex justify-between">
+                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">تكلفة المنتجات</span>
-                    <span className="font-medium">${productsCost.toFixed(2)}</span>
+                    <div className="flex items-center gap-2">
+                         {watchOverriddenPrice ? (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Badge variant="secondary">مُعدل</Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>السعر الافتراضي: ${selectedAbjourTypeData?.pricePerSquareMeter.toFixed(2)}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ) : null}
+                        <span className="font-medium">${productsCost.toFixed(2)}</span>
+                    </div>
                   </div>
                   <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
                     <span className="text-muted-foreground">تكلفة التوصيل</span>

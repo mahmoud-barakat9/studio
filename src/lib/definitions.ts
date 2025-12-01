@@ -23,6 +23,7 @@ export type Order = {
   mainColor: string;
   bladeWidth: number;
   pricePerSquareMeter: number;
+  overriddenPricePerSquareMeter?: number;
   status: OrderStatus;
   date: string;
   scheduledDeliveryDate?: string;

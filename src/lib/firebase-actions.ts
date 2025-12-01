@@ -50,6 +50,21 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
 export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { id?: string }) => {
     const newId = orderData.id || `ORD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`;
     
+    const totalArea = orderData.openings.reduce(
+      (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (orderData.bladeWidth || 0)) / 10000,
+      0
+    );
+
+    const finalPricePerMeter = orderData.overriddenPricePerSquareMeter || orderData.pricePerSquareMeter;
+    const productsCost = totalArea * finalPricePerMeter;
+
+    let deliveryCost = 0;
+    if (orderData.hasDelivery) {
+        const baseDeliveryFee = 5; // Base fee
+        const perMeterFee = 0.5; // $0.5 per square meter
+        deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
+    }
+    
     const newOrder: Order = {
         id: newId,
         orderName: orderData.orderName,
@@ -60,14 +75,15 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
         mainColor: orderData.mainColor,
         bladeWidth: orderData.bladeWidth,
         pricePerSquareMeter: orderData.pricePerSquareMeter,
+        overriddenPricePerSquareMeter: orderData.overriddenPricePerSquareMeter,
         status: orderData.status,
         date: orderData.date,
-        totalArea: orderData.totalArea,
-        totalCost: orderData.totalCost,
+        totalArea,
+        totalCost: productsCost,
         openings: orderData.openings,
         isArchived: false,
         hasDelivery: orderData.hasDelivery,
-        deliveryCost: orderData.deliveryCost,
+        deliveryCost: deliveryCost,
         deliveryAddress: orderData.deliveryAddress,
     };
     
@@ -122,9 +138,9 @@ export const updateOrder = async (orderId: string, orderData: Partial<Order>): P
     } else if (orderData.hasDelivery === false) {
         deliveryCost = 0;
     }
-
-
-    const productsCost = totalArea * (orderData.pricePerSquareMeter || originalOrder.pricePerSquareMeter);
+    
+    const finalPricePerMeter = orderData.overriddenPricePerSquareMeter || orderData.pricePerSquareMeter || originalOrder.pricePerSquareMeter;
+    const productsCost = totalArea * finalPricePerMeter;
 
     const updatedData: Order = {
         ...originalOrder,

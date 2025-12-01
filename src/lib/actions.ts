@@ -89,20 +89,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     throw new Error("User not found");
   }
   
-  const totalArea = formData.openings.reduce(
-      (acc: number, op: any) => acc + ((op.codeLength || 0) * (op.numberOfCodes || 0) * (formData.bladeWidth || 0)) / 10000,
-      0
-    );
-
-  let deliveryCost = 0;
-  if (formData.hasDelivery) {
-    const baseDeliveryFee = 5; // Base fee
-    const perMeterFee = 0.5; // $0.5 per square meter
-    deliveryCost = baseDeliveryFee + (totalArea * perMeterFee);
-  }
-
-  const productsCost = totalArea * (formData.pricePerSquareMeter || 0);
-
   const orderData = {
     ...formData,
     userId,
@@ -110,9 +96,6 @@ export async function createOrder(formData: any, asAdmin: boolean) {
     customerPhone: finalCustomerData.phone,
     status: 'Pending', // All new orders start as Pending
     date: new Date().toISOString().split('T')[0],
-    totalArea,
-    totalCost: productsCost,
-    deliveryCost,
   };
   
   const newOrder = await addOrder(orderData);
