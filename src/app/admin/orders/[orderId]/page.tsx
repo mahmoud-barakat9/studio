@@ -1,4 +1,5 @@
 
+'use client';
 
 import { getOrderById, getUserById } from "@/lib/firebase-actions";
 import {
@@ -19,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign } from "lucide-react";
+import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign, Edit } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
 import {
   Tooltip,
@@ -27,14 +28,49 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import React, { useEffect, useState } from "react";
+import type { Order, User } from "@/lib/definitions";
+import { EditPriceDialog } from "@/components/orders/edit-price-dialog";
 
 
-const DUMMY_USER_ID = "4"; // Admin User ID
+const DUMMY_ADMIN_ID = "4"; // Admin User ID
 
-export default async function AdminOrderDetailPage({ params }: { params: { orderId: string }}) {
+async function getOrderAndUsers(orderId: string) {
+    const orderData = await getOrderById(orderId);
+    const currentUserData = await getUserById(DUMMY_ADMIN_ID);
+    let customerData: User | undefined;
+    if (orderData) {
+        customerData = await getUserById(orderData.userId);
+    }
+    return { orderData, currentUserData, customerData };
+}
+
+export default function AdminOrderDetailPage({ params }: { params: { orderId: string }}) {
   const orderId = params.orderId;
-  const order = await getOrderById(orderId);
-  const currentUser = await getUserById(DUMMY_USER_ID);
+  const [order, setOrder] = useState<Order | null | undefined>(undefined);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [customer, setCustomer] = useState<User | undefined>(undefined);
+  
+  useEffect(() => {
+    async function fetchData() {
+        if (!orderId) return;
+        const { orderData, currentUserData, customerData } = await getOrderAndUsers(orderId);
+        setOrder(orderData);
+        setCurrentUser(currentUserData);
+        setCustomer(customerData);
+    }
+    fetchData();
+  }, [orderId]);
+
+
+  if (order === undefined) {
+      return (
+           <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-8 md:p-8">
+               {/* Skeleton loader can be added here */}
+               <p>جاري تحميل تفاصيل الطلب...</p>
+           </main>
+      )
+  }
 
   if (!order) {
     return (
@@ -60,9 +96,9 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
     );
   }
 
-  const customer = await getUserById(order.userId);
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
   const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
+  const isEditable = order.status === 'Pending' || order.status === 'Approved';
 
 
   return (
@@ -96,7 +132,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-grow flex flex-col gap-8">
-            <AdminOrderDetails order={order} currentUser={currentUser} />
+            <AdminOrderDetails order={order} currentUser={currentUser} setOrder={setOrder} />
            <Card>
             <CardHeader>
               <CardTitle>تفاصيل الفتحات</CardTitle>
@@ -174,21 +210,28 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
                            <BadgeDollarSign className="h-4 w-4" />
                            سعر المتر
                         </span>
-                         <div className="flex items-center gap-2">
-                             {order.overriddenPricePerSquareMeter && (
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Badge variant="secondary">مُعدل</Badge>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>السعر الأصلي: ${order.pricePerSquareMeter.toFixed(2)}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
-                            <span className="font-semibold">${pricePerMeter.toFixed(2)}</span>
-                        </div>
+                        <EditPriceDialog
+                          order={order}
+                          onPriceUpdate={setOrder}
+                          isEditable={isEditable}
+                        >
+                            <div className="flex items-center gap-2 cursor-pointer group">
+                                {order.overriddenPricePerSquareMeter && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger onClick={(e) => e.stopPropagation()}>
+                                                <Badge variant="secondary">مُعدل</Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>السعر الأصلي: ${order.pricePerSquareMeter.toFixed(2)}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
+                                <span className="font-semibold">${pricePerMeter.toFixed(2)}</span>
+                                {isEditable && <Edit className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"/>}
+                            </div>
+                        </EditPriceDialog>
                     </div>
                      <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">تكلفة المنتجات</span>

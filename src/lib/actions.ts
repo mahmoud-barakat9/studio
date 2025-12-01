@@ -338,4 +338,15 @@ export async function deleteMaterial(materialName: string) {
     }
 }
 
+export async function updateOrderPrice(orderId: string, newPrice: number | null) {
+  try {
+    const updatedOrder = await updateOrderDB(orderId, {
+      overriddenPricePerSquareMeter: newPrice === null ? undefined : newPrice,
+    });
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { success: true, updatedOrder };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}
     

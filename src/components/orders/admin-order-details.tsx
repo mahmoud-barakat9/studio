@@ -12,9 +12,8 @@ import { ScheduleOrderDialog } from './schedule-order-dialog';
 
 const DUMMY_USER_ID = "5"; 
 
-export function AdminOrderDetails({ order: initialOrder, currentUser }: { order: Order, currentUser: User | null }) {
-    const [order, setOrder] = useState(initialOrder);
-
+export function AdminOrderDetails({ order, setOrder, currentUser }: { order: Order, setOrder: (order: Order) => void, currentUser: User | null }) {
+    
     const isOwner = currentUser?.id === order.userId;
     const isAdmin = currentUser?.role === 'admin';
 
@@ -32,12 +31,12 @@ export function AdminOrderDetails({ order: initialOrder, currentUser }: { order:
         } else {
              // For other status updates that don't need a WhatsApp redirect
             await updateOrderStatusAction(orderId, newStatus);
-            setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+            setOrder({ ...order, status: newStatus });
             return;
         }
 
         if (result?.success) {
-            setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+            setOrder({ ...order, status: newStatus });
             if (result.whatsappUrl) {
                 window.open(result.whatsappUrl, '_blank');
             }
