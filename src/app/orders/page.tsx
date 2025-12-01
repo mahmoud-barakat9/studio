@@ -28,7 +28,7 @@ const statusTranslations: Record<string, string> = {
 };
 
 export default function OrdersPage() {
-  const { orders: allOrders, loading } = useOrdersAndUsers(DUMMY_USER_ID);
+  const { orders: userOrders, loading } = useOrdersAndUsers(DUMMY_USER_ID);
   const [currentTabs, setCurrentTabs] = useState<Record<string, number>>({});
 
   if (loading) {
@@ -51,8 +51,6 @@ export default function OrdersPage() {
       </div>
      )
   }
-
-  const userOrders = allOrders.filter(o => o.userId === DUMMY_USER_ID);
 
   const ordersByStatus = (Object.keys(statusTranslations) as Array<Order['status']>).reduce((acc, status) => {
     const filteredOrders = userOrders.filter(order => order.status === status && !order.isArchived);
