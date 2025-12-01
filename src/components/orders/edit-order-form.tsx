@@ -54,7 +54,13 @@ import { Textarea } from '../ui/textarea';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
-import { Tooltip, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -562,7 +568,7 @@ export function EditOrderForm({ order, isAdmin = false, users = [] }: OrderFormP
                    <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">تكلفة المنتجات</span>
                     <div className="flex items-center gap-2">
-                         {watchOverriddenPrice ? (
+                        {watchOverriddenPrice ? (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger>

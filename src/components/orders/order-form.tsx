@@ -752,7 +752,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                    <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">تكلفة المنتجات</span>
                     <div className="flex items-center gap-2">
-                         {watchOverriddenPrice ? (
+                        {watchOverriddenPrice ? (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger>
