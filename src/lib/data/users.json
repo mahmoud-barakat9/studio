@@ -1,0 +1,38 @@
+
+[
+  {
+    "id": "1",
+    "name": "Ahmed Ali",
+    "email": "ahmed.ali@example.com",
+    "phone": "555-1111",
+    "role": "user"
+  },
+  {
+    "id": "2",
+    "name": "Fatima Zahra",
+    "email": "fatima.zahra@example.com",
+    "phone": "555-2222",
+    "role": "user"
+  },
+  {
+    "id": "3",
+    "name": "Khalid Hassan",
+    "email": "khalid.hassan@example.com",
+    "phone": "555-3333",
+    "role": "user"
+  },
+  {
+    "id": "4",
+    "name": "Adminstrator",
+    "email": "admin@abjour.com",
+    "phone": "555-4444",
+    "role": "admin"
+  },
+  {
+    "id": "5",
+    "name": "User",
+    "email": "user@abjour.com",
+    "phone": "555-5555",
+    "role": "user"
+  }
+]

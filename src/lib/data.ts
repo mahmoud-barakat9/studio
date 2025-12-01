@@ -1,5 +1,8 @@
 import type { User, Order } from "@/lib/definitions";
 
+// This file is now deprecated as data is managed in JSON files.
+// It is kept for reference but is no longer used by the application.
+
 export const users: User[] = [
   { id: "1", name: "Ahmed Ali", email: "ahmed.ali@example.com", phone: "555-1111", role: "user" },
   { id: "2", name: "Fatima Zahra", email: "fatima.zahra@example.com", phone: "555-2222", role: "user" },

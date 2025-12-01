@@ -1,0 +1,191 @@
+
+[
+  {
+    "id": "ORD001",
+    "userId": "1",
+    "orderName": "Villa Reception",
+    "customerName": "Ahmed Ali",
+    "customerPhone": "555-1234",
+    "mainAbjourType": "شراع",
+    "mainColor": "بيج",
+    "bladeWidth": 5.5,
+    "pricePerSquareMeter": 120,
+    "status": "Delivered",
+    "date": "2024-05-01",
+    "scheduledDeliveryDate": "2024-05-08",
+    "actualDeliveryDate": "2024-05-08",
+    "totalArea": 12.5,
+    "totalCost": 1500,
+    "openings": [
+      {
+        "serial": "A01",
+        "abjourType": "Standard",
+        "codeLength": 2.5,
+        "numberOfCodes": 50,
+        "hasEndCap": true,
+        "hasAccessories": false
+      },
+      {
+        "serial": "A02",
+        "abjourType": "Narrow",
+        "codeLength": 2,
+        "numberOfCodes": 40,
+        "hasEndCap": true,
+        "hasAccessories": true
+      }
+    ],
+    "isArchived": true,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": ""
+  },
+  {
+    "id": "ORD002",
+    "userId": "2",
+    "orderName": "Office Windows",
+    "customerName": "Fatima Zahra",
+    "customerPhone": "555-5678",
+    "mainAbjourType": "مدار",
+    "mainColor": "رمادي",
+    "bladeWidth": 5.8,
+    "pricePerSquareMeter": 130,
+    "status": "Processing",
+    "date": "2024-05-10",
+    "scheduledDeliveryDate": "2024-05-25",
+    "totalArea": 25,
+    "totalCost": 3250,
+    "openings": [
+      {
+        "serial": "B01",
+        "abjourType": "Standard",
+        "codeLength": 3,
+        "numberOfCodes": 60,
+        "hasEndCap": false,
+        "hasAccessories": false
+      },
+      {
+        "serial": "B02",
+        "abjourType": "Standard",
+        "codeLength": 3,
+        "numberOfCodes": 60,
+        "hasEndCap": false,
+        "hasAccessories": false
+      },
+      {
+        "serial": "B03",
+        "abjourType": "Wide",
+        "codeLength": 4,
+        "numberOfCodes": 80,
+        "hasEndCap": true,
+        "hasAccessories": true
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": true,
+    "deliveryCost": 20,
+    "deliveryAddress": "123 Main St, Anytown, USA"
+  },
+  {
+    "id": "ORD003",
+    "userId": "1",
+    "orderName": "Bedroom Renovation",
+    "customerName": "Ahmed Ali",
+    "customerPhone": "555-1234",
+    "mainAbjourType": "اوروبي",
+    "mainColor": "خشبي",
+    "bladeWidth": 5.5,
+    "pricePerSquareMeter": 150,
+    "status": "FactoryShipped",
+    "date": "2024-05-15",
+    "totalArea": 8,
+    "totalCost": 1200,
+    "openings": [
+      {
+        "serial": "C01",
+        "abjourType": "Narrow",
+        "codeLength": 2,
+        "numberOfCodes": 40,
+        "hasEndCap": true,
+        "hasAccessories": false
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": ""
+  },
+  {
+    "id": "ORD004",
+    "userId": "3",
+    "orderName": "New Apartment",
+    "customerName": "Khalid Hassan",
+    "customerPhone": "555-9012",
+    "mainAbjourType": "شراع",
+    "mainColor": "أبيض",
+    "bladeWidth": 5.5,
+    "pricePerSquareMeter": 120,
+    "status": "FactoryOrdered",
+    "date": "2024-05-20",
+    "totalArea": 30.2,
+    "totalCost": 3624,
+    "openings": [
+      {
+        "serial": "D01",
+        "abjourType": "Standard",
+        "codeLength": 2.8,
+        "numberOfCodes": 56,
+        "hasEndCap": true,
+        "hasAccessories": true
+      },
+      {
+        "serial": "D02",
+        "abjourType": "Standard",
+        "codeLength": 2.8,
+        "numberOfCodes": 56,
+        "hasEndCap": true,
+        "hasAccessories": true
+      },
+      {
+        "serial": "D03",
+        "abjourType": "Narrow",
+        "codeLength": 1.5,
+        "numberOfCodes": 30,
+        "hasEndCap": false,
+        "hasAccessories": false
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": ""
+  },
+  {
+    "id": "ORD005",
+    "userId": "5",
+    "orderName": "Test User Order",
+    "customerName": "User",
+    "customerPhone": "555-5555",
+    "mainAbjourType": "شراع",
+    "mainColor": "أبيض",
+    "bladeWidth": 5.5,
+    "pricePerSquareMeter": 120,
+    "status": "Pending",
+    "date": "2024-05-22",
+    "totalArea": 15,
+    "totalCost": 1800,
+    "openings": [
+      {
+        "serial": "E01",
+        "abjourType": "Standard",
+        "codeLength": 3,
+        "numberOfCodes": 50,
+        "hasEndCap": true,
+        "hasAccessories": true
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": ""
+  }
+]

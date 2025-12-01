@@ -47,7 +47,7 @@ import React, { useActionState, useEffect, useState, useTransition, useMemo } fr
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
-import { abjourTypesData } from '@/lib/abjour-data';
+import { getMaterials } from '@/lib/firebase-actions';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
 import { Skeleton } from '../ui/skeleton';
@@ -176,10 +176,18 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
   
   const submitButtonRef = React.useRef<HTMLButtonElement>(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+  useEffect(() => {
+    async function fetchMaterials() {
+        const materials = await getMaterials();
+        setAbjourTypesData(materials);
+    }
+    fetchMaterials();
+  }, []);
 
   useEffect(() => {
     if (isDesktop) {
@@ -227,7 +235,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const selectedAbjourTypeData = useMemo(() => {
     return abjourTypesData.find(t => t.name === watchMainAbjourType);
-  }, [watchMainAbjourType]);
+  }, [watchMainAbjourType, abjourTypesData]);
 
   const availableColors = useMemo(() => {
     return selectedAbjourTypeData?.colors || [];
@@ -335,27 +343,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             if (!isAdmin) {
                 router.push(`/orders/${result.orderId}`);
             }
-        } else if (!isAdmin && result?.success) {
-            // Admin redirection is handled by server-side redirect()
-             toast({
-                title: 'تم إرسال الطلب بنجاح!',
-                description: `تم إنشاء طلبك "${payload.orderName}".`,
-            });
-            form.reset({
-                openings: [],
-                orderName: '',
-                mainAbjourType: '',
-                mainColor: '',
-                hasDelivery: false,
-                deliveryAddress: '',
-                userId: isAdmin ? '' : currentUser?.id,
-                customerName: isAdmin ? '' : currentUser?.name,
-                customerPhone: isAdmin ? '' : currentUser?.phone,
-                newUserName: '',
-                newUserEmail: '',
-                newUserPhone: '',
-                overriddenPricePerSquareMeter: undefined,
-            });
         }
      });
   };
