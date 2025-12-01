@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Truck, AlertTriangle } from "lucide-react";
+import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign } from "lucide-react";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
@@ -60,6 +60,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
   }
 
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
+  const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
 
 
   return (
@@ -164,6 +165,20 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                     <span className="font-semibold">{order.actualDeliveryDate}</span>
                                 </div>
                             )}
+                             <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-1">
+                                <BadgeDollarSign className="h-4 w-4" />
+                                سعر المتر
+                                </span>
+                                <div className="flex items-center gap-2">
+                                {order.overriddenPricePerSquareMeter != null && (
+                                    <span className="font-semibold text-sm text-muted-foreground line-through">
+                                        ${order.pricePerSquareMeter.toFixed(2)}
+                                    </span>
+                                )}
+                                <span className="font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
+                                </div>
+                            </div>
                              <div className="flex items-center justify-between border-t pt-4">
                                 <span className="text-muted-foreground">تكلفة المنتجات</span>
                                 <span className="font-semibold">${order.totalCost.toFixed(2)}</span>
