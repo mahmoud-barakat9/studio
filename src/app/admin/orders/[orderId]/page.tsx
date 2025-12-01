@@ -31,6 +31,7 @@ import {
 import React, { useEffect, useState } from "react";
 import type { Order, User } from "@/lib/definitions";
 import { EditPriceDialog } from "@/components/orders/edit-price-dialog";
+import { useParams } from "next/navigation";
 
 
 const DUMMY_ADMIN_ID = "4"; // Admin User ID
@@ -45,8 +46,9 @@ async function getOrderAndUsers(orderId: string) {
     return { orderData, currentUserData, customerData };
 }
 
-export default function AdminOrderDetailPage({ params }: { params: { orderId: string }}) {
-  const orderId = params.orderId;
+export default function AdminOrderDetailPage() {
+  const params = useParams();
+  const orderId = params.orderId as string;
   const [order, setOrder] = useState<Order | null | undefined>(undefined);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [customer, setCustomer] = useState<User | undefined>(undefined);
