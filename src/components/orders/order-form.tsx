@@ -43,7 +43,7 @@ import {
   generateOrderName,
   createOrder as createOrderAction,
 } from '@/lib/actions';
-import React, { useActionState, useEffect, useState, useTransition, useMemo } from 'react';
+import React, { useEffect, useTransition, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
@@ -325,22 +325,23 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const onSubmit = (data: OrderFormValues) => {
      startSubmitTransition(async () => {
-        const payload = {
+        const result = await createOrderAction({
           ...data,
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
           overriddenPricePerSquareMeter: data.overriddenPricePerSquareMeter,
-        };
-        
-        const result = await createOrderAction(payload, isAdmin);
+        }, isAdmin);
+
         if (result?.success && result.orderId) {
             toast({
                 title: 'تم إرسال الطلب بنجاح!',
-                description: `تم إنشاء طلبك "${payload.orderName}".`,
+                description: `تم إنشاء طلبك "${data.orderName}".`,
             });
             
-            if (!isAdmin) {
+            if (isAdmin) {
+                router.push(`/admin/orders`);
+            } else {
                 router.push(`/orders/${result.orderId}`);
             }
         }
@@ -348,17 +349,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   };
 
   const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
-
-  const addOpeningButton = (
-    <AddOpeningForm
-      onSave={handleAddOpening}
-      bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-      isDisabled={!isPrimaryInfoSelected}
-      openingsCount={watchedOpenings.length}
-      variant={watchedOpenings.length > 0 ? 'secondary' : 'default'}
-    />
-  );
-
 
   return (
     <Form {...form}>
@@ -612,41 +602,42 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                           أضف الفتحات الخاصة بهذا الطلب. يجب تحديد النوع واللون أولاً.
                       </CardDescription>
                   </CardHeader>
-                  {watchedOpenings.length === 0 && (
-                      <CardContent>
+                  <CardContent>
+                      {watchedOpenings.length === 0 ? (
                           <div className="text-center py-6 px-4 border-2 border-dashed rounded-lg">
                             <h3 className="text-lg font-medium text-muted-foreground mb-2">
                                {isPrimaryInfoSelected ? "أنت جاهز الآن!" : "خطوة أولى"}
                             </h3>
                             <p className="text-sm text-muted-foreground mb-4">
                                 {isPrimaryInfoSelected 
-                                    ? "انقر أدناه لإضافة أول فتحة لطلبك." 
+                                    ? "انقر على الزر في الأسفل لإضافة أول فتحة لطلبك." 
                                     : "الرجاء اختيار نوع الأباجور واللون الرئيسي أولاً."}
                             </p>
-                            {addOpeningButton}
                          </div>
-                      </CardContent>
-                  )}
+                      ) : (
+                          <OpeningsTable 
+                              openings={watchedOpenings}
+                              bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                              onUpdateOpening={handleUpdateOpening}
+                              onDeleteOpening={handleDeleteOpening}
+                          />
+                      )}
+                  </CardContent>
+                  <CardFooter className="justify-center">
+                       <AddOpeningForm
+                            onSave={handleAddOpening}
+                            bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
+                            isDisabled={!isPrimaryInfoSelected}
+                            openingsCount={watchedOpenings.length}
+                            variant={watchedOpenings.length > 0 ? 'secondary' : 'default'}
+                        />
+                  </CardFooter>
               </Card>
 
               {form.formState.errors.openings && (
                   <p className="text-sm font-medium text-destructive px-4">
                   {form.formState.errors.openings.message || form.formState.errors.openings.root?.message}
                   </p>
-              )}
-
-              {watchedOpenings.length > 0 && (
-                  <div className="space-y-4">
-                      <OpeningsTable 
-                          openings={watchedOpenings}
-                          bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                          onUpdateOpening={handleUpdateOpening}
-                          onDeleteOpening={handleDeleteOpening}
-                      />
-                       <div className="flex justify-center pt-2">
-                           {addOpeningButton}
-                       </div>
-                  </div>
               )}
             </div>
           </div>

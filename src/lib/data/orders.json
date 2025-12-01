@@ -1,5 +1,34 @@
-
 [
+  {
+    "id": "ORD301",
+    "orderName": "طلب 12/1/2025, 7:42:43 PM",
+    "userId": "5",
+    "customerName": "User",
+    "customerPhone": "555-5555",
+    "mainAbjourType": "مدار",
+    "mainColor": "بيج",
+    "bladeWidth": 5.8,
+    "pricePerSquareMeter": 130,
+    "status": "Pending",
+    "date": "2025-12-01",
+    "totalArea": 0.85608,
+    "totalCost": 111.29039999999999,
+    "openings": [
+      {
+        "serial": "OP1",
+        "abjourType": "قياسي",
+        "codeLength": 123,
+        "numberOfCodes": 12,
+        "hasEndCap": false,
+        "hasAccessories": false,
+        "notes": ""
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": ""
+  },
   {
     "id": "ORD001",
     "userId": "1",
