@@ -18,7 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, AlertTriangle } from "lucide-react";
+import { ArrowRight, FileText, Truck, AlertTriangle, Pencil } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
 
 const DUMMY_USER_ID = "4"; // Admin User ID
@@ -61,6 +61,14 @@ export default async function AdminOrderDetailPage({ params }: { params: { order
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <h1 className="text-2xl font-bold">تفاصيل الطلب</h1>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                {order.status === 'Pending' && (
+                    <Link href={`/admin/orders/${order.id}/edit`} className="w-full sm:w-auto">
+                        <Button className="w-full">
+                            <Pencil className="ml-2 h-4 w-4" />
+                            تعديل الطلب
+                        </Button>
+                    </Link>
+                )}
                  <Link href={`/admin/orders/${order.id}/view`} className="w-full sm:w-auto">
                     <Button variant="outline" className="w-full">
                         <FileText className="ml-2 h-4 w-4" />
