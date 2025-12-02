@@ -9,7 +9,6 @@ import { getUserById } from "@/lib/firebase-actions";
 import type { User } from "@/lib/definitions";
 import { ClientDateTime } from "@/components/client-date-time";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
-import { OrderFormProvider } from "@/components/orders/order-form-provider";
 
 const DUMMY_USER_ID = "5"; 
 
@@ -17,7 +16,6 @@ export default async function NewOrderPage() {
   const currentUser = await getUserById(DUMMY_USER_ID);
 
   return (
-    <OrderFormProvider>
       <div className="flex flex-col min-h-screen">
         <MainHeader />
         <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
@@ -44,6 +42,5 @@ export default async function NewOrderPage() {
         <MainFooter />
         <BottomNavbar />
       </div>
-    </OrderFormProvider>
   );
 }

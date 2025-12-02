@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -54,8 +53,6 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { useOrderForm } from './order-form-provider';
-import { createPortal } from 'react-dom';
 
 
 const openingSchema = z.object({
@@ -151,7 +148,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
-  const { setFormActions } = useOrderForm();
   
   useEffect(() => {
     async function fetchMaterials() {
@@ -293,39 +289,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   };
 
   const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
-
-  const FormActions = () => (
-    <>
-      <div className="text-right">
-        <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
-        <p className="text-2xl font-bold">${totalCost.toFixed(2)}</p>
-      </div>
-      <Button
-          type="submit"
-          size="lg"
-          className="flex-shrink-0"
-          disabled={isSubmitPending}
-          onClick={form.handleSubmit(onSubmit)}
-      >
-          {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-          إرسال الطلب
-      </Button>
-    </>
-  );
-
-  useEffect(() => {
-    const actionsContainer = document.getElementById('form-actions-container');
-    if (actionsContainer) {
-      setFormActions(
-        createPortal(
-          <FormActions />,
-          actionsContainer
-        )
-      );
-    }
-    return () => setFormActions(null);
-  }, [totalCost, isSubmitPending, setFormActions]);
-
 
   return (
     <Form {...form}>
@@ -619,7 +582,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             </div>
           </div>
           
-          <div className="hidden lg:block lg:sticky top-4 space-y-8">
+          <div className="lg:sticky top-4 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -745,31 +708,19 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   </div>
                 </div>
               </CardContent>
+               <CardFooter>
+                 <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitPending}
+                  >
+                    {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                    إرسال الطلب
+                  </Button>
+               </CardFooter>
             </Card>
           </div>
         </div>
-        
-        {/* Desktop Floating Submit Bar */}
-        <div className="hidden lg:flex fixed bottom-0 left-0 right-0 z-50 p-4">
-            <div className="container mx-auto flex items-center justify-end">
-                 <div className="bg-background/95 border border-border backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-6">
-                    <div className="text-right">
-                        <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
-                        <p className="text-2xl font-bold">${totalCost.toFixed(2)}</p>
-                    </div>
-                    <Button
-                        type="submit"
-                        size="lg"
-                        className="flex-shrink-0"
-                        disabled={isSubmitPending}
-                    >
-                        {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                        إرسال الطلب
-                    </Button>
-                </div>
-            </div>
-        </div>
-
       </form>
     </Form>
   );
