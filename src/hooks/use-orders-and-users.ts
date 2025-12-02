@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import type { Order, User } from '@/lib/definitions';
-import { getOrders, getUsers } from '@/lib/firebase-actions';
+import { getOrders, getUsers, initializeTestUsers } from '@/lib/firebase-actions';
 
 export function useOrdersAndUsers(userId?: string) {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -13,6 +13,9 @@ export function useOrdersAndUsers(userId?: string) {
         async function fetchData() {
             setLoading(true);
             try {
+                // Ensure test users are initialized, especially for dev environment
+                await initializeTestUsers();
+                
                 const [ordersData, usersData] = await Promise.all([
                     getOrders(),
                     getUsers(true) // Fetch all users including admins
