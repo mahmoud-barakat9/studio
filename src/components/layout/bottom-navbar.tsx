@@ -19,20 +19,12 @@ export function BottomNavbar() {
   const isNewOrderPage = pathname === '/orders/new';
 
   return (
-    <div id="bottom-nav-portal-container" className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm md:hidden",
-         isNewOrderPage ? "h-24" : "h-16"
+    <div id="bottom-nav-container" className={cn(
+        "fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-sm md:hidden h-16",
+        isNewOrderPage && "bottom-16" // Move up to make space for the submit bar
     )}>
-      <nav className={cn(
-          "container flex h-full items-center justify-around px-2"
-        )}>
+      <nav className="container flex h-full items-center justify-around px-2">
         {navLinks.map(link => {
-          // Hide the middle "New Order" link when on the new order page,
-          // because the portal will render the submit actions there.
-          if (isNewOrderPage && link.href === '/orders/new') {
-            return <div key={link.href} className="w-1/3" />
-          }
-
           const isActive =
             (link.href === '/dashboard' && pathname === link.href) ||
             (link.href !== '/dashboard' && pathname.startsWith(link.href));

@@ -43,7 +43,6 @@ import {
   createOrder as createOrderAction,
 } from '@/lib/actions';
 import React, { useEffect, useTransition, useMemo, useState, useActionState } from 'react';
-import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
@@ -54,7 +53,6 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { useMediaQuery } from '@/hooks/use-media-query';
 
 
 const openingSchema = z.object({
@@ -150,15 +148,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [isNamePending, startNameTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
-  
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
-  const isMobile = useMediaQuery("(max-width: 767px)");
-
-  useEffect(() => {
-    // We need to find the portal container after the component mounts
-    // as it exists in a different part of the React tree (in the layout).
-    setPortalContainer(document.getElementById('bottom-nav-portal-container'));
-  }, []);
   
   useEffect(() => {
     async function fetchMaterials() {
@@ -300,27 +289,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   };
 
   const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
-
-  const FormActions = ({ isMobileView }: { isMobileView: boolean }) => (
-    <div className={isMobileView ? "flex items-center justify-between w-full px-4" : "w-full"}>
-       {isMobileView && (
-            <div className="text-left">
-                <p className="text-xs text-muted-foreground">التكلفة الإجمالية</p>
-                <p className="font-bold text-lg">${totalCost.toFixed(2)}</p>
-            </div>
-       )}
-       <Button
-            type="submit"
-            className={isMobileView ? "w-auto" : "w-full"}
-            size={isMobileView ? "lg" : "default"}
-            disabled={isSubmitPending}
-        >
-            {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-            إرسال الطلب
-        </Button>
-    </div>
-  );
-
 
   return (
     <Form {...form}>
@@ -614,7 +582,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             </div>
           </div>
           
-          <div className="lg:sticky top-4 space-y-8">
+          <div className="hidden lg:block lg:sticky top-4 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -740,17 +708,37 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   </div>
                 </div>
               </CardContent>
-
-              <CardFooter className="md:hidden">
-                 {/* This space is for the mobile portal */}
-              </CardFooter>
-               <CardFooter className="hidden md:flex">
-                    <FormActions isMobileView={false} />
+               <CardFooter>
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitPending}
+                    >
+                        {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                        إرسال الطلب
+                    </Button>
               </CardFooter>
             </Card>
           </div>
         </div>
-        {isMobile && portalContainer && createPortal(<FormActions isMobileView={true} />, portalContainer)}
+        {/* Mobile Submit Bar */}
+        <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 p-4 bg-background/95 border-t border-border backdrop-blur-sm">
+            <div className="container mx-auto flex items-center justify-between gap-4">
+                <div>
+                    <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
+                    <p className="text-xl font-bold">${totalCost.toFixed(2)}</p>
+                </div>
+                 <Button
+                    type="submit"
+                    size="lg"
+                    className="flex-shrink-0"
+                    disabled={isSubmitPending}
+                >
+                    {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                    إرسال الطلب
+                </Button>
+            </div>
+        </div>
       </form>
     </Form>
   );
