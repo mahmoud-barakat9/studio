@@ -24,10 +24,11 @@ export function BottomNavbar() {
     )}>
       <nav className="container flex h-16 items-center justify-around px-2">
         {navLinks.map((link, index) => {
-          const isActive =
-            (link.href === '/dashboard' && pathname === link.href) ||
-            (pathname.startsWith(link.href) && link.href !== '/dashboard');
-          
+          // Corrected logic for isActive
+          const isActive = (link.href === '/dashboard') 
+            ? pathname === link.href
+            : pathname.startsWith(link.href) && link.href.length === pathname.length;
+
           const isMiddleButton = index === 1;
 
           return (
