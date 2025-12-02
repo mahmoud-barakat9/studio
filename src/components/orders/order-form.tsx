@@ -293,7 +293,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-24 lg:pb-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-8">
             <Card>
@@ -710,7 +710,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 </div>
               </CardContent>
               <CardFooter>
-                <Button
+                 <Button
                   type="submit"
                   className="w-full"
                   disabled={isSubmitPending}
@@ -725,8 +725,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
           </div>
         </div>
         
-        {/* Floating Submit Button */}
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)] lg:pl-[16rem] xl:pl-[18rem]">
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)]">
             <div className="container mx-auto max-w-7xl">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">
