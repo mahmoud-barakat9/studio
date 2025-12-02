@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -53,7 +54,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { OrderFormProvider, useOrderForm } from './order-form-provider';
+import { useOrderForm } from './order-form-provider';
 import { createPortal } from 'react-dom';
 
 
@@ -121,7 +122,7 @@ interface OrderFormProps {
 }
 
 
-function OrderFormInner({ isAdmin = false, users: allUsers = [], currentUser, currentDate }: OrderFormProps) {
+export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, currentDate }: OrderFormProps) {
   const orderSchema = isAdmin ? adminOrderSchema : userOrderSchema;
   const router = useRouter();
   
@@ -304,6 +305,7 @@ function OrderFormInner({ isAdmin = false, users: allUsers = [], currentUser, cu
           size="lg"
           className="flex-shrink-0"
           disabled={isSubmitPending}
+          onClick={form.handleSubmit(onSubmit)}
       >
           {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           إرسال الطلب
@@ -771,13 +773,4 @@ function OrderFormInner({ isAdmin = false, users: allUsers = [], currentUser, cu
       </form>
     </Form>
   );
-}
-
-
-export function OrderForm(props: OrderFormProps) {
-  return (
-    <OrderFormProvider>
-      <OrderFormInner {...props} />
-    </OrderFormProvider>
-  )
 }
