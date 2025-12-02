@@ -20,7 +20,7 @@ export function MainFooter() {
 
   return (
     <footer className="bg-muted text-muted-foreground">
-      <div className="container py-8 px-4 md:px-6">
+      <div className="container py-12 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-2">
             <Link href={homeUrl} className="flex items-center gap-2 mb-2">
@@ -56,7 +56,7 @@ export function MainFooter() {
             </div>
           </div>
         </div>
-        <div className="border-t mt-8 pt-4 text-center text-sm">
+        <div className="border-t mt-8 pt-6 text-center text-sm">
           {isClient ? <p>&copy; {currentYear} طلب أباجور. جميع الحقوق محفوظة.</p> : <div className="h-6" />}
         </div>
       </div>
