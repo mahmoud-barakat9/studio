@@ -12,6 +12,7 @@ import { PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Pagination } from "@/components/pagination";
+import { BottomNavbar } from "@/components/layout/bottom-navbar";
 
 const DUMMY_USER_ID = "5"; 
 const ITEMS_PER_PAGE = 5;
@@ -74,7 +75,7 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <main className="flex-1 bg-muted/40">
+      <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
         <div id="orders" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8">
             <div className="flex items-center justify-between">
                 <div>
@@ -85,7 +86,7 @@ export default function OrdersPage() {
                     هنا يمكنك عرض وتتبع جميع طلباتك.
                 </p>
                 </div>
-                 <Link href="/orders/new">
+                 <Link href="/orders/new" className="hidden md:inline-block">
                     <Button>
                         <PlusCircle className="ml-2 h-4 w-4" />
                         إنشاء طلب جديد
@@ -150,6 +151,7 @@ export default function OrdersPage() {
         </div>
       </main>
       <MainFooter />
+      <BottomNavbar />
     </div>
   );
 }

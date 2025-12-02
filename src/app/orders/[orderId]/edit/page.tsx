@@ -1,3 +1,4 @@
+
 import { getOrderById } from "@/lib/firebase-actions";
 import { EditOrderForm } from "@/components/orders/edit-order-form";
 import Link from "next/link";
@@ -6,6 +7,7 @@ import { ArrowRight, AlertTriangle } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BottomNavbar } from "@/components/layout/bottom-navbar";
 
 
 const DUMMY_USER_ID = "5";
@@ -44,6 +46,7 @@ export default async function EditOrderPage({
                 </Card>
             </main>
             <MainFooter />
+            <BottomNavbar />
         </div>
     );
   }
@@ -72,6 +75,7 @@ export default async function EditOrderPage({
                 </Card>
             </main>
             <MainFooter />
+            <BottomNavbar />
         </div>
       )
   }
@@ -79,7 +83,7 @@ export default async function EditOrderPage({
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <main className="flex-1 bg-muted/40 p-4 md:p-8">
+      <main className="flex-1 bg-muted/40 p-4 md:p-8 pb-24 md:pb-8">
         <div className="flex items-center justify-between mb-8">
             <div>
                 <h1 className="text-2xl font-bold">تعديل الطلب: {order.orderName}</h1>
@@ -95,6 +99,7 @@ export default async function EditOrderPage({
         <EditOrderForm order={order} />
       </main>
       <MainFooter />
+      <BottomNavbar />
     </div>
   );
 }

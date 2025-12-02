@@ -23,6 +23,7 @@ import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign } from "lucide-react"
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
+import { BottomNavbar } from "@/components/layout/bottom-navbar";
 
 
 export default async function OrderDetailPage({ params }: { params: { orderId: string }}) {
@@ -55,6 +56,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
             </div>
         </main>
         <MainFooter />
+        <BottomNavbar />
       </div>
     );
   }
@@ -66,14 +68,14 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <main className="flex-1 bg-muted/40">
+      <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
         <div className="container mx-auto py-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-bold">تفاصيل طلبك</h1>
                     <p className="text-muted-foreground">عرض شامل لكل معلومات طلبك الحالي.</p>
                 </div>
-                <Link href="/orders">
+                <Link href="/orders" className="hidden md:inline-block">
                     <Button variant="outline">
                         <ArrowRight className="ml-2 h-4 w-4" />
                         العودة إلى كل الطلبات
@@ -216,6 +218,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
         </div>
       </main>
       <MainFooter />
+      <BottomNavbar />
     </div>
   );
 }

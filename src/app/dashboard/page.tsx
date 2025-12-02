@@ -2,34 +2,33 @@
 'use client';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlusCircle, Ruler, ClipboardList, CheckCircle2, TrendingUp, TrendingDown, Package } from "lucide-react";
+import { ArrowLeft, PlusCircle, Package, Ruler, ClipboardList } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import type { Order, User } from "@/lib/definitions";
+import type { Order } from "@/lib/definitions";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { useMemo } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { BottomNavbar } from "@/components/layout/bottom-navbar";
 
 const DUMMY_USER_ID = "5"; 
 
 function Stat({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | number }) {
     return (
-        <div className="flex flex-col items-center gap-2 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="h-6 w-6" />
+        <div className="flex flex-col items-center justify-center gap-2 text-center flex-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
             </div>
-            <div>
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">{value}</p>
+            <div className="text-center">
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <p className="text-lg font-bold">{value}</p>
             </div>
         </div>
     );
 }
-
 
 export default function DashboardPage() {
   const { orders, users, loading } = useOrdersAndUsers(DUMMY_USER_ID);
@@ -42,18 +41,24 @@ export default function DashboardPage() {
     }
     
     const recentOrders = userOrders.slice(0, 5);
-
-    const totalOrders = userOrders.length;
     
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const thisMonthOrders = userOrders.filter(o => {
+        const orderDate = new Date(o.date);
+        return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    });
+
     const totalApprovedMeters = userOrders
       .filter(order => order.status !== 'Pending' && order.status !== 'Rejected')
       .reduce((sum, order) => sum + order.totalArea, 0);
 
     const activeOrdersCount = userOrders.filter(order => order.status !== 'Delivered' && order.status !== 'Rejected' && !order.isArchived).length;
 
-
     const kpiData = {
-        totalOrders,
+        monthlyOrdersCount: thisMonthOrders.length,
         totalApprovedMeters,
         activeOrdersCount,
     }
@@ -90,11 +95,10 @@ export default function DashboardPage() {
       )
   }
 
-
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <main className="flex-1 bg-muted/40 p-4 md:p-8">
+      <main className="flex-1 bg-muted/40 p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-7xl mx-auto grid gap-8">
             
             <div className="text-center space-y-4">
@@ -104,7 +108,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground max-w-xl mx-auto">
                     نظرة عامة سريعة على نشاطك. انشئ طلبًا جديدًا أو تتبع طلباتك الحالية من هنا.
                 </p>
-                 <Link href="/orders/new">
+                 <Link href="/orders/new" className="hidden md:inline-block">
                     <Button size="lg" className="w-full sm:w-auto sm:max-w-xs">
                         <PlusCircle className="ml-2 h-5 w-5" />
                         إنشاء طلب جديد
@@ -113,9 +117,9 @@ export default function DashboardPage() {
             </div>
 
             <Card className="shadow-lg">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                     <div className="flex items-center justify-around">
-                        <Stat icon={ClipboardList} label="إجمالي الطلبات" value={kpiData.totalOrders || 0} />
+                        <Stat icon={ClipboardList} label="طلبات الشهر" value={kpiData.monthlyOrdersCount || 0} />
                         <Separator orientation="vertical" className="h-16" />
                         <Stat icon={Ruler} label="إجمالي الأمتار" value={`${kpiData.totalApprovedMeters?.toFixed(2) || '0.00'} م²`} />
                         <Separator orientation="vertical" className="h-16" />
@@ -144,6 +148,7 @@ export default function DashboardPage() {
         </div>
       </main>
       <MainFooter />
+      <BottomNavbar />
     </div>
   );
 }
