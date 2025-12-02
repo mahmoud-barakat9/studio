@@ -8,6 +8,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { getUserById, getOrdersByUserId } from "@/lib/firebase-actions";
 import type { User, Order } from "@/lib/definitions";
 import { OrdersTable } from "@/components/orders/orders-table";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 const DUMMY_USER_ID = "5"; 
 
@@ -26,6 +31,27 @@ export default async function DashboardPage() {
 
   const activeOrdersCount = userOrders.filter(order => order.status !== 'Delivered' && order.status !== 'Rejected').length;
 
+  const stats = [
+    {
+      title: "إجمالي الطلبات",
+      value: userOrders.length,
+      description: "كل الطلبات التي قمت بإنشائها",
+      icon: ClipboardList,
+    },
+    {
+      title: "إجمالي الأمتار المعتمدة",
+      value: `${totalApprovedMeters.toFixed(2)} م²`,
+      description: "مجموع مساحة طلباتك المكتملة",
+      icon: Ruler,
+    },
+    {
+      title: "الطلبات النشطة",
+      value: activeOrdersCount,
+      description: "الطلبات قيد التنفيذ حاليًا",
+      icon: CheckCircle2,
+    },
+  ];
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -33,54 +59,55 @@ export default async function DashboardPage() {
       <main className="flex-1 bg-muted/40 p-4 md:p-8">
         <div className="max-w-7xl mx-auto grid gap-8">
             
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {`أهلاً بك، ${currentUser?.name || 'User'}!`}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        نظرة عامة سريعة على نشاطك.
-                    </p>
-                </div>
+            <div className="text-center space-y-4">
+                <h1 className="text-4xl font-bold tracking-tight">
+                    {`أهلاً بك، ${currentUser?.name || 'User'}!`}
+                </h1>
+                <p className="text-muted-foreground max-w-xl mx-auto">
+                    نظرة عامة سريعة على نشاطك. انشئ طلبًا جديدًا أو تتبع طلباتك الحالية من هنا.
+                </p>
                  <Link href="/orders/new">
-                    <Button size="lg">
+                    <Button size="lg" className="w-full sm:w-auto sm:max-w-xs">
                         <PlusCircle className="ml-2 h-5 w-5" />
                         إنشاء طلب جديد
                     </Button>
                 </Link>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
-                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{userOrders.length}</div>
-                  <p className="text-xs text-muted-foreground">كل الطلبات التي قمت بإنشائها</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">إجمالي الأمتار المعتمدة</CardTitle>
-                  <Ruler className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalApprovedMeters.toFixed(2)} م²</div>
-                  <p className="text-xs text-muted-foreground">مجموع مساحة طلباتك المكتملة</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">الطلبات النشطة</CardTitle>
-                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{activeOrdersCount}</div>
-                  <p className="text-xs text-muted-foreground">الطلبات قيد التنفيذ حاليًا</p>
-                </CardContent>
-              </Card>
+            <div className="md:hidden">
+              <Carousel opts={{ align: "start", direction: "rtl" }} className="w-full">
+                <CarouselContent className="-ml-2">
+                  {stats.map((stat, index) => (
+                    <CarouselItem key={index} className="pl-2 basis-4/5">
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                          <stat.icon className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{stat.value}</div>
+                          <p className="text-xs text-muted-foreground">{stat.description}</p>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
+
+            <div className="hidden md:grid md:grid-cols-3 gap-4">
+               {stats.map((stat, index) => (
+                  <Card key={index}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                      <stat.icon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <p className="text-xs text-muted-foreground">{stat.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
 
 
@@ -98,7 +125,7 @@ export default async function DashboardPage() {
                     </Link>
                 </CardHeader>
                 <CardContent>
-                    <OrdersTable orders={recentOrders} />
+                    <OrdersTable orders={recentOrders} users={currentUser ? [currentUser] : []} />
                 </CardContent>
             </Card>
         </div>
