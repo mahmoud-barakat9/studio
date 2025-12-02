@@ -20,37 +20,41 @@ export function BottomNavbar() {
   return (
     <div className={cn(
         "fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-sm md:hidden",
+        "pb-safe", // Safe area for iOS
     )}>
       <nav className="container flex h-16 items-center justify-around px-2">
-        {navLinks.map(link => {
+        {navLinks.map((link, index) => {
           const isActive =
             (link.href === '/dashboard' && pathname === link.href) ||
             (pathname.startsWith(link.href) && link.href !== '/dashboard');
           
-          if (link.href === '/orders/new') {
-            return (
-              <Link href={link.href} className="-mt-8" key={link.href}>
-                  <Button size="lg" className="rounded-full h-16 w-16 shadow-lg flex flex-col gap-1">
-                  <link.icon className="h-6 w-6" />
-                  <span className="text-xs">{link.label}</span>
-                  </Button>
-              </Link>
-            );
-          }
+          const isMiddleButton = index === 1;
 
           return (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 p-2 transition-colors flex-1',
-                isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-primary'
+                'flex flex-col items-center justify-center gap-1 p-2 transition-colors flex-1 h-full',
+                !isMiddleButton && (isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary')
               )}
             >
-              <link.icon className="h-6 w-6" />
-              <span className="text-xs font-medium">{link.label}</span>
+              {isMiddleButton ? (
+                <div className="-mt-8">
+                    <Button size="lg" className="rounded-full h-16 w-16 shadow-lg flex flex-col gap-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <link.icon className="h-6 w-6" />
+                        <span className="text-xs">{link.label}</span>
+                    </Button>
+                </div>
+              ) : (
+                <div className={cn(
+                    "flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-full transition-colors",
+                    isActive && "bg-primary/10"
+                )}>
+                    <link.icon className="h-6 w-6" />
+                    <span className="text-xs font-medium">{link.label}</span>
+                </div>
+              )}
             </Link>
           );
         })}
