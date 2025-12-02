@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -708,29 +709,39 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   </div>
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitPending}
+                >
+                  {isSubmitPending && (
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  )}
+                  إرسال الطلب
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>
         
         {/* Floating Submit Button */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 lg:pl-[16rem] xl:pl-[18rem]">
-            <div className="container mx-auto">
-                <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)] lg:rounded-t-lg lg:border-x lg:max-w-4xl lg:mx-auto">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-sm text-muted-foreground">التكلفة الإجمالية</span>
-                            <span className="text-xl font-bold">${totalCost.toFixed(2)}</span>
-                        </div>
-                        <Button
-                            type="submit"
-                            size="lg"
-                            className="min-w-[150px]"
-                            disabled={isSubmitPending}
-                        >
-                            {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                            إرسال الطلب
-                        </Button>
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)] lg:pl-[16rem] xl:pl-[18rem]">
+            <div className="container mx-auto max-w-7xl">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col">
+                        <span className="text-sm text-muted-foreground">التكلفة الإجمالية</span>
+                        <span className="text-xl font-bold">${totalCost.toFixed(2)}</span>
                     </div>
+                    <Button
+                        type="submit"
+                        size="lg"
+                        className="min-w-[150px]"
+                        disabled={isSubmitPending}
+                    >
+                        {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                        إرسال الطلب
+                    </Button>
                 </div>
             </div>
         </div>
