@@ -7,6 +7,7 @@ import { Home, ListOrdered, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { useOrderForm } from '../orders/order-form-provider';
+import React from 'react';
 
 const navLinks = [
   { href: '/dashboard', label: 'الرئيسية', icon: Home },
