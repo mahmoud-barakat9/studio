@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, PlusCircle, Ruler, ClipboardList, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import type { Order, User } from "@/lib/definitions";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
