@@ -19,7 +19,8 @@ export function BottomNavbar() {
 
   return (
     <div className={cn(
-        "fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-sm md:hidden"
+        "fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-sm md:hidden",
+        pathname === '/orders/new' && 'bottom-20'
     )}>
       <nav className="container flex h-16 items-center justify-around px-2">
         {navLinks.map(link => {
