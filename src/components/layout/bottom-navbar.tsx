@@ -3,11 +3,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListOrdered, PlusCircle, Loader2 } from 'lucide-react';
+import { Home, ListOrdered, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { useFormStatus } from 'react-dom';
-import React from 'react';
 
 const navLinks = [
   { href: '/dashboard', label: 'الرئيسية', icon: Home },
@@ -15,40 +13,30 @@ const navLinks = [
   { href: '/orders', label: 'طلباتي', icon: ListOrdered },
 ];
 
-declare module 'react-dom' {
-    function useFormStatus(): {
-      pending: boolean;
-      data: FormData | null;
-      method: 'get' | 'post' | null;
-      action: ((formData: FormData) => Promise<void>) | null;
-    };
-}
-
 
 export function BottomNavbar() {
   const pathname = usePathname();
   const isNewOrderPage = pathname === '/orders/new';
 
   return (
-    <div className={cn(
+    <div id="bottom-nav-portal-container" className={cn(
         "fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm md:hidden",
-        isNewOrderPage && "h-24"
+         isNewOrderPage ? "h-24" : "h-16"
     )}>
       <nav className={cn(
-          "container flex h-16 items-center justify-around px-2",
-           isNewOrderPage && "h-full"
+          "container flex h-full items-center justify-around px-2"
         )}>
         {navLinks.map(link => {
-          const isActive =
-            link.href === '/dashboard'
-              ? pathname === link.href
-              : pathname.startsWith(link.href);
-          
+          // Hide the middle "New Order" link when on the new order page,
+          // because the portal will render the submit actions there.
           if (isNewOrderPage && link.href === '/orders/new') {
-            // This space will be occupied by the form context buttons
             return <div key={link.href} className="w-1/3" />
           }
 
+          const isActive =
+            (link.href === '/dashboard' && pathname === link.href) ||
+            (link.href !== '/dashboard' && pathname.startsWith(link.href));
+          
           if (link.href === '/orders/new') {
             return (
               <Link href={link.href} key={link.href} className="-mt-8">

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -44,6 +43,7 @@ import {
   createOrder as createOrderAction,
 } from '@/lib/actions';
 import React, { useEffect, useTransition, useMemo, useState, useActionState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Opening, Order } from '@/lib/definitions';
@@ -151,7 +151,14 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
   
-  const submitButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  useEffect(() => {
+    // We need to find the portal container after the component mounts
+    // as it exists in a different part of the React tree (in the layout).
+    setPortalContainer(document.getElementById('bottom-nav-portal-container'));
+  }, []);
   
   useEffect(() => {
     async function fetchMaterials() {
@@ -286,13 +293,34 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 title: 'تم إرسال الطلب بنجاح!',
                 description: `تم إنشاء طلبك "${data.orderName}".`,
             });
-            const targetUrl = asAdmin ? `/admin/orders/${result.orderId}` : `/orders/${result.orderId}`;
+            const targetUrl = isAdmin ? `/admin/orders/${result.orderId}` : `/orders/${result.orderId}`;
             router.push(targetUrl);
         }
      });
   };
 
   const isPrimaryInfoSelected = !!watchMainAbjourType && !!watchMainColor;
+
+  const FormActions = ({ isMobileView }: { isMobileView: boolean }) => (
+    <div className={isMobileView ? "flex items-center justify-between w-full px-4" : "w-full"}>
+       {isMobileView && (
+            <div className="text-left">
+                <p className="text-xs text-muted-foreground">التكلفة الإجمالية</p>
+                <p className="font-bold text-lg">${totalCost.toFixed(2)}</p>
+            </div>
+       )}
+       <Button
+            type="submit"
+            className={isMobileView ? "w-auto" : "w-full"}
+            size={isMobileView ? "lg" : "default"}
+            disabled={isSubmitPending}
+        >
+            {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+            إرسال الطلب
+        </Button>
+    </div>
+  );
+
 
   return (
     <Form {...form}>
@@ -567,28 +595,15 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                           />
                       )}
                   </CardContent>
-                   {watchedOpenings.length > 0 && (
-                    <CardFooter className="justify-center">
+                   <CardFooter className="justify-center">
                         <AddOpeningForm
                             onSave={handleAddOpening}
                             bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
                             isDisabled={!isPrimaryInfoSelected}
                             openingsCount={watchedOpenings.length}
-                            variant={'secondary'}
+                            variant={watchedOpenings.length > 0 ? 'secondary' : 'default'}
                         />
                     </CardFooter>
-                   )}
-                   {watchedOpenings.length === 0 && isPrimaryInfoSelected && (
-                        <CardFooter className="justify-center">
-                           <AddOpeningForm
-                                onSave={handleAddOpening}
-                                bladeWidth={selectedAbjourTypeData?.bladeWidth || 0}
-                                isDisabled={!isPrimaryInfoSelected}
-                                openingsCount={watchedOpenings.length}
-                                variant={'default'}
-                            />
-                        </CardFooter>
-                   )}
               </Card>
 
               {form.formState.errors.openings && (
@@ -599,7 +614,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             </div>
           </div>
           
-          <div className="lg:col-span-1 lg:sticky top-4 space-y-8">
+          <div className="lg:sticky top-4 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -726,22 +741,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                 </div>
               </CardContent>
 
-              <CardFooter>
-                <Button
-                  ref={submitButtonRef}
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitPending}
-                >
-                  {isSubmitPending && (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  )}
-                  إرسال الطلب
-                </Button>
+              <CardFooter className="md:hidden">
+                 {/* This space is for the mobile portal */}
+              </CardFooter>
+               <CardFooter className="hidden md:flex">
+                    <FormActions isMobileView={false} />
               </CardFooter>
             </Card>
           </div>
         </div>
+        {isMobile && portalContainer && createPortal(<FormActions isMobileView={true} />, portalContainer)}
       </form>
     </Form>
   );
