@@ -1,5 +1,4 @@
 
-
 import { getOrderById } from "@/lib/firebase-actions";
 import {
   Card,
@@ -140,8 +139,8 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                     <Card className="overflow-hidden">
                         <CardHeader className="bg-muted/30">
                             <CardTitle>{order.orderName}</CardTitle>
-                            <CardDescription>
-                                <div className="flex items-center gap-2 pt-1">
+                            <div className="text-sm text-muted-foreground pt-1">
+                                <div className="flex items-center gap-2">
                                     <Badge variant={
                                         order.status === 'Delivered' ? 'default' :
                                         order.status === 'Rejected' ? 'destructive' :
@@ -150,7 +149,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                     <span className="text-xs text-muted-foreground">•</span>
                                     <span className="text-xs text-muted-foreground font-mono">{order.id}</span>
                                 </div>
-                            </CardDescription>
+                            </div>
                         </CardHeader>
                         <CardContent className="p-6 grid gap-4">
                             <div className="grid gap-2 text-sm">
