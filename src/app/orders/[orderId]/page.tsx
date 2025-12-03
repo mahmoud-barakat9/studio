@@ -104,8 +104,8 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                 <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[50px]">#</TableHead>
-                                    <TableHead>العرض (سم)</TableHead>
-                                    <TableHead>الارتفاع (سم)</TableHead>
+                                    <TableHead>طول الشفرة (سم)</TableHead>
+                                    <TableHead>عدد الشفرات</TableHead>
                                     <TableHead>المساحة (م²)</TableHead>
                                     <TableHead>إضافات</TableHead>
                                 </TableRow>
@@ -116,8 +116,8 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                     return (
                                         <TableRow key={opening.serial}>
                                             <TableCell className="font-mono">{index + 1}</TableCell>
-                                            <TableCell className="font-medium">{opening.width ? opening.width.toFixed(2) : '-'}</TableCell>
-                                            <TableCell className="font-medium">{opening.height ? opening.height.toFixed(2) : '-'}</TableCell>
+                                            <TableCell className="font-medium">{opening.codeLength.toFixed(2)}</TableCell>
+                                            <TableCell className="font-medium">{opening.numberOfCodes}</TableCell>
                                             <TableCell className="font-mono">{area.toFixed(2)}</TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col gap-1 items-start">
