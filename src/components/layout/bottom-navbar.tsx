@@ -24,12 +24,18 @@ export function BottomNavbar() {
     )}>
       <nav className="container flex h-16 items-center justify-around px-2">
         {navLinks.map((link, index) => {
-          // Corrected logic for isActive
+          // Special case for dashboard button, shouldn't be active if we're on a sub-page like /orders
           const isActive = (link.href === '/dashboard') 
             ? pathname === link.href
             : pathname.startsWith(link.href) && link.href.length === pathname.length;
 
           const isMiddleButton = index === 1;
+
+          // Don't render the 'New Order' button if we are on the dashboard page
+          if (link.href === '/orders/new' && pathname === '/dashboard') {
+            return <div key={link.href} className="flex-1" />; // Placeholder to maintain layout
+          }
+
 
           return (
             <Link

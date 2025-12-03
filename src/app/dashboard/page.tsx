@@ -108,7 +108,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground max-w-xl mx-auto">
                     نظرة عامة سريعة على نشاطك. انشئ طلبًا جديدًا أو تتبع طلباتك الحالية من هنا.
                 </p>
-                 <Link href="/orders/new" className="hidden md:inline-block">
+                 <Link href="/orders/new">
                     <Button size="lg" className="w-full sm:w-auto sm:max-w-xs">
                         <PlusCircle className="ml-2 h-5 w-5" />
                         إنشاء طلب جديد
