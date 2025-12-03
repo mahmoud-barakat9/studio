@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle, BadgeDollarSign } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest, sendToFactory } from "@/lib/actions";
@@ -34,6 +34,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { OrderDetailsDialog } from "./order-details-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import React from "react";
@@ -266,7 +272,21 @@ export function OrdersTable({
                   </div>
                  <div className="flex justify-between">
                     <span className="text-muted-foreground">التكلفة:</span>
-                    <span className="font-bold font-mono">${finalTotalCost.toFixed(2)}</span>
+                    <div className="flex items-center gap-2">
+                      {order.overriddenPricePerSquareMeter != null && (
+                         <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                  <BadgeDollarSign className="h-4 w-4 text-primary" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>تم تعديل سعر المتر</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <span className="font-bold font-mono">${finalTotalCost.toFixed(2)}</span>
+                    </div>
                   </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -365,7 +385,25 @@ export function OrdersTable({
                            </div>
                         </TableCell>
                         <TableCell className="text-left font-mono">
-                          ${finalTotalCost.toFixed(2)}
+                          <div className="flex items-center gap-2 justify-end">
+                            {order.overriddenPricePerSquareMeter != null && (
+                               <TooltipProvider>
+                                  <Tooltip>
+                                      <TooltipTrigger>
+                                        <BadgeDollarSign className="h-4 w-4 text-primary" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                          <div className="flex flex-col gap-1 p-1">
+                                            <p>تم تعديل سعر المتر</p>
+                                            <p><span className="text-muted-foreground">الأصلي:</span> ${order.pricePerSquareMeter.toFixed(2)}</p>
+                                            <p><span className="text-muted-foreground">الجديد:</span> ${order.overriddenPricePerSquareMeter.toFixed(2)}</p>
+                                          </div>
+                                      </TooltipContent>
+                                  </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            <span>${finalTotalCost.toFixed(2)}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="text-left" onClick={(e) => e.stopPropagation()}>
                            <div className="flex items-center gap-1 justify-end">
