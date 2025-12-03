@@ -1,4 +1,5 @@
 
+
 import { getOrderById } from "@/lib/firebase-actions";
 import {
   Card,
@@ -18,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box } from "lucide-react";
+import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box, Ruler } from "lucide-react";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
@@ -192,6 +193,10 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                             <Separator />
                             
                             <div className="grid gap-3 text-sm">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground flex items-center gap-1.5"><Ruler className="h-4 w-4" /> المساحة الإجمالية</span>
+                                    <span className="font-semibold font-mono">{order.totalArea.toFixed(2)} م²</span>
+                                </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground flex items-center gap-1.5"><BadgeDollarSign className="h-4 w-4" /> سعر المتر</span>
                                     <div className="flex items-center gap-2">
