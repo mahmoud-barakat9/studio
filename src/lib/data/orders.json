@@ -9,7 +9,7 @@
     "mainColor": "بيج",
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 120,
-    "status": "Pending",
+    "status": "Processing",
     "date": "2025-12-03",
     "totalArea": 2.7775,
     "totalCost": 333.29999999999995,
@@ -36,7 +36,8 @@
     "isArchived": false,
     "hasDelivery": true,
     "deliveryCost": 6.38875,
-    "deliveryAddress": "يسب"
+    "deliveryAddress": "يسب",
+    "scheduledDeliveryDate": "2025-12-15"
   },
   {
     "id": "ORD301",
@@ -51,7 +52,7 @@
     "status": "Pending",
     "date": "2025-12-01",
     "totalArea": 0.85608,
-    "totalCost": 111.29039999999999,
+    "totalCost": 102.72959999999999,
     "openings": [
       {
         "serial": "OP1",
@@ -66,7 +67,8 @@
     "isArchived": false,
     "hasDelivery": false,
     "deliveryCost": 0,
-    "deliveryAddress": ""
+    "deliveryAddress": "",
+    "overriddenPricePerSquareMeter": 120
   },
   {
     "id": "ORD001",
