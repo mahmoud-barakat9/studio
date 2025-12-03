@@ -19,11 +19,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign } from "lucide-react";
+import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box } from "lucide-react";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
+import { Separator } from "@/components/ui/separator";
 
 
 export default async function OrderDetailPage({ params }: { params: { orderId: string }}) {
@@ -96,34 +97,39 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                     <Card>
                         <CardHeader>
                         <CardTitle>تفاصيل القطع</CardTitle>
+                        <CardDescription>قائمة بالقطع والمواصفات التي طلبتها.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-lg border">
                             <Table className="min-w-full">
                                 <TableHeader>
                                 <TableRow>
-                                    <TableHead>#</TableHead>
-                                    <TableHead>نوع التركيب</TableHead>
-                                    <TableHead>طول الكود (سم)</TableHead>
-                                    <TableHead>عدد الأكواد</TableHead>
+                                    <TableHead className="w-[50px]">#</TableHead>
+                                    <TableHead>العرض (سم)</TableHead>
+                                    <TableHead>الارتفاع (سم)</TableHead>
+                                    <TableHead>المساحة (م²)</TableHead>
                                     <TableHead>إضافات</TableHead>
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {order.openings.map((opening, index) => (
-                                    <TableRow key={opening.serial}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{opening.abjourType}</TableCell>
-                                    <TableCell>{opening.codeLength}</TableCell>
-                                    <TableCell>{opening.numberOfCodes}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col gap-1">
-                                        {opening.hasEndCap && <Badge variant="secondary">غطاء طرفي</Badge>}
-                                        {opening.hasAccessories && <Badge variant="secondary">إكسسوارات</Badge>}
-                                        </div>
-                                    </TableCell>
-                                    </TableRow>
-                                ))}
+                                {order.openings.map((opening, index) => {
+                                    const area = (opening.codeLength * opening.numberOfCodes * order.bladeWidth) / 10000;
+                                    return (
+                                        <TableRow key={opening.serial}>
+                                            <TableCell className="font-mono">{index + 1}</TableCell>
+                                            <TableCell className="font-medium">{opening.width ? opening.width.toFixed(2) : '-'}</TableCell>
+                                            <TableCell className="font-medium">{opening.height ? opening.height.toFixed(2) : '-'}</TableCell>
+                                            <TableCell className="font-mono">{area.toFixed(2)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    {opening.hasEndCap && <Badge variant="secondary">غطاء طرفي</Badge>}
+                                                    {opening.hasAccessories && <Badge variant="secondary">إكسسوارات</Badge>}
+                                                    {!opening.hasEndCap && !opening.hasAccessories && <span className="text-xs text-muted-foreground">-</span>}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
                                 </TableBody>
                             </Table>
                         </div>
@@ -131,88 +137,92 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                     </Card>
                 </div>
                 <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 flex flex-col gap-8">
-                    <Card>
-                        <CardHeader>
+                    <Card className="overflow-hidden">
+                        <CardHeader className="bg-muted/30">
                             <CardTitle>{order.orderName}</CardTitle>
-                            <CardDescription>رقم الطلب: {order.id}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">الحالة</span>
-                                <span>
+                            <CardDescription>
+                                <div className="flex items-center gap-2 pt-1">
                                     <Badge variant={
                                         order.status === 'Delivered' ? 'default' :
                                         order.status === 'Rejected' ? 'destructive' :
                                         'secondary'
                                     }>{order.status}</Badge>
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">نوع الأباجور</span>
-                                <span>{order.mainAbjourType} ({order.mainColor})</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">تاريخ الطلب</span>
-                                <span>{order.date}</span>
-                            </div>
-                             {order.scheduledDeliveryDate && (
-                                <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">تاريخ التسليم المتوقع</span>
-                                    <span className="font-semibold">{order.scheduledDeliveryDate}</span>
+                                    <span className="text-xs text-muted-foreground">•</span>
+                                    <span className="text-xs text-muted-foreground font-mono">{order.id}</span>
                                 </div>
-                            )}
-                            {order.actualDeliveryDate && (
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-6 grid gap-4">
+                            <div className="grid gap-2 text-sm">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">تاريخ التسليم الفعلي</span>
-                                    <span className="font-semibold">{order.actualDeliveryDate}</span>
+                                    <span className="text-muted-foreground flex items-center gap-2"><Box /> نوع الأباجور</span>
+                                    <span className="font-semibold">{order.mainAbjourType}</span>
                                 </div>
-                            )}
-                             <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground flex items-center gap-1">
-                                <BadgeDollarSign className="h-4 w-4" />
-                                سعر المتر
-                                </span>
-                                <div className="flex items-center gap-2">
-                                {order.overriddenPricePerSquareMeter != null && (
-                                    <span className="font-semibold text-sm text-muted-foreground line-through">
-                                        ${order.pricePerSquareMeter.toFixed(2)}
-                                    </span>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground flex items-center gap-2"><Palette /> اللون</span>
+                                    <span className="font-semibold">{order.mainColor}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground flex items-center gap-2"><Calendar /> تاريخ الطلب</span>
+                                    <span className="font-semibold">{order.date}</span>
+                                </div>
+                                {order.scheduledDeliveryDate && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground">تاريخ التسليم المتوقع</span>
+                                        <span className="font-semibold">{order.scheduledDeliveryDate}</span>
+                                    </div>
                                 )}
-                                <span className="font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
-                                </div>
+                                {order.actualDeliveryDate && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground">تاريخ التسليم الفعلي</span>
+                                        <span className="font-semibold">{order.actualDeliveryDate}</span>
+                                    </div>
+                                )}
                             </div>
-                             <div className="flex items-center justify-between border-t pt-4">
-                                <span className="text-muted-foreground">تكلفة المنتجات</span>
-                                <span className="font-semibold">${order.totalCost.toFixed(2)}</span>
-                            </div>
+
                             {order.hasDelivery && (
-                                <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">تكلفة التوصيل</span>
-                                    <span className="font-semibold">${(order.deliveryCost || 0).toFixed(2)}</span>
-                                </div>
+                                <>
+                                    <Separator />
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-semibold flex items-center gap-2"><Truck /> تفاصيل التوصيل</h4>
+                                        <p className="text-sm text-muted-foreground pl-6">{order.deliveryAddress}</p>
+                                    </div>
+                                </>
                             )}
-                            <div className="flex items-center justify-between font-bold text-lg border-t pt-2">
-                                <span className="text-muted-foreground">التكلفة الإجمالية</span>
-                                <span className="font-extrabold">${finalTotalCost.toFixed(2)}</span>
+                            
+                            <Separator />
+                            
+                            <div className="grid gap-3 text-sm">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground flex items-center gap-1.5"><BadgeDollarSign className="h-4 w-4" /> سعر المتر</span>
+                                    <div className="flex items-center gap-2">
+                                    {order.overriddenPricePerSquareMeter != null && (
+                                        <span className="font-semibold text-sm text-muted-foreground line-through">
+                                            ${order.pricePerSquareMeter.toFixed(2)}
+                                        </span>
+                                    )}
+                                    <span className="font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground">تكلفة المنتجات</span>
+                                    <span className="font-semibold">${order.totalCost.toFixed(2)}</span>
+                                </div>
+                                {order.hasDelivery && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground">تكلفة التوصيل</span>
+                                        <span className="font-semibold">${(order.deliveryCost || 0).toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <Separator />
+                                <div className="flex items-center justify-between font-bold text-lg">
+                                    <span className="text-muted-foreground">الإجمالي</span>
+                                    <span className="font-extrabold">${finalTotalCost.toFixed(2)}</span>
+                                </div>
                             </div>
+
                         </CardContent>
                     </Card>
-                    {order.hasDelivery && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                <Truck className="h-5 w-5" />
-                                تفاصيل التوصيل
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid gap-4">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground text-sm">عنوان التوصيل</span>
-                                    <p className="text-sm font-medium">{order.deliveryAddress}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
         </div>
