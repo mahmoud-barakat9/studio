@@ -35,7 +35,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
     return (
       <div className="flex flex-col min-h-screen">
         <MainHeader />
-        <main className="flex-1 bg-muted/40">
+        <main className="flex-1 bg-muted/40 p-4 md:p-8">
             <div className="container mx-auto py-8">
                  <Card>
                     <CardHeader>
@@ -69,9 +69,9 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
   return (
     <div className="flex flex-col min-h-screen">
       <MainHeader />
-      <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
-        <div className="container mx-auto py-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <main className="flex-1 bg-muted/40 p-4 md:p-8 pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">تفاصيل طلبك</h1>
                     <p className="text-muted-foreground">عرض شامل لكل معلومات طلبك الحالي.</p>
