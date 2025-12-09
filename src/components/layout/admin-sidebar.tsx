@@ -13,6 +13,7 @@ import {
   Boxes,
   User,
   Warehouse,
+  Building,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const links = [
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
   { href: "/admin/inventory", label: "المخزون", icon: Warehouse },
+  { href: "/admin/suppliers", label: "الموردون", icon: Building },
   { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 

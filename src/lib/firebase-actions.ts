@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { abjourTypesData as defaultAbjourTypesData } from '@/lib/abjour-data';
-import type { Order, User, Opening, AbjourTypeData, Purchase } from '@/lib/definitions';
+import type { Order, User, Opening, AbjourTypeData, Purchase, Supplier } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 
 const dataDir = path.join(process.cwd(), 'src', 'lib', 'data');
@@ -12,6 +12,7 @@ const ordersFilePath = path.join(dataDir, 'orders.json');
 const usersFilePath = path.join(dataDir, 'users.json');
 const materialsFilePath = path.join(dataDir, 'materials.json');
 const purchasesFilePath = path.join(dataDir, 'purchases.json');
+const suppliersFilePath = path.join(dataDir, 'suppliers.json');
 
 
 const readData = <T>(filePath: string): T[] => {
@@ -21,6 +22,9 @@ const readData = <T>(filePath: string): T[] => {
             let defaultData: any[] = [];
             if (filePath.includes('materials.json')) {
                 defaultData = defaultAbjourTypesData;
+            }
+             if (filePath.includes('suppliers.json')) {
+                defaultData = [{ id: '1', name: 'مورد عام' }];
             }
             fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
             return defaultData as T[];
@@ -355,13 +359,15 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
 
 // --- Purchases ---
 export const getPurchases = async (): Promise<Purchase[]> => {
-    return Promise.resolve(readData<Purchase>(purchasesFilePath));
+    const purchases = readData<Purchase>(purchasesFilePath);
+    return Promise.resolve(purchases.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 }
 
-export const addPurchase = async (purchaseData: Omit<Purchase, 'id'>): Promise<Purchase> => {
+export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): Promise<Purchase> => {
     let purchases = readData<Purchase>(purchasesFilePath);
     const newPurchase: Purchase = {
         id: `PUR-${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
         ...purchaseData
     };
     purchases.unshift(newPurchase);
@@ -378,3 +384,22 @@ export const addPurchase = async (purchaseData: Omit<Purchase, 'id'>): Promise<P
     revalidatePath('/admin/inventory');
     return Promise.resolve(newPurchase);
 }
+
+// --- Suppliers ---
+export const getSuppliers = async (): Promise<Supplier[]> => {
+    return Promise.resolve(readData<Supplier>(suppliersFilePath));
+};
+
+export const addSupplier = async (supplierData: Omit<Supplier, 'id'>): Promise<Supplier> => {
+    let suppliers = readData<Supplier>(suppliersFilePath);
+    const newId = `${suppliers.length + 1}`;
+    const newSupplier: Supplier = {
+        id: newId,
+        ...supplierData,
+    };
+    suppliers.push(newSupplier);
+    writeData<Supplier>(suppliersFilePath, suppliers);
+
+    revalidatePath('/admin/suppliers');
+    return Promise.resolve(newSupplier);
+};

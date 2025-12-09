@@ -3,10 +3,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { PurchaseForm } from "@/components/inventory/purchase-form";
-import { getMaterials } from "@/lib/firebase-actions";
+import { getMaterials, getSuppliers } from "@/lib/firebase-actions";
 
 export default async function NewPurchasePage() {
     const materials = await getMaterials();
+    const suppliers = await getSuppliers();
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="flex items-center justify-between mb-8">
@@ -21,7 +22,7 @@ export default async function NewPurchasePage() {
                 </Button>
             </Link>
         </div>
-        <PurchaseForm materials={materials} />
+        <PurchaseForm materials={materials} suppliers={suppliers} />
     </main>
   );
 }

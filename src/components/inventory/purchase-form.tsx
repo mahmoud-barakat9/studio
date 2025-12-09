@@ -32,10 +32,11 @@ import { Loader2 } from 'lucide-react';
 import { createPurchase } from '@/lib/actions';
 import React, { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { AbjourTypeData } from '@/lib/definitions';
+import type { AbjourTypeData, Supplier } from '@/lib/definitions';
 
 const purchaseSchema = z.object({
   materialName: z.string().min(1, 'اسم المادة مطلوب.'),
+  supplierName: z.string().min(1, 'اسم المورد مطلوب.'),
   quantity: z.coerce.number().min(0.1, 'الكمية مطلوبة ويجب أن تكون أكبر من صفر.'),
   purchasePricePerMeter: z.coerce.number().min(0.1, 'سعر الشراء مطلوب ويجب أن يكون أكبر من صفر.'),
 });
@@ -44,15 +45,17 @@ type PurchaseFormValues = z.infer<typeof purchaseSchema>;
 
 interface PurchaseFormProps {
     materials: AbjourTypeData[];
+    suppliers: Supplier[];
 }
 
-export function PurchaseForm({ materials }: PurchaseFormProps) {
+export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
   const form = useForm<PurchaseFormValues>({
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
       materialName: '',
-      quantity: 0,
-      purchasePricePerMeter: 0,
+      supplierName: '',
+      quantity: undefined,
+      purchasePricePerMeter: undefined,
     },
   });
 
@@ -85,6 +88,30 @@ export function PurchaseForm({ materials }: PurchaseFormProps) {
             <CardTitle>تفاصيل فاتورة الشراء</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+             <FormField
+              control={form.control}
+              name="supplierName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>المورد</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="اختر المورد" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {suppliers.map(supplier => (
+                            <SelectItem key={supplier.id} value={supplier.name}>
+                            {supplier.name}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="materialName"
@@ -116,7 +143,7 @@ export function PurchaseForm({ materials }: PurchaseFormProps) {
                 <FormItem>
                   <FormLabel>الكمية المشتراة (م²)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.1" {...field} />
+                    <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,7 +156,7 @@ export function PurchaseForm({ materials }: PurchaseFormProps) {
                 <FormItem>
                   <FormLabel>سعر الشراء للمتر المربع ($)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <Input type="number" step="0.01" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

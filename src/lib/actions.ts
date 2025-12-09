@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -315,8 +315,10 @@ export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
     }
 
     const materialData = {
-        ...validatedFields.data,
-        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
+        name: formData.name,
+        bladeWidth: formData.bladeWidth,
+        pricePerSquareMeter: formData.pricePerSquareMeter,
+        colors: formData.colors.split(',').map(c => c.trim()).filter(Boolean),
     };
     
     try {
@@ -356,6 +358,7 @@ export async function updateOrderPrice(orderId: string, newPrice: number | null)
 
 const purchaseSchema = z.object({
     materialName: z.string().min(1, 'اسم المادة مطلوب.'),
+    supplierName: z.string().min(1, 'اسم المورد مطلوب.'),
     quantity: z.coerce.number().min(0.1, 'الكمية مطلوبة.'),
     purchasePricePerMeter: z.coerce.number().min(0.1, 'سعر الشراء مطلوب.'),
 });
@@ -370,6 +373,28 @@ export async function createPurchase(formData: z.infer<typeof purchaseSchema>) {
         await addPurchaseDB(validatedFields.data);
         revalidatePath('/admin/inventory');
         redirect('/admin/inventory');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
+
+const supplierSchema = z.object({
+    name: z.string().min(2, 'اسم المورد مطلوب.'),
+});
+
+export async function createSupplier(formData: z.infer<typeof supplierSchema>) {
+    const validatedFields = supplierSchema.safeParse(formData);
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+    
+    try {
+        await addSupplierDB(validatedFields.data);
+        revalidatePath('/admin/suppliers');
+        revalidatePath('/admin/inventory/new');
+        redirect('/admin/suppliers');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };

@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, Package } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -70,7 +70,7 @@ export default async function AdminMaterialsPage() {
       <Card>
         <CardHeader>
           <CardTitle>قائمة المواد</CardTitle>
-          <CardDescription>عرض وتعديل أنواع الأباجور المستخدمة في النظام.</CardDescription>
+          <CardDescription>عرض وتعديل أنواع الأباجور المستخدمة في النظام والمخزون المتاح.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -79,8 +79,9 @@ export default async function AdminMaterialsPage() {
                   <TableRow>
                     <TableHead>الاسم</TableHead>
                     <TableHead>عرض الشفرة (سم)</TableHead>
-                    <TableHead>سعر المتر المربع ($)</TableHead>
-                    <TableHead>الألوان المتاحة</TableHead>
+                    <TableHead>سعر المتر ($)</TableHead>
+                    <TableHead>المخزون (م²)</TableHead>
+                    <TableHead>الألوان</TableHead>
                     <TableHead>الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -90,8 +91,14 @@ export default async function AdminMaterialsPage() {
                       <TableCell className="font-medium">{material.name}</TableCell>
                       <TableCell>{material.bladeWidth}</TableCell>
                       <TableCell>${material.pricePerSquareMeter.toFixed(2)}</TableCell>
+                      <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-mono">{material.stock.toFixed(2)}</span>
+                          </div>
+                      </TableCell>
                        <TableCell>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
                             {material.colors.map(color => (
                                 <Badge key={color} variant="secondary">{color}</Badge>
                             ))}

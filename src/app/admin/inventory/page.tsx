@@ -11,9 +11,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, Package, DollarSign } from "lucide-react";
+import { PlusCircle, AlertTriangle, Package, DollarSign, FileText } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { format } from 'date-fns';
+
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
 
@@ -22,10 +24,11 @@ export default async function AdminInventoryPage() {
     const purchases = await getPurchases();
 
     const materialsWithCost = materials.map(material => {
-        const avgPurchasePrice = purchases
-            .filter(p => p.materialName === material.name)
-            .reduce((acc, p, _, arr) => acc + p.purchasePricePerMeter / arr.length, 0);
+        const materialPurchases = purchases.filter(p => p.materialName === material.name);
+        const totalQuantityPurchased = materialPurchases.reduce((sum, p) => sum + p.quantity, 0);
+        const totalCostOfPurchases = materialPurchases.reduce((sum, p) => sum + (p.purchasePricePerMeter * p.quantity), 0);
         
+        const avgPurchasePrice = totalQuantityPurchased > 0 ? totalCostOfPurchases / totalQuantityPurchased : 0;
         const totalStockValue = material.stock * avgPurchasePrice;
         
         return {
@@ -100,7 +103,39 @@ export default async function AdminInventoryPage() {
           </div>
         </CardContent>
       </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>سجل فواتير الشراء</CardTitle>
+                <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>تاريخ الفاتورة</TableHead>
+                            <TableHead>المورد</TableHead>
+                            <TableHead>المادة</TableHead>
+                            <TableHead>الكمية (م²)</TableHead>
+                            <TableHead>سعر المتر ($)</TableHead>
+                            <TableHead>الإجمالي ($)</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {purchases.map(purchase => (
+                             <TableRow key={purchase.id}>
+                                <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
+                                <TableCell className="font-medium">{purchase.supplierName}</TableCell>
+                                <TableCell>{purchase.materialName}</TableCell>
+                                <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono">${purchase.purchasePricePerMeter.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono font-bold">${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     </main>
   );
 }
-
