@@ -1,7 +1,6 @@
 
 'use client';
 import { useState, useMemo } from "react";
-import { getMaterials, getPurchases, getSuppliers } from "@/lib/firebase-actions";
 import {
   Table,
   TableBody,
@@ -13,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, Package, DollarSign, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, AlertTriangle, Package, DollarSign, Pencil, Trash2, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
@@ -28,15 +27,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { deletePurchase } from "@/lib/actions";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination } from "@/components/pagination";
 import type { Purchase } from "@/lib/definitions";
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
 const ITEMS_PER_PAGE = 10;
+
+type FilterType = 'all' | 'material' | 'supplier';
+type FilterValue = string;
 
 function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
     return (
@@ -65,7 +76,9 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
     );
   }
 
-function PurchasesTable({ purchases }: { purchases: Purchase[] }) {
+function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: any[] }) {
+    const getSupplierName = (id: string) => suppliers.find(s => s.id === id)?.name || id;
+
     if (purchases.length === 0) {
         return (
             <div className="text-center text-muted-foreground p-8 border rounded-lg">
@@ -91,7 +104,7 @@ function PurchasesTable({ purchases }: { purchases: Purchase[] }) {
                 {purchases.map(purchase => (
                      <TableRow key={purchase.id} className="even:bg-muted/40">
                         <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
-                        <TableCell className="font-medium">{purchase.supplierName}</TableCell>
+                        <TableCell className="font-medium">{getSupplierName(purchase.supplierName)}</TableCell>
                         <TableCell>{purchase.materialName}</TableCell>
                         <TableCell>{purchase.color}</TableCell>
                         <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
@@ -119,43 +132,51 @@ function PurchasesTable({ purchases }: { purchases: Purchase[] }) {
 
 export default function AdminInventoryPage() {
     const { materials, purchases, suppliers, loading } = useOrdersAndUsers();
-    const [currentTabs, setCurrentTabs] = useState<Record<string, number>>({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [filter, setFilter] = useState<{type: FilterType, value: FilterValue}>({ type: 'all', value: 'all' });
     
     const materialsWithCost = useMemo(() => {
-        if (!materials || !purchases) return [];
-        return materials.map(material => {
-            const materialPurchases = purchases.filter(p => p.materialName === material.name);
-            const totalQuantityPurchased = materialPurchases.reduce((sum, p) => sum + p.quantity, 0);
-            const totalCostOfPurchases = materialPurchases.reduce((sum, p) => sum + (p.purchasePricePerMeter * p.quantity), 0);
-            
-            const avgPurchasePrice = totalQuantityPurchased > 0 ? totalCostOfPurchases / totalQuantityPurchased : 0;
-            const totalStockValue = material.stock * avgPurchasePrice;
-            
-            return {
-                ...material,
-                totalStockValue,
-            };
-        })
-    }, [materials, purchases]);
+      if (!materials || !purchases) return [];
+      return materials.map(material => {
+          const materialPurchases = purchases.filter(p => p.materialName === material.name);
+          const totalQuantityPurchased = materialPurchases.reduce((sum, p) => sum + p.quantity, 0);
+          const totalCostOfPurchases = materialPurchases.reduce((sum, p) => sum + (p.purchasePricePerMeter * p.quantity), 0);
+          
+          const avgPurchasePrice = totalQuantityPurchased > 0 ? totalCostOfPurchases / totalQuantityPurchased : 0;
+          const totalStockValue = material.stock * avgPurchasePrice;
+          
+          return {
+              ...material,
+              totalStockValue,
+          };
+      });
+  }, [materials, purchases]);
 
-     const handlePageChange = (tab: string, page: number) => {
-        setCurrentTabs(prev => ({ ...prev, [tab]: page }));
+    const filteredPurchases = useMemo(() => {
+        if (filter.type === 'all') return purchases;
+        if (filter.type === 'material') return purchases.filter(p => p.materialName === filter.value);
+        if (filter.type === 'supplier') return purchases.filter(p => p.supplierName === filter.value);
+        return [];
+    }, [purchases, filter]);
+
+    const totalPages = Math.ceil(filteredPurchases.length / ITEMS_PER_PAGE);
+    const paginatedPurchases = filteredPurchases.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    const handleFilterChange = (type: FilterType, value: FilterValue) => {
+        setFilter({ type, value });
+        setCurrentPage(1); // Reset to first page on filter change
     };
 
-    const filterGroups = useMemo(() => {
-        if (!materials || !purchases || !suppliers) return { byMaterial: [], bySupplier: [] };
-        const byMaterial = materials.map(m => ({
-            name: m.name,
-            purchases: purchases.filter(p => p.materialName === m.name)
-        })).filter(g => g.purchases.length > 0);
+    const getFilterLabel = () => {
+        if (filter.type === 'all') return 'كل الفواتير';
+        if (filter.type === 'material') return `المادة: ${filter.value}`;
+        if (filter.type === 'supplier') {
+            const supplier = suppliers.find(s => s.id === filter.value);
+            return `المورد: ${supplier?.name || filter.value}`;
+        }
+        return 'فلترة';
+    }
 
-        const bySupplier = suppliers.map(s => ({
-            name: s.name,
-            purchases: purchases.filter(p => p.supplierName === s.name)
-        })).filter(g => g.purchases.length > 0);
-
-        return { byMaterial, bySupplier };
-    }, [materials, purchases, suppliers]);
 
     if (loading) {
         return (
@@ -189,145 +210,99 @@ export default function AdminInventoryPage() {
           <CardDescription>عرض الكميات المتاحة من كل مادة في المخزون.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table className="min-w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>اسم المادة</TableHead>
-                    <TableHead>الكمية المتاحة (م²)</TableHead>
-                    <TableHead>قيمة المخزون الإجمالية</TableHead>
-                    <TableHead>الحالة</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {materialsWithCost.map((material) => {
-                    const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
-                    return (
-                        <TableRow key={material.name} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/20")}>
-                        <TableCell className="font-medium">{material.name}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <Package className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-mono">{material.stock.toFixed(2)}</span>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-mono">${material.totalStockValue.toFixed(2)}</span>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            {isLowStock ? (
-                                <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    مخزون منخفض
-                                </Badge>
-                            ) : (
-                                <Badge variant="secondary">متوفر</Badge>
-                            )}
-                        </TableCell>
-                        </TableRow>
-                    );
-                    })}
-                </TableBody>
-            </Table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {materialsWithCost.map((material) => {
+              const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
+              return (
+                  <Card key={material.name} className={cn("flex flex-col justify-between", isLowStock && "border-destructive")}>
+                    <CardHeader className="flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-base font-medium">{material.name}</CardTitle>
+                      {isLowStock ? (
+                          <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
+                              <AlertTriangle className="h-3 w-3" />
+                              مخزون منخفض
+                          </Badge>
+                      ) : (
+                          <Badge variant="secondary">متوفر</Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                       <div className="flex items-center gap-3">
+                          <Package className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
+                            <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
+                          </div>
+                      </div>
+                       <div className="flex items-center gap-3">
+                          <DollarSign className="h-5 w-5 text-muted-foreground" />
+                           <div>
+                            <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
+                            <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
+                          </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+              );
+              })}
           </div>
         </CardContent>
       </Card>
 
         <Card>
-            <CardHeader>
-                <CardTitle>سجل فواتير الشراء</CardTitle>
-                <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
+            <CardHeader className="flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <CardTitle>سجل فواتير الشراء</CardTitle>
+                    <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0">
+                            <SlidersHorizontal className="ml-2 h-4 w-4" />
+                            {getFilterLabel()}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>فلترة حسب</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleFilterChange('all', 'all')}>
+                            كل الفواتير
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel>المادة</DropdownMenuLabel>
+                            {materials.map(m => (
+                                <DropdownMenuItem key={m.name} onClick={() => handleFilterChange('material', m.name)}>
+                                    {m.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuGroup>
+                        
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                             <DropdownMenuLabel>المورد</DropdownMenuLabel>
+                             {suppliers.map(s => (
+                                <DropdownMenuItem key={s.id} onClick={() => handleFilterChange('supplier', s.id)}>
+                                    {s.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuGroup>
+
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </CardHeader>
             <CardContent>
-                <Tabs defaultValue="all" className="w-full">
-                    <div className="overflow-x-auto pb-2">
-                        <TabsList className="inline-flex w-max">
-                            <TabsTrigger value="all">كل الفواتير ({purchases.length})</TabsTrigger>
-                            <TabsTrigger value="by-material">حسب المادة</TabsTrigger>
-                            <TabsTrigger value="by-supplier">حسب المورد</TabsTrigger>
-                        </TabsList>
-                    </div>
-
-                    <TabsContent value="all">
-                        <div className="space-y-4">
-                            <PurchasesTable purchases={purchases.slice(( (currentTabs['all'] || 1) - 1) * ITEMS_PER_PAGE, (currentTabs['all'] || 1) * ITEMS_PER_PAGE)} />
-                            {purchases.length > ITEMS_PER_PAGE && (
-                                <Pagination 
-                                    currentPage={currentTabs['all'] || 1}
-                                    totalPages={Math.ceil(purchases.length / ITEMS_PER_PAGE)}
-                                    onPageChange={(page) => handlePageChange('all', page)}
-                                />
-                            )}
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="by-material">
-                         <Tabs defaultValue={filterGroups.byMaterial[0]?.name} className="w-full" key={filterGroups.byMaterial[0]?.name}>
-                            {filterGroups.byMaterial.length > 0 && (
-                                <div className="overflow-x-auto pb-2">
-                                    <TabsList className="inline-flex w-max">
-                                        {filterGroups.byMaterial.map(group => (
-                                            <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
-                                        ))}
-                                    </TabsList>
-                                </div>
-                            )}
-                             {filterGroups.byMaterial.map(group => {
-                                const tabId = `mat-${group.name}`;
-                                const currentPage = currentTabs[tabId] || 1;
-                                const totalPages = Math.ceil(group.purchases.length / ITEMS_PER_PAGE);
-                                const paginatedPurchases = group.purchases.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-                                return (
-                                <TabsContent key={group.name} value={group.name}>
-                                    <div className="space-y-4">
-                                        <PurchasesTable purchases={paginatedPurchases} />
-                                        {totalPages > 1 && (
-                                            <Pagination 
-                                                currentPage={currentPage}
-                                                totalPages={totalPages}
-                                                onPageChange={(page) => handlePageChange(tabId, page)}
-                                            />
-                                        )}
-                                    </div>
-                                </TabsContent>
-                             )})}
-                         </Tabs>
-                    </TabsContent>
-                     <TabsContent value="by-supplier">
-                         <Tabs defaultValue={filterGroups.bySupplier[0]?.name} className="w-full" key={filterGroups.bySupplier[0]?.name}>
-                            {filterGroups.bySupplier.length > 0 && (
-                                <div className="overflow-x-auto pb-2">
-                                    <TabsList className="inline-flex w-max">
-                                        {filterGroups.bySupplier.map(group => (
-                                            <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
-                                        ))}
-                                    </TabsList>
-                                </div>
-                            )}
-                             {filterGroups.bySupplier.map(group => {
-                                 const tabId = `sup-${group.name}`;
-                                const currentPage = currentTabs[tabId] || 1;
-                                const totalPages = Math.ceil(group.purchases.length / ITEMS_PER_PAGE);
-                                const paginatedPurchases = group.purchases.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-                                return (
-                                <TabsContent key={group.name} value={group.name}>
-                                    <div className="space-y-4">
-                                        <PurchasesTable purchases={paginatedPurchases} />
-                                        {totalPages > 1 && (
-                                            <Pagination 
-                                                currentPage={currentPage}
-                                                totalPages={totalPages}
-                                                onPageChange={(page) => handlePageChange(tabId, page)}
-                                            />
-                                        )}
-                                    </div>
-                                </TabsContent>
-                             )})}
-                         </Tabs>
-                    </TabsContent>
-                </Tabs>
+                 <div className="space-y-4">
+                    <PurchasesTable purchases={paginatedPurchases} suppliers={suppliers} />
+                    {totalPages > 1 && (
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
+                    )}
+                </div>
             </CardContent>
         </Card>
     </main>
