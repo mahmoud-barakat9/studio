@@ -70,7 +70,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
         <div className="space-y-4 py-4">
             <div className="relative h-64 w-full rounded-lg overflow-hidden border">
                 <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3624.469724128526!2d46.672101815000004!3d24.7104338841249!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f038d1e345a7b%3A0x2a6b4f7f6e8c7c1!2sKingdom%20Centre!5e0!3m2!1sen!2ssa!4v1620207593232!5m2!1sen!2ssa"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102919.23126322045!2d37.09116744869384!3d36.202113300000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15255853d9943485%3A0x95cf94f86153e0a3!2sAleppo%2C%20Syria!5e0!3m2!1sen!2sae!4v1766020584288!5m2!1sen!2sae"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
