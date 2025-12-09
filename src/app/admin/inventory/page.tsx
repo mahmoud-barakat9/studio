@@ -30,10 +30,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -167,16 +164,6 @@ export default function AdminInventoryPage() {
         setCurrentPage(1); // Reset to first page on filter change
     };
 
-    const getFilterLabel = () => {
-        if (filter.type === 'all') return 'كل الفواتير';
-        if (filter.type === 'material') return `المادة: ${filter.value}`;
-        if (filter.type === 'supplier' && suppliers) {
-            return `المورد: ${filter.value}`;
-        }
-        return 'فلترة';
-    }
-
-
     if (loading) {
         return (
             <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -197,7 +184,7 @@ export default function AdminInventoryPage() {
         <div className="mr-auto flex items-center gap-2">
             <Link href="/admin/inventory/new">
                 <Button size="sm">
-                <PlusCircle className="h-4 w-4 ml-2" />
+                <PlusCircle className="ml-2 h-4 w-4" />
                 إضافة فاتورة شراء
                 </Button>
             </Link>
@@ -254,41 +241,44 @@ export default function AdminInventoryPage() {
                     <CardTitle>سجل فواتير الشراء</CardTitle>
                     <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0">
-                            <SlidersHorizontal className="ml-2 h-4 w-4" />
-                            {getFilterLabel()}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>فلترة حسب</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => handleFilterChange('all', 'all')}>
-                            كل الفواتير
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuGroup>
-                            <DropdownMenuLabel>المادة</DropdownMenuLabel>
+                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <Button 
+                        variant={filter.type === 'all' ? 'default' : 'outline'}
+                        onClick={() => handleFilterChange('all', 'all')}
+                    >
+                        كل الفواتير
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant={filter.type === 'material' ? 'default' : 'outline'}>
+                                <SlidersHorizontal className="ml-2 h-4 w-4" />
+                                الفلترة حسب المادة
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
                             {materials?.map(m => (
                                 <DropdownMenuItem key={m.name} onSelect={() => handleFilterChange('material', m.name)}>
                                     {m.name}
                                 </DropdownMenuItem>
                             ))}
-                        </DropdownMenuGroup>
-                        
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                             <DropdownMenuLabel>المورد</DropdownMenuLabel>
-                             {suppliers?.map(s => (
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                           <Button variant={filter.type === 'supplier' ? 'default' : 'outline'}>
+                                <SlidersHorizontal className="ml-2 h-4 w-4" />
+                                الفلترة حسب المورد
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                           {suppliers?.map(s => (
                                 <DropdownMenuItem key={s.id} onSelect={() => handleFilterChange('supplier', s.name)}>
                                     {s.name}
                                 </DropdownMenuItem>
                             ))}
-                        </DropdownMenuGroup>
-
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
 
             </CardHeader>
             <CardContent>
