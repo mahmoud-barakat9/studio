@@ -226,9 +226,6 @@ export default function AdminReportsPage() {
                   content={<ChartTooltipContent hideLabel />}
                 />
                 <Pie data={statusDistributionData} dataKey="count" nameKey="status" innerRadius={60}>
-                     {statusDistributionData.map((entry) => (
-                        <Cell key={`cell-${entry.status}`} fill={entry.fill} />
-                      ))}
                 </Pie>
                 <ChartLegend
                   content={<ChartLegendContent nameKey="status" />}
