@@ -77,7 +77,10 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
   }
 
 function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: Supplier[] }) {
-    const getSupplierName = (id: string) => (suppliers || []).find(s => s.id === id)?.name || id;
+    const getSupplierName = (id: string) => {
+        if (!suppliers) return id;
+        return suppliers.find(s => s.id === id)?.name || id;
+    }
 
     if (purchases.length === 0) {
         return (
