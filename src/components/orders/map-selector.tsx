@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -16,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 
 interface MapSelectorProps {
   value?: string;
@@ -66,19 +64,20 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
         <DialogHeader>
           <DialogTitle>تحديد موقع التوصيل</DialogTitle>
           <DialogDescription>
-            الرجاء لصق رابط الموقع من خرائط جوجل وإضافة أي ملاحظات إضافية.
+            استخدم الخريطة للعثور على موقعك، ثم قم بنسخ الرابط ولصقه أدناه.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-            <div className="relative h-48 w-full rounded-lg overflow-hidden border">
-                <Image 
-                    src="https://picsum.photos/seed/map/800/400" 
-                    alt="Map placeholder"
-                    fill
-                    className="object-cover"
-                    data-ai-hint="world map"
-                />
-                 <div className="absolute inset-0 bg-primary/10" />
+            <div className="relative h-64 w-full rounded-lg overflow-hidden border">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3624.469724128526!2d46.672101815000004!3d24.7104338841249!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f038d1e345a7b%3A0x2a6b4f7f6e8c7c1!2sKingdom%20Centre!5e0!3m2!1sen!2ssa!4v1620207593232!5m2!1sen!2ssa"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    title="Google Maps"
+                ></iframe>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="map-link">رابط خرائط جوجل</Label>
