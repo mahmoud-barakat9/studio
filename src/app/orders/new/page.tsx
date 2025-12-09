@@ -25,10 +25,10 @@ export default async function NewOrderPage() {
                       <h1 className="text-2xl font-bold">إنشاء طلب جديد</h1>
                       <p className="text-muted-foreground">املأ التفاصيل أدناه لإنشاء طلبك.</p>
                   </div>
-                  <Link href="/orders" className="hidden md:inline-block">
+                  <Link href="/dashboard" className="hidden md:inline-block">
                       <Button variant="outline">
                           <ArrowRight className="ml-2 h-4 w-4" />
-                          الذهاب إلى كل الطلبات
+                          الرجوع إلى لوحة التحكم
                       </Button>
                   </Link>
               </div>

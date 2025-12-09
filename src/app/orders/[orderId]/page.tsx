@@ -76,7 +76,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                     <h1 className="text-2xl font-bold">تفاصيل طلبك</h1>
                     <p className="text-muted-foreground">عرض شامل لكل معلومات طلبك الحالي.</p>
                 </div>
-                <Link href="/orders" className="hidden md:inline-block">
+                <Link href="/orders">
                     <Button variant="outline">
                         <ArrowRight className="ml-2 h-4 w-4" />
                         العودة إلى كل الطلبات

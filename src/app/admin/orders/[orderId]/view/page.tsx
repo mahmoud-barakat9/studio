@@ -89,11 +89,19 @@ export default function OrderInvoicesPage() {
                     <h1 className="text-2xl font-bold">فواتير الطلب: {order.orderName}</h1>
                     <p className="text-muted-foreground">اختر الفاتورة المطلوبة لعرضها أو تنزيلها كصورة.</p>
                 </div>
-                 <TabsList className="grid w-full sm:w-auto grid-cols-3">
-                    <TabsTrigger value="customer">فاتورة العميل</TabsTrigger>
-                    <TabsTrigger value="factory">فاتورة المعمل</TabsTrigger>
-                    <TabsTrigger value="delivery" disabled={!order.hasDelivery}>فاتورة التوصيل</TabsTrigger>
-                </TabsList>
+                <div className="flex items-center gap-2">
+                    <TabsList className="grid w-full sm:w-auto grid-cols-3">
+                        <TabsTrigger value="customer">فاتورة العميل</TabsTrigger>
+                        <TabsTrigger value="factory">فاتورة المعمل</TabsTrigger>
+                        <TabsTrigger value="delivery" disabled={!order.hasDelivery}>فاتورة التوصيل</TabsTrigger>
+                    </TabsList>
+                    <Button variant="outline" asChild>
+                        <Link href="/admin/orders">
+                             <ArrowRight className="ml-2 h-4 w-4" />
+                             رجوع
+                        </Link>
+                    </Button>
+                </div>
             </div>
             
             <TabsContent value="customer">

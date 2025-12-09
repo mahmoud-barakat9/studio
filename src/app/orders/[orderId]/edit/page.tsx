@@ -89,10 +89,10 @@ export default async function EditOrderPage({
                 <h1 className="text-2xl font-bold">تعديل الطلب: {order.orderName}</h1>
                 <p className="text-muted-foreground">قم بتحديث تفاصيل الطلب أدناه.</p>
             </div>
-            <Link href="/orders">
+            <Link href={`/orders/${order.id}`}>
                 <Button variant="outline">
                     <ArrowRight className="ml-2 h-4 w-4" />
-                    العودة إلى كل الطلبات
+                    العودة إلى تفاصيل الطلب
                 </Button>
             </Link>
         </div>
