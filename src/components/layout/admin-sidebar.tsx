@@ -14,6 +14,8 @@ import {
   User,
   Warehouse,
   Building,
+  LogOut,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +27,7 @@ import {
   SidebarFooter,
   SidebarMenuBadge,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Avatar,
@@ -34,10 +37,11 @@ import {
 import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badge: true },
+  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badgeKey: 'pending' },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
   { href: "/admin/inventory", label: "المخزون", icon: Warehouse },
@@ -47,67 +51,99 @@ const links = [
 
 export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
   const pathname = usePathname();
+  const { state } = useSidebar();
+
+  const badgeCounts = {
+    pending: pendingOrdersCount,
+  };
 
   return (
     <Sidebar side="right">
       <SidebarRail />
       <SidebarHeader>
-        <div className="flex items-center gap-2">
-            <BrandLogo />
-            <span className="text-lg font-semibold">طلب أباجور</span>
-        </div>
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-sidebar-accent">
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
+                        <AvatarFallback>A</AvatarFallback>
+                    </Avatar>
+                    {state === 'expanded' && (
+                        <div className="flex flex-col items-start text-right">
+                            <span className="font-semibold text-sm">مسؤول</span>
+                            <span className="text-xs text-sidebar-foreground/70">admin@abjour.com</span>
+                        </div>
+                    )}
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="bottom" className="w-56">
+                <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                    <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                    <Link href="#"><Settings className="ml-2 h-4 w-4" /> الإعدادات</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarHeader>
+      
       <SidebarContent>
         <SidebarMenu>
-          {links.map((link) => (
-            <SidebarMenuItem key={link.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith(link.href)}
-                tooltip={link.label}
-              >
-                <Link href={link.href}>
-                  <link.icon />
-                  <span>{link.label}</span>
-                  {link.badge && pendingOrdersCount > 0 && (
-                     <SidebarMenuBadge>{pendingOrdersCount}</SidebarMenuBadge>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {links.map((link) => {
+            const badgeCount = link.badgeKey ? badgeCounts[link.badgeKey as keyof typeof badgeCounts] : 0;
+            return (
+              <SidebarMenuItem key={link.href}>
+                <SidebarMenuButton
+                  asChild
+                  size="lg"
+                  isActive={pathname.startsWith(link.href)}
+                  tooltip={{
+                      children: link.label,
+                      side: "left"
+                  }}
+                >
+                  <Link href={link.href}>
+                    <link.icon />
+                    <span>{link.label}</span>
+                    {link.badgeKey && badgeCount > 0 && (
+                       <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="flex items-center gap-3 p-2">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-3 justify-start p-2 w-full h-auto">
-                        <Avatar>
-                            <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
-                            <AvatarFallback>A</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-start">
-                            <span className="font-semibold text-sm">مسؤول</span>
-                            <span className="text-xs text-muted-foreground">admin@abjour.com</span>
-                        </div>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" className="mb-2">
-                    <DropdownMenuLabel>حسابي</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild>
-                        <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+
+      <SidebarFooter className="flex flex-col gap-2">
+         <Separator className="bg-sidebar-border/50"/>
+         <SidebarMenu>
+            <SidebarMenuItem>
+                 <SidebarMenuButton
+                  asChild
+                  size="lg"
+                  tooltip={{
+                      children: "تسجيل الخروج",
+                      side: "left"
+                  }}
+                >
+                  <Link href="/welcome">
+                    <LogOut />
+                    <span>تسجيل الخروج</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
