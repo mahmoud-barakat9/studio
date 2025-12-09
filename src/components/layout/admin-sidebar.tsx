@@ -131,25 +131,12 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                 <DropdownMenuItem asChild>
                     <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
                 </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                    <Link href="/welcome"><LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج</Link>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-         <SidebarMenu>
-            <SidebarMenuItem>
-                 <SidebarMenuButton
-                  asChild
-                  size="lg"
-                  tooltip={{
-                      children: "تسجيل الخروج",
-                      side: "left"
-                  }}
-                >
-                  <Link href="/welcome">
-                    <LogOut />
-                    <span>تسجيل الخروج</span>
-                  </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
