@@ -124,14 +124,16 @@ export default async function AdminInventoryPage() {
                     </TableHeader>
                     <TableBody>
                         {purchases.map(purchase => (
-                             <TableRow key={purchase.id}>
+                             <TableRow key={purchase.id} className="even:bg-muted/40">
                                 <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
                                 <TableCell className="font-medium">{purchase.supplierName}</TableCell>
                                 <TableCell>{purchase.materialName}</TableCell>
                                 <TableCell>{purchase.color}</TableCell>
                                 <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
                                 <TableCell className="font-mono">${purchase.purchasePricePerMeter.toFixed(2)}</TableCell>
-                                <TableCell className="font-mono font-bold">${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}</TableCell>
+                                <TableCell className="font-mono font-bold bg-primary/5 text-primary">
+                                    ${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
