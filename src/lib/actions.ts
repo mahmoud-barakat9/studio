@@ -278,11 +278,11 @@ export async function archiveOrder(orderId: string) {
   }
 
 const materialSchema = z.object({
-  name: z.string().min(2),
-  bladeWidth: z.coerce.number().min(0.1),
-  pricePerSquareMeter: z.coerce.number().min(0.1),
-  colors: z.string().min(1),
-  stock: z.coerce.number().optional(), // Stock is managed internally
+  name: z.string().min(2, 'الاسم مطلوب ويجب أن يكون حرفين على الأقل.'),
+  bladeWidth: z.coerce.number().min(0.1, 'عرض الشفرة مطلوب.'),
+  pricePerSquareMeter: z.coerce.number().min(0.1, 'السعر مطلوب.'),
+  colors: z.string().min(1, 'يجب إضافة لون واحد على الأقل.'),
+  stock: z.coerce.number().optional(),
 });
 
 export async function createMaterial(formData: z.infer<typeof materialSchema>) {
@@ -318,7 +318,7 @@ export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
         return { error: "البيانات المدخلة غير صالحة." };
     }
 
-    const materialData: AbjourTypeData = {
+    const materialData = {
         ...validatedFields.data,
         colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
         stock: validatedFields.data.stock || 0,
