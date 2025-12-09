@@ -339,7 +339,9 @@ export const updateMaterial = async (materialName: string, materialData: Partial
     const materialIndex = materials.findIndex(m => m.name === materialName);
     if (materialIndex === -1) throw new Error("Material not found");
     
-    materials[materialIndex] = {...materials[materialIndex], ...materialData};
+    const currentStock = materials[materialIndex].stock;
+    
+    materials[materialIndex] = {...materials[materialIndex], ...materialData, stock: currentStock};
     writeData<AbjourTypeData>(materialsFilePath, materials);
 
     revalidatePath('/admin/materials');
@@ -376,10 +378,17 @@ export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): 
     // Update material stock
     let materials = readData<AbjourTypeData>(materialsFilePath);
     const materialIndex = materials.findIndex(m => m.name === purchaseData.materialName);
+    
     if (materialIndex !== -1) {
         materials[materialIndex].stock += purchaseData.quantity;
-        writeData<AbjourTypeData>(materialsFilePath, materials);
+    } else {
+        // If the material doesn't exist, we can't add stock.
+        // This case might need more robust handling, like creating the material.
+        // For now, we'll log an error.
+        console.error(`Attempted to add stock for non-existent material: ${purchaseData.materialName}`);
     }
+    
+    writeData<AbjourTypeData>(materialsFilePath, materials);
     
     revalidatePath('/admin/inventory');
     return Promise.resolve(newPurchase);

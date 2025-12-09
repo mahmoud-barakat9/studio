@@ -1,5 +1,13 @@
-
 [
+  {
+    "id": "PUR-1765300021473",
+    "date": "2025-12-09",
+    "materialName": "اوروبي",
+    "color": "أسود",
+    "supplierName": "شركة الأباجور الحديثة",
+    "quantity": 4,
+    "purchasePricePerMeter": 6
+  },
   {
     "id": "PUR-1765298621021",
     "materialName": "شراع",
