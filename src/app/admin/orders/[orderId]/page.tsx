@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { getOrderById, getUserById } from "@/lib/firebase-actions";
@@ -20,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign, Edit } from "lucide-react";
+import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign, Edit, ExternalLink } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
 import {
   Tooltip,
@@ -44,6 +45,19 @@ async function getOrderAndUsers(orderId: string) {
         customerData = await getUserById(orderData.userId);
     }
     return { orderData, currentUserData, customerData };
+}
+
+function parseDeliveryAddress(address: string) {
+    try {
+        const parsed = JSON.parse(address);
+        return {
+            link: parsed.link || '',
+            notes: parsed.notes || '',
+        };
+    } catch (e) {
+        // If it's not a valid JSON, it's a plain string address
+        return { link: '', notes: address };
+    }
 }
 
 export default function AdminOrderDetailPage() {
@@ -101,6 +115,7 @@ export default function AdminOrderDetailPage() {
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
   const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
   const isEditable = order.status === 'Pending' || order.status === 'Approved';
+  const deliveryInfo = order.hasDelivery ? parseDeliveryAddress(order.deliveryAddress) : null;
 
 
   return (
@@ -251,7 +266,7 @@ export default function AdminOrderDetailPage() {
                     </div>
                 </CardContent>
             </Card>
-             {order.hasDelivery && (
+             {deliveryInfo && (
                  <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -260,9 +275,22 @@ export default function AdminOrderDetailPage() {
                         </CardTitle>
                     </CardHeader>
                      <CardContent className="grid gap-4">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-muted-foreground text-sm">عنوان التوصيل</span>
-                            <p className="text-sm font-medium">{order.deliveryAddress}</p>
+                        <div className="flex flex-col gap-2">
+                            {deliveryInfo.link && (
+                                <a href={deliveryInfo.link} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    <ExternalLink className="h-4 w-4" />
+                                    فتح رابط الموقع في خرائط جوجل
+                                </a>
+                            )}
+                             {deliveryInfo.notes && (
+                                 <div>
+                                    <span className="text-muted-foreground text-sm">ملاحظات:</span>
+                                    <p className="text-sm font-medium">{deliveryInfo.notes}</p>
+                                </div>
+                             )}
+                              {!deliveryInfo.link && !deliveryInfo.notes && (
+                                 <p className="text-sm text-muted-foreground">{order.deliveryAddress}</p>
+                             )}
                         </div>
                     </CardContent>
                 </Card>

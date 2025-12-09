@@ -19,13 +19,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box, Ruler } from "lucide-react";
+import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box, Ruler, ExternalLink } from "lucide-react";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
 import { Separator } from "@/components/ui/separator";
 
+function parseDeliveryAddress(address: string) {
+    try {
+        const parsed = JSON.parse(address);
+        return {
+            link: parsed.link || '',
+            notes: parsed.notes || '',
+        };
+    } catch (e) {
+        // If it's not a valid JSON, it's a plain string address
+        return { link: '', notes: address };
+    }
+}
 
 export default async function OrderDetailPage({ params }: { params: { orderId: string }}) {
   const orderId = params.orderId;
@@ -64,6 +76,7 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
 
   const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
   const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
+  const deliveryInfo = order.hasDelivery ? parseDeliveryAddress(order.deliveryAddress) : null;
 
 
   return (
@@ -180,12 +193,26 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                                 )}
                             </div>
 
-                            {order.hasDelivery && (
+                            {deliveryInfo && (
                                 <>
                                     <Separator />
                                     <div className="space-y-2">
                                         <h4 className="text-sm font-semibold flex items-center gap-2"><Truck /> تفاصيل التوصيل</h4>
-                                        <p className="text-sm text-muted-foreground pl-6">{order.deliveryAddress}</p>
+                                        <div className="pl-6 space-y-2 text-sm">
+                                            {deliveryInfo.link && (
+                                                <div className="flex items-center gap-2">
+                                                    <a href={deliveryInfo.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                                        <ExternalLink className="h-4 w-4" />
+                                                        رابط الموقع على الخريطة
+                                                    </a>
+                                                </div>
+                                            )}
+                                            {deliveryInfo.notes && (
+                                                <p className="text-muted-foreground">
+                                                   <span className="font-semibold text-foreground">ملاحظات:</span> {deliveryInfo.notes}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </>
                             )}

@@ -54,6 +54,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
+import { MapSelector } from './map-selector';
 
 
 const openingSchema = z.object({
@@ -82,8 +83,8 @@ const userOrderSchema = baseOrderSchema.extend({
   userId: z.string().min(1, "معرف المستخدم مطلوب."),
   customerName: z.string().min(1, 'اسم العميل مطلوب.'),
   customerPhone: z.string().min(1, 'رقم الهاتف مطلوب.'),
-}).refine(data => !data.hasDelivery || (data.hasDelivery && data.deliveryAddress && data.deliveryAddress.length > 0), {
-    message: 'عنوان التوصيل مطلوب عند تفعيل خيار التوصيل.',
+}).refine(data => !data.hasDelivery || (data.hasDelivery && data.deliveryAddress && data.deliveryAddress.length > 0 && data.deliveryAddress.includes('https://')), {
+    message: 'الرجاء تحديد الموقع على الخريطة وإدخال رابط صحيح من خرائط جوجل.',
     path: ['deliveryAddress'],
 });
 
@@ -651,17 +652,24 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                     </CardHeader>
                     {watchHasDelivery && (
                     <CardContent className="p-4 pt-0">
-                         <FormField
+                        <FormField
                             control={form.control}
                             name="deliveryAddress"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>عنوان التوصيل</FormLabel>
                                 <FormControl>
-                                    <Textarea
-                                        placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
-                                        {...field}
-                                    />
+                                    {isAdmin ? (
+                                        <Textarea
+                                            placeholder="الرجاء إدخال عنوان التوصيل الكامل هنا..."
+                                            {...field}
+                                        />
+                                    ) : (
+                                        <MapSelector
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                        />
+                                    )}
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
