@@ -114,25 +114,29 @@ export default function AdminInventoryPage() {
     const { materials, purchases, suppliers, loading } = useOrdersAndUsers();
     const [currentTabs, setCurrentTabs] = useState<Record<string, number>>({});
     
-    const materialsWithCost = useMemo(() => materials.map(material => {
-        const materialPurchases = purchases.filter(p => p.materialName === material.name);
-        const totalQuantityPurchased = materialPurchases.reduce((sum, p) => sum + p.quantity, 0);
-        const totalCostOfPurchases = materialPurchases.reduce((sum, p) => sum + (p.purchasePricePerMeter * p.quantity), 0);
-        
-        const avgPurchasePrice = totalQuantityPurchased > 0 ? totalCostOfPurchases / totalQuantityPurchased : 0;
-        const totalStockValue = material.stock * avgPurchasePrice;
-        
-        return {
-            ...material,
-            totalStockValue,
-        };
-    }), [materials, purchases]);
+    const materialsWithCost = useMemo(() => {
+        if (!materials || !purchases) return [];
+        return materials.map(material => {
+            const materialPurchases = purchases.filter(p => p.materialName === material.name);
+            const totalQuantityPurchased = materialPurchases.reduce((sum, p) => sum + p.quantity, 0);
+            const totalCostOfPurchases = materialPurchases.reduce((sum, p) => sum + (p.purchasePricePerMeter * p.quantity), 0);
+            
+            const avgPurchasePrice = totalQuantityPurchased > 0 ? totalCostOfPurchases / totalQuantityPurchased : 0;
+            const totalStockValue = material.stock * avgPurchasePrice;
+            
+            return {
+                ...material,
+                totalStockValue,
+            };
+        })
+    }, [materials, purchases]);
 
      const handlePageChange = (tab: string, page: number) => {
         setCurrentTabs(prev => ({ ...prev, [tab]: page }));
     };
 
     const filterGroups = useMemo(() => {
+        if (!materials || !purchases || !suppliers) return { byMaterial: [], bySupplier: [] };
         const byMaterial = materials.map(m => ({
             name: m.name,
             purchases: purchases.filter(p => p.materialName === m.name)
@@ -318,5 +322,3 @@ export default function AdminInventoryPage() {
     </main>
   );
 }
-
-    
