@@ -41,7 +41,7 @@ import { deletePurchase } from "@/lib/actions";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/pagination";
-import type { Purchase } from "@/lib/definitions";
+import type { Purchase, Supplier } from "@/lib/definitions";
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
 const ITEMS_PER_PAGE = 10;
@@ -76,8 +76,8 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
     );
   }
 
-function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: any[] }) {
-    const getSupplierName = (id: string) => suppliers.find(s => s.id === id)?.name || id;
+function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: Supplier[] }) {
+    const getSupplierName = (id: string) => (suppliers || []).find(s => s.id === id)?.name || id;
 
     if (purchases.length === 0) {
         return (
