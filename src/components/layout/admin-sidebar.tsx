@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -11,6 +12,7 @@ import {
   Home,
   Boxes,
   User,
+  Warehouse,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +39,7 @@ const links = [
   { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badge: true },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
+  { href: "/admin/inventory", label: "المخزون", icon: Warehouse },
   { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 

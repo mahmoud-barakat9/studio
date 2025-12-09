@@ -52,4 +52,13 @@ export type AbjourTypeData = {
   bladeWidth: number; // in cm
   pricePerSquareMeter: number;
   colors: string[];
+  stock: number; // in square meters
+};
+
+export type Purchase = {
+  id: string;
+  materialName: string;
+  quantity: number; // in square meters
+  purchasePricePerMeter: number;
+  date: string;
 };

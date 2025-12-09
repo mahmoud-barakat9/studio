@@ -4,13 +4,14 @@
 import fs from 'fs';
 import path from 'path';
 import { abjourTypesData as defaultAbjourTypesData } from '@/lib/abjour-data';
-import type { Order, User, Opening, AbjourTypeData } from '@/lib/definitions';
+import type { Order, User, Opening, AbjourTypeData, Purchase } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 
 const dataDir = path.join(process.cwd(), 'src', 'lib', 'data');
 const ordersFilePath = path.join(dataDir, 'orders.json');
 const usersFilePath = path.join(dataDir, 'users.json');
 const materialsFilePath = path.join(dataDir, 'materials.json');
+const purchasesFilePath = path.join(dataDir, 'purchases.json');
 
 
 const readData = <T>(filePath: string): T[] => {
@@ -142,9 +143,23 @@ export const updateOrderStatus = async (orderId: string, status: Order['status']
     const orderIndex = orders.findIndex(o => o.id === orderId);
     if (orderIndex === -1) throw new Error("Order not found");
     
+    const order = orders[orderIndex];
+    const previousStatus = order.status;
+    
     orders[orderIndex].status = status;
     if (status === 'Delivered') {
         orders[orderIndex].actualDeliveryDate = new Date().toISOString().split('T')[0];
+    }
+    
+    // Deduct stock when order moves to Processing
+    if (status === 'Processing' && previousStatus !== 'Processing') {
+        const materials = readData<AbjourTypeData>(materialsFilePath);
+        const materialIndex = materials.findIndex(m => m.name === order.mainAbjourType);
+        if (materialIndex !== -1) {
+            materials[materialIndex].stock -= order.totalArea;
+            writeData<AbjourTypeData>(materialsFilePath, materials);
+            revalidatePath('/admin/inventory');
+        }
     }
     
     writeData<Order>(ordersFilePath, orders);
@@ -320,12 +335,14 @@ export const updateMaterial = async (materialData: AbjourTypeData): Promise<Abjo
     const materialIndex = materials.findIndex(m => m.name === materialData.name);
     if (materialIndex === -1) throw new Error("Material not found");
     
-    materials[materialIndex] = materialData;
+    // Preserve stock when updating
+    const existingStock = materials[materialIndex].stock;
+    materials[materialIndex] = {...materialData, stock: existingStock};
     writeData<AbjourTypeData>(materialsFilePath, materials);
 
     revalidatePath('/admin/materials');
     revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
-    return Promise.resolve(materialData);
+    return Promise.resolve(materials[materialIndex]);
 };
 
 export const deleteMaterial = async (materialName: string): Promise<{ success: boolean }> => {
@@ -336,3 +353,30 @@ export const deleteMaterial = async (materialName: string): Promise<{ success: b
     revalidatePath('/admin/materials');
     return Promise.resolve({ success: true });
 };
+
+
+// --- Purchases ---
+export const getPurchases = async (): Promise<Purchase[]> => {
+    return Promise.resolve(readData<Purchase>(purchasesFilePath));
+}
+
+export const addPurchase = async (purchaseData: Omit<Purchase, 'id'>): Promise<Purchase> => {
+    let purchases = readData<Purchase>(purchasesFilePath);
+    const newPurchase: Purchase = {
+        id: `PUR-${Date.now()}`,
+        ...purchaseData
+    };
+    purchases.unshift(newPurchase);
+    writeData<Purchase>(purchasesFilePath, purchases);
+
+    // Update material stock
+    let materials = readData<AbjourTypeData>(materialsFilePath);
+    const materialIndex = materials.findIndex(m => m.name === purchaseData.materialName);
+    if (materialIndex !== -1) {
+        materials[materialIndex].stock += purchaseData.quantity;
+        writeData<AbjourTypeData>(materialsFilePath, materials);
+    }
+    
+    revalidatePath('/admin/inventory');
+    return Promise.resolve(newPurchase);
+}

@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -103,6 +103,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
   revalidatePath('/dashboard');
   revalidatePath('/orders');
   revalidatePath('/admin/orders');
+  revalidatePath('/admin/inventory');
 
   if (asAdmin) {
     redirect('/admin/orders');
@@ -204,9 +205,9 @@ export async function scheduleOrder(orderId: string, days: number) {
         const deliveryDate = new Date();
         deliveryDate.setDate(deliveryDate.getDate() + days);
 
+        await updateOrderStatusDB(orderId, 'Processing');
         const updatedOrder = await updateOrderDB(orderId, { 
             scheduledDeliveryDate: deliveryDate.toISOString().split('T')[0],
-            status: 'Processing',
         });
 
         revalidatePath(`/admin/orders/${orderId}`);
@@ -281,6 +282,7 @@ const materialSchema = z.object({
   bladeWidth: z.coerce.number().min(0.1),
   pricePerSquareMeter: z.coerce.number().min(0.1),
   colors: z.string().min(1),
+  stock: z.coerce.number().optional(), // Stock is managed internally
 });
 
 export async function createMaterial(formData: z.infer<typeof materialSchema>) {
@@ -289,14 +291,20 @@ export async function createMaterial(formData: z.infer<typeof materialSchema>) {
         return { error: "البيانات المدخلة غير صالحة." };
     }
     
-    const materialData: AbjourTypeData = {
+    const materialData: Omit<AbjourTypeData, 'stock'> & {stock?: number} = {
         ...validatedFields.data,
         colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean)
     };
+    
+    const finalMaterialData: AbjourTypeData = {
+        ...materialData,
+        stock: materialData.stock || 0
+    };
 
     try {
-        await addMaterial(materialData);
+        await addMaterial(finalMaterialData);
         revalidatePath('/admin/materials');
+        revalidatePath('/admin/inventory');
         redirect('/admin/materials');
         return { success: true };
     } catch (error: any) {
@@ -312,13 +320,15 @@ export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
 
     const materialData: AbjourTypeData = {
         ...validatedFields.data,
-        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean)
+        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
+        stock: validatedFields.data.stock || 0,
     };
     
     try {
         await updateMaterialDB(materialData);
         revalidatePath('/admin/materials');
         revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
+        revalidatePath('/admin/inventory');
         redirect('/admin/materials');
         return { success: true };
     } catch (error: any) {
@@ -330,6 +340,7 @@ export async function deleteMaterial(materialName: string) {
     try {
         await deleteMaterialDB(materialName);
         revalidatePath('/admin/materials');
+        revalidatePath('/admin/inventory');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };
@@ -347,4 +358,30 @@ export async function updateOrderPrice(orderId: string, newPrice: number | null)
     return { success: false, error: (error as Error).message };
   }
 }
-    
+
+const purchaseSchema = z.object({
+    materialName: z.string().min(1, 'اسم المادة مطلوب.'),
+    quantity: z.coerce.number().min(0.1, 'الكمية مطلوبة.'),
+    purchasePricePerMeter: z.coerce.number().min(0.1, 'سعر الشراء مطلوب.'),
+});
+
+export async function createPurchase(formData: z.infer<typeof purchaseSchema>) {
+    const validatedFields = purchaseSchema.safeParse(formData);
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+
+    const purchaseData = {
+        ...validatedFields.data,
+        date: new Date().toISOString().split('T')[0],
+    };
+
+    try {
+        await addPurchaseDB(purchaseData);
+        revalidatePath('/admin/inventory');
+        redirect('/admin/inventory');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}

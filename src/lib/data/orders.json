@@ -49,7 +49,7 @@
     "mainColor": "بيج",
     "bladeWidth": 5.8,
     "pricePerSquareMeter": 130,
-    "status": "Pending",
+    "status": "Approved",
     "date": "2025-12-01",
     "totalArea": 0.85608,
     "totalCost": 102.72959999999999,
@@ -239,10 +239,10 @@
     "mainColor": "أبيض",
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 120,
-    "status": "Pending",
+    "status": "Delivered",
     "date": "2024-05-22",
-    "totalArea": 15,
-    "totalCost": 1800,
+    "totalArea": 0.0825,
+    "totalCost": 9.9,
     "openings": [
       {
         "serial": "E01",
@@ -256,6 +256,8 @@
     "isArchived": false,
     "hasDelivery": false,
     "deliveryCost": 0,
-    "deliveryAddress": ""
+    "deliveryAddress": "",
+    "scheduledDeliveryDate": "2025-12-12",
+    "actualDeliveryDate": "2025-12-09"
   }
 ]

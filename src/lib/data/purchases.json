@@ -1,0 +1,24 @@
+
+[
+  {
+    "id": "PUR-1718123456789",
+    "materialName": "شراع",
+    "quantity": 200,
+    "purchasePricePerMeter": 80,
+    "date": "2024-05-10"
+  },
+  {
+    "id": "PUR-1718234567890",
+    "materialName": "مدار",
+    "quantity": 150,
+    "purchasePricePerMeter": 90,
+    "date": "2024-05-12"
+  },
+  {
+    "id": "PUR-1718345678901",
+    "materialName": "اوروبي",
+    "quantity": 100,
+    "purchasePricePerMeter": 110,
+    "date": "2024-05-15"
+  }
+]

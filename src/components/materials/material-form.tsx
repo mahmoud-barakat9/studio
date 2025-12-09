@@ -33,6 +33,7 @@ const materialSchema = z.object({
   bladeWidth: z.coerce.number().min(0.1, 'عرض الشفرة مطلوب.'),
   pricePerSquareMeter: z.coerce.number().min(0.1, 'السعر مطلوب.'),
   colors: z.string().min(1, 'يجب إضافة لون واحد على الأقل.'),
+  stock: z.coerce.number().optional(),
 });
 
 type MaterialFormValues = z.infer<typeof materialSchema>;
@@ -49,6 +50,7 @@ export function MaterialForm({ material }: MaterialFormProps) {
       bladeWidth: material?.bladeWidth || 0,
       pricePerSquareMeter: material?.pricePerSquareMeter || 0,
       colors: material?.colors.join(',') || '',
+      stock: material?.stock || 0,
     },
   });
 
@@ -142,6 +144,22 @@ export function MaterialForm({ material }: MaterialFormProps) {
                 </FormItem>
               )}
             />
+            {!isEditing && (
+                 <FormField
+                    control={form.control}
+                    name="stock"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>الكمية المبدئية في المخزون (م²)</FormLabel>
+                        <FormControl>
+                            <Input type="number" step="0.1" {...field} />
+                        </FormControl>
+                        <FormDescription>هذه هي الكمية التي تبدأ بها في المخزون.</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
           </CardContent>
           <CardFooter>
             <Button
