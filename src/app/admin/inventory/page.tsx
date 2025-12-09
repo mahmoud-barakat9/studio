@@ -107,7 +107,7 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
                 {purchases.map(purchase => (
                      <TableRow key={purchase.id} className="even:bg-muted/40">
                         <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
-                        <TableCell className="font-medium">{getSupplierName(purchase.supplierName)}</TableCell>
+                        <TableCell className="font-medium">{purchase.supplierName}</TableCell>
                         <TableCell>{purchase.materialName}</TableCell>
                         <TableCell>{purchase.color}</TableCell>
                         <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
@@ -175,8 +175,7 @@ export default function AdminInventoryPage() {
         if (filter.type === 'all') return 'كل الفواتير';
         if (filter.type === 'material') return `المادة: ${filter.value}`;
         if (filter.type === 'supplier' && suppliers) {
-            const supplier = suppliers.find(s => s.id === filter.value);
-            return `المورد: ${supplier?.name || filter.value}`;
+            return `المورد: ${filter.value}`;
         }
         return 'فلترة';
     }
@@ -286,7 +285,7 @@ export default function AdminInventoryPage() {
                         <DropdownMenuGroup>
                              <DropdownMenuLabel>المورد</DropdownMenuLabel>
                              {suppliers?.map(s => (
-                                <DropdownMenuItem key={s.id} onClick={() => handleFilterChange('supplier', s.id)}>
+                                <DropdownMenuItem key={s.id} onClick={() => handleFilterChange('supplier', s.name)}>
                                     {s.name}
                                 </DropdownMenuItem>
                             ))}
