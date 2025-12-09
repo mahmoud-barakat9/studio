@@ -291,18 +291,14 @@ export async function createMaterial(formData: z.infer<typeof materialSchema>) {
         return { error: "البيانات المدخلة غير صالحة." };
     }
     
-    const materialData: Omit<AbjourTypeData, 'stock'> & {stock?: number} = {
+    const materialData: AbjourTypeData = {
         ...validatedFields.data,
-        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean)
-    };
-    
-    const finalMaterialData: AbjourTypeData = {
-        ...materialData,
-        stock: materialData.stock || 0
+        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
+        stock: validatedFields.data.stock || 0,
     };
 
     try {
-        await addMaterial(finalMaterialData);
+        await addMaterial(materialData);
         revalidatePath('/admin/materials');
         revalidatePath('/admin/inventory');
         redirect('/admin/materials');
@@ -321,11 +317,11 @@ export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
     const materialData = {
         ...validatedFields.data,
         colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
-        stock: validatedFields.data.stock || 0,
+        stock: validatedFields.data.stock, // Keep stock from form if it exists
     };
     
     try {
-        await updateMaterialDB(materialData);
+        await updateMaterialDB(materialData.name, materialData);
         revalidatePath('/admin/materials');
         revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
         revalidatePath('/admin/inventory');

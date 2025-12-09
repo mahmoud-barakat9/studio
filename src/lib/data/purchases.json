@@ -1,5 +1,12 @@
 [
   {
+    "id": "PUR-1765297204670",
+    "materialName": "اوروبي",
+    "quantity": 2.2,
+    "purchasePricePerMeter": 1.14,
+    "date": "2025-12-09"
+  },
+  {
     "id": "PUR-1765297046740",
     "materialName": "مدار",
     "quantity": 1.2,

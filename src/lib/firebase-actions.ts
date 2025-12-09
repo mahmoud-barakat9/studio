@@ -330,18 +330,16 @@ export const addMaterial = async (materialData: AbjourTypeData): Promise<AbjourT
     return Promise.resolve(materialData);
 };
 
-export const updateMaterial = async (materialData: AbjourTypeData): Promise<AbjourTypeData> => {
+export const updateMaterial = async (materialName: string, materialData: Partial<AbjourTypeData>): Promise<AbjourTypeData> => {
     let materials = readData<AbjourTypeData>(materialsFilePath);
-    const materialIndex = materials.findIndex(m => m.name === materialData.name);
+    const materialIndex = materials.findIndex(m => m.name === materialName);
     if (materialIndex === -1) throw new Error("Material not found");
     
-    // Preserve stock when updating
-    const existingStock = materials[materialIndex].stock;
-    materials[materialIndex] = {...materialData, stock: existingStock};
+    materials[materialIndex] = {...materials[materialIndex], ...materialData};
     writeData<AbjourTypeData>(materialsFilePath, materials);
 
     revalidatePath('/admin/materials');
-    revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
+    revalidatePath(`/admin/materials/${encodeURIComponent(materialName)}/edit`);
     return Promise.resolve(materials[materialIndex]);
 };
 
