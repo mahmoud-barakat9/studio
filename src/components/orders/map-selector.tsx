@@ -18,12 +18,12 @@ import { MapPin, LocateFixed } from "lucide-react";
 import React, { useState, useEffect, useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+const DEFAULT_MAP_SRC = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102919.23126322045!2d37.09116744869384!3d36.202113300000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15255853d9943485%3A0x95cf94f86153e0a3!2sAleppo%2C%20Syria!5e0!3m2!1sen!2sae!4v1766020584288!5m2!1sen!2sae"
+
 interface MapSelectorProps {
   value?: string;
   onChange: (value: string) => void;
 }
-
-const DEFAULT_MAP_SRC = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102919.23126322045!2d37.09116744869384!3d36.202113300000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15255853d9943485%3A0x95cf94f86153e0a3!2sAleppo%2C%20Syria!5e0!3m2!1sen!2sae!4v1766020584288!5m2!1sen!2sae"
 
 export function MapSelector({ value, onChange }: MapSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -116,15 +116,15 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
             <span className="truncate">{displayValue}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="w-[95vw] h-[90vh] max-w-2xl flex flex-col p-0 sm:p-6">
+        <DialogHeader className="p-6 pb-0 sm:p-0">
           <DialogTitle>تحديد موقع التوصيل</DialogTitle>
           <DialogDescription>
-            استخدم الخريطة للعثور على موقعك، ثم قم بنسخ الرابط ولصقه، أو استخدم زر تحديد الموقع الحالي.
+            استخدم الخريطة للعثور على موقعك، أو استخدم زر تحديد الموقع الحالي، ثم قم بنسخ الرابط ولصقه.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-            <div className="relative h-64 w-full rounded-lg overflow-hidden border">
+        <div className="flex-1 overflow-y-auto px-6 space-y-4">
+            <div className="relative h-56 sm:h-64 w-full rounded-lg overflow-hidden border">
                 <iframe
                     src={mapSrc}
                     width="100%"
@@ -160,7 +160,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
                 />
             </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-0 sm:p-0 sm:pt-6 border-t sm:border-0 mt-auto">
             <Button variant="outline" onClick={() => setIsOpen(false)}>إلغاء</Button>
             <Button type="button" onClick={handleSave}>حفظ الموقع</Button>
         </DialogFooter>
