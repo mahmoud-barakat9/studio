@@ -153,6 +153,7 @@ export default function AdminInventoryPage() {
   }, [materials, purchases]);
 
     const filteredPurchases = useMemo(() => {
+        if (!purchases) return [];
         if (filter.type === 'all') return purchases;
         if (filter.type === 'material') return purchases.filter(p => p.materialName === filter.value);
         if (filter.type === 'supplier') return purchases.filter(p => p.supplierName === filter.value);
@@ -170,7 +171,7 @@ export default function AdminInventoryPage() {
     const getFilterLabel = () => {
         if (filter.type === 'all') return 'كل الفواتير';
         if (filter.type === 'material') return `المادة: ${filter.value}`;
-        if (filter.type === 'supplier') {
+        if (filter.type === 'supplier' && suppliers) {
             const supplier = suppliers.find(s => s.id === filter.value);
             return `المورد: ${supplier?.name || filter.value}`;
         }
