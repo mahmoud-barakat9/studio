@@ -317,7 +317,6 @@ export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
     const materialData = {
         ...validatedFields.data,
         colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
-        stock: validatedFields.data.stock, // Keep stock from form if it exists
     };
     
     try {
@@ -367,13 +366,8 @@ export async function createPurchase(formData: z.infer<typeof purchaseSchema>) {
         return { error: "البيانات المدخلة غير صالحة." };
     }
 
-    const purchaseData = {
-        ...validatedFields.data,
-        date: new Date().toISOString().split('T')[0],
-    };
-
     try {
-        await addPurchaseDB(purchaseData);
+        await addPurchaseDB(validatedFields.data);
         revalidatePath('/admin/inventory');
         redirect('/admin/inventory');
         return { success: true };
