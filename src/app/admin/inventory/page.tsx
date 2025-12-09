@@ -271,7 +271,7 @@ export default function AdminInventoryPage() {
                         
                         <DropdownMenuGroup>
                             <DropdownMenuLabel>المادة</DropdownMenuLabel>
-                            {materials.map(m => (
+                            {materials?.map(m => (
                                 <DropdownMenuItem key={m.name} onClick={() => handleFilterChange('material', m.name)}>
                                     {m.name}
                                 </DropdownMenuItem>
@@ -281,7 +281,7 @@ export default function AdminInventoryPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                              <DropdownMenuLabel>المورد</DropdownMenuLabel>
-                             {suppliers.map(s => (
+                             {suppliers?.map(s => (
                                 <DropdownMenuItem key={s.id} onClick={() => handleFilterChange('supplier', s.id)}>
                                     {s.name}
                                 </DropdownMenuItem>
