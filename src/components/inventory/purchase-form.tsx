@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
@@ -30,12 +30,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { createPurchase } from '@/lib/actions';
-import React, { useTransition } from 'react';
+import React, { useTransition, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AbjourTypeData, Supplier } from '@/lib/definitions';
 
 const purchaseSchema = z.object({
   materialName: z.string().min(1, 'اسم المادة مطلوب.'),
+  color: z.string().min(1, 'اللون مطلوب.'),
   supplierName: z.string().min(1, 'اسم المورد مطلوب.'),
   quantity: z.coerce.number().min(0.1, 'الكمية مطلوبة ويجب أن تكون أكبر من صفر.'),
   purchasePricePerMeter: z.coerce.number().min(0.1, 'سعر الشراء مطلوب ويجب أن يكون أكبر من صفر.'),
@@ -53,6 +54,7 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
       materialName: '',
+      color: '',
       supplierName: '',
       quantity: undefined,
       purchasePricePerMeter: undefined,
@@ -61,6 +63,20 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
 
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+
+  const watchMaterialName = useWatch({ control: form.control, name: 'materialName' });
+
+  const availableColors = useMemo(() => {
+    const selectedMaterial = materials.find(m => m.name === watchMaterialName);
+    return selectedMaterial?.colors || [];
+  }, [watchMaterialName, materials]);
+
+  useEffect(() => {
+    const currentColor = form.getValues('color');
+    if (watchMaterialName && !availableColors.includes(currentColor)) {
+        form.setValue('color', '');
+    }
+  }, [watchMaterialName, availableColors, form]);
 
   const onSubmit = (data: PurchaseFormValues) => {
      startTransition(async () => {
@@ -128,6 +144,30 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
                         {materials.map(material => (
                             <SelectItem key={material.name} value={material.name}>
                             {material.name}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>اللون</FormLabel>
+                   <Select onValueChange={field.onChange} value={field.value} disabled={!watchMaterialName}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="اختر اللون" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {availableColors.map(color => (
+                            <SelectItem key={color} value={color}>
+                            {color}
                             </SelectItem>
                         ))}
                         </SelectContent>

@@ -3,6 +3,7 @@
   {
     "id": "PUR-1765298621021",
     "materialName": "شراع",
+    "color": "بيج",
     "quantity": 12,
     "purchasePricePerMeter": 15,
     "supplierName": "مورد عام",
@@ -11,6 +12,7 @@
   {
     "id": "PUR-1765297596442",
     "materialName": "مدار",
+    "color": "أبيض",
     "quantity": 0.4,
     "purchasePricePerMeter": 5,
     "supplierName": "مورد عام",
@@ -19,6 +21,7 @@
   {
     "id": "PUR-1765297407269",
     "materialName": "اوروبي",
+    "color": "خشبي",
     "quantity": 1.1,
     "purchasePricePerMeter": 44,
     "date": "2025-12-09",
@@ -27,6 +30,7 @@
   {
     "id": "PUR-1765297204670",
     "materialName": "اوروبي",
+    "color": "فضي",
     "quantity": 2.2,
     "purchasePricePerMeter": 1.14,
     "date": "2025-12-09",
@@ -35,6 +39,7 @@
   {
     "id": "PUR-1765297046740",
     "materialName": "مدار",
+    "color": "رمادي",
     "quantity": 1.2,
     "purchasePricePerMeter": 0.24,
     "date": "2025-12-09",
@@ -43,6 +48,7 @@
   {
     "id": "PUR-1718123456789",
     "materialName": "شراع",
+    "color": "أبيض",
     "quantity": 200,
     "purchasePricePerMeter": 80,
     "date": "2024-05-10",
@@ -51,6 +57,7 @@
   {
     "id": "PUR-1718234567890",
     "materialName": "مدار",
+    "color": "بيج",
     "quantity": 150,
     "purchasePricePerMeter": 90,
     "date": "2024-05-12",
@@ -59,6 +66,7 @@
   {
     "id": "PUR-1718345678901",
     "materialName": "اوروبي",
+    "color": "أسود",
     "quantity": 100,
     "purchasePricePerMeter": 110,
     "date": "2024-05-15",

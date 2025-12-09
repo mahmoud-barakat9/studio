@@ -116,6 +116,7 @@ export default async function AdminInventoryPage() {
                             <TableHead>تاريخ الفاتورة</TableHead>
                             <TableHead>المورد</TableHead>
                             <TableHead>المادة</TableHead>
+                            <TableHead>اللون</TableHead>
                             <TableHead>الكمية (م²)</TableHead>
                             <TableHead>سعر المتر ($)</TableHead>
                             <TableHead>الإجمالي ($)</TableHead>
@@ -127,6 +128,7 @@ export default async function AdminInventoryPage() {
                                 <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
                                 <TableCell className="font-medium">{purchase.supplierName}</TableCell>
                                 <TableCell>{purchase.materialName}</TableCell>
+                                <TableCell>{purchase.color}</TableCell>
                                 <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
                                 <TableCell className="font-mono">${purchase.purchasePricePerMeter.toFixed(2)}</TableCell>
                                 <TableCell className="font-mono font-bold">${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}</TableCell>

@@ -58,6 +58,7 @@ export type AbjourTypeData = {
 export type Purchase = {
   id: string;
   materialName: string;
+  color: string;
   supplierName: string;
   quantity: number; // in square meters
   purchasePricePerMeter: number;

@@ -358,6 +358,7 @@ export async function updateOrderPrice(orderId: string, newPrice: number | null)
 
 const purchaseSchema = z.object({
     materialName: z.string().min(1, 'اسم المادة مطلوب.'),
+    color: z.string().min(1, 'اللون مطلوب.'),
     supplierName: z.string().min(1, 'اسم المورد مطلوب.'),
     quantity: z.coerce.number().min(0.1, 'الكمية مطلوبة.'),
     purchasePricePerMeter: z.coerce.number().min(0.1, 'سعر الشراء مطلوب.'),
