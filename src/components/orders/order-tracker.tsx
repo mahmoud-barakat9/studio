@@ -60,13 +60,13 @@ export function OrderTracker({ order }: { order: Order }) {
               <div className="flex flex-col items-center gap-2 text-center w-full">
                   <div
                       className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
+                      'w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2',
                       isCompleted ? 'bg-primary border-primary text-primary-foreground' : '',
                       isCurrent ? 'bg-primary/10 border-primary text-primary ring-4 ring-primary/20' : '',
                       !isCompleted && !isCurrent ? 'bg-muted border-border text-muted-foreground' : ''
                       )}
                   >
-                      <stage.icon className="w-5 h-5" />
+                      <stage.icon className="w-6 h-6" />
                   </div>
                   <p className={cn(
                       'text-xs font-medium',
@@ -78,7 +78,7 @@ export function OrderTracker({ order }: { order: Order }) {
 
                {index < stagesToShow.length - 1 && (
                  <div className={cn(
-                    "flex-1 h-0.5 mt-5 rounded-full transition-colors duration-300",
+                    "flex-1 h-0.5 mt-6 rounded-full transition-colors duration-300",
                     isCompleted ? 'bg-primary' : 'bg-border'
                  )}></div>
                )}

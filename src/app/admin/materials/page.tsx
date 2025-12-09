@@ -98,7 +98,7 @@ export default async function AdminMaterialsPage() {
                           </div>
                       </TableCell>
                        <TableCell>
-                        <div className="flex flex-wrap gap-1 max-w-xs">
+                        <div className="flex flex-wrap gap-1 max-w-sm">
                             {material.colors.map(color => (
                                 <Badge key={color} variant="secondary">{color}</Badge>
                             ))}

@@ -18,7 +18,7 @@ export default async function NewOrderPage() {
   return (
       <div className="flex flex-col min-h-screen">
         <MainHeader />
-        <main className="flex-1 bg-muted/40 pb-32 md:pb-8">
+        <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
           <div className="container mx-auto py-8">
               <div className="flex items-center justify-between mb-8">
                   <div>

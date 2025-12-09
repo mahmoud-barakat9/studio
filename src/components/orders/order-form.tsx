@@ -295,8 +295,8 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid lg:grid-cols-5 gap-8 items-start">
+          <div className="lg:col-span-3 space-y-8">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -584,7 +584,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             </div>
           </div>
           
-          <div className="lg:sticky top-4 space-y-8">
+          <div className="lg:col-span-2 lg:sticky top-4 space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -598,7 +598,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                       <FormItem>
                         <FormLabel>اسم الطلب</FormLabel>
                         <FormControl>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col sm:flex-row items-center gap-2">
                             <Input
                               {...field}
                               placeholder="مثال: 'غرفة معيشة الفيلا'"
@@ -609,13 +609,14 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                               variant="outline"
                               onClick={handleSuggestName}
                               disabled={isNamePending}
+                              className="w-full sm:w-auto flex-shrink-0"
                             >
                               {isNamePending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <Wand2 className="h-4 w-4" />
                               )}
-                              <span className="sr-only">اقتراح اسم</span>
+                              <span className="sr-only sm:not-sr-only sm:ml-2">اقتراح</span>
                             </Button>
                           </div>
                         </FormControl>
