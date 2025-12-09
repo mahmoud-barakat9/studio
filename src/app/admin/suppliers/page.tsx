@@ -1,5 +1,7 @@
 
 
+'use client';
+
 import { getSuppliers, getPurchases } from "@/lib/firebase-actions";
 import {
   Table,
@@ -14,23 +16,46 @@ import { AddSupplierForm } from "@/components/suppliers/add-supplier-form";
 import { Package, DollarSign, ListOrdered, Eye } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo } from "react";
 
-export default async function AdminSuppliersPage() {
-    const suppliers = await getSuppliers();
-    const purchases = await getPurchases();
+export default function AdminSuppliersPage() {
+    const { purchases, suppliers, loading } = useOrdersAndUsers();
 
-    const suppliersWithStats = suppliers.map(supplier => {
-        const supplierPurchases = purchases.filter(p => p.supplierName === supplier.name);
-        const totalPurchasesValue = supplierPurchases.reduce((sum, p) => sum + (p.quantity * p.purchasePricePerMeter), 0);
-        const totalQuantity = supplierPurchases.reduce((sum, p) => sum + p.quantity, 0);
-        const purchaseCount = supplierPurchases.length;
-        return {
-            ...supplier,
-            totalPurchasesValue,
-            totalQuantity,
-            purchaseCount
-        };
-    });
+    const suppliersWithStats = useMemo(() => {
+        if (loading) return [];
+        return suppliers.map(supplier => {
+            const supplierPurchases = purchases.filter(p => p.supplierName === supplier.name);
+            const totalPurchasesValue = supplierPurchases.reduce((sum, p) => sum + (p.quantity * p.purchasePricePerMeter), 0);
+            const totalQuantity = supplierPurchases.reduce((sum, p) => sum + p.quantity, 0);
+            const purchaseCount = supplierPurchases.length;
+            return {
+                ...supplier,
+                totalPurchasesValue,
+                totalQuantity,
+                purchaseCount
+            };
+        });
+    }, [purchases, suppliers, loading]);
+
+    if (loading) {
+        return (
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+                 <div className="flex items-center">
+                    <h1 className="font-semibold text-lg md:text-2xl">إدارة الموردين</h1>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-8">
+                        <Card><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
+                    </div>
+                    <div className="lg:col-span-1">
+                        <Card><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
+                    </div>
+                </div>
+            </main>
+        )
+    }
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -101,5 +126,3 @@ export default async function AdminSuppliersPage() {
     </main>
   );
 }
-
-    

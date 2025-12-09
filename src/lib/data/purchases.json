@@ -1,5 +1,14 @@
 [
   {
+    "id": "PUR-1765303215334",
+    "date": "2025-12-09",
+    "materialName": "شراع",
+    "color": "بيج",
+    "supplierName": "شركة الأباجور الحديثة",
+    "quantity": 120,
+    "purchasePricePerMeter": 120
+  },
+  {
     "id": "PUR-1765300593605",
     "date": "2025-12-09",
     "materialName": "مدار",

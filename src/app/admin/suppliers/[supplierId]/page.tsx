@@ -1,4 +1,5 @@
 
+'use client';
 import { getSupplierById, getPurchasesBySupplierId } from "@/lib/firebase-actions";
 import {
   Card,
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Package, DollarSign, ListOrdered, AlertTriangle } from "lucide-react";
+import { ArrowRight, Package, DollarSign, ListOrdered, AlertTriangle, Pencil, Trash2 } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -19,15 +20,84 @@ import {
     TableRow,
   } from "@/components/ui/table";
 import { format } from "date-fns";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deletePurchase } from "@/lib/actions";
+import type { Purchase, Supplier } from "@/lib/definitions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
-export default async function SupplierDetailsPage({
-  params,
-}: {
-  params: { supplierId: string };
-}) {
-  const supplier = await getSupplierById(params.supplierId);
-  const supplierPurchases = supplier ? await getPurchasesBySupplierId(supplier.name) : [];
+function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">حذف الفاتورة</span>
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              هذا الإجراء لا يمكن التراجع عنه. سيؤدي هذا إلى حذف هذه الفاتورة نهائيًا وسيقوم بتحديث المخزون بناءً على ذلك.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <form action={deletePurchase.bind(null, purchaseId)}>
+              <AlertDialogAction type="submit">متابعة الحذف</AlertDialogAction>
+            </form>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+}
+
+export default function SupplierDetailsPage() {
+  const params = useParams();
+  const supplierId = params.supplierId as string;
+
+  const [supplier, setSupplier] = useState<Supplier | null | undefined>(undefined);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  
+  useEffect(() => {
+    async function fetchData() {
+        if (!supplierId) return;
+        const supplierData = await getSupplierById(supplierId);
+        setSupplier(supplierData);
+        if (supplierData) {
+            const purchasesData = await getPurchasesBySupplierId(supplierData.name);
+            setPurchases(purchasesData);
+        }
+    }
+    fetchData();
+  }, [supplierId]);
+
+
+  if (supplier === undefined) {
+    return (
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <div className="flex items-center justify-between mb-4">
+                <Skeleton className="h-10 w-1/3" />
+                <Skeleton className="h-10 w-24" />
+            </div>
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-64 w-full" />
+        </main>
+    )
+  }
 
   if (!supplier) {
     return (
@@ -53,8 +123,8 @@ export default async function SupplierDetailsPage({
     );
   }
 
-  const totalPurchasesValue = supplierPurchases.reduce((sum, p) => sum + (p.quantity * p.purchasePricePerMeter), 0);
-  const totalQuantity = supplierPurchases.reduce((sum, p) => sum + p.quantity, 0);
+  const totalPurchasesValue = purchases.reduce((sum, p) => sum + (p.quantity * p.purchasePricePerMeter), 0);
+  const totalQuantity = purchases.reduce((sum, p) => sum + p.quantity, 0);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -100,7 +170,7 @@ export default async function SupplierDetailsPage({
                     <ListOrdered className="h-8 w-8 text-primary" />
                     <div>
                         <p className="text-muted-foreground">عدد الفواتير</p>
-                        <p className="font-bold text-lg font-mono">{supplierPurchases.length}</p>
+                        <p className="font-bold text-lg font-mono">{purchases.length}</p>
                     </div>
                 </div>
             </div>
@@ -109,7 +179,7 @@ export default async function SupplierDetailsPage({
       
       <Card>
         <CardHeader>
-          <CardTitle>فواتير المورد ({supplierPurchases.length})</CardTitle>
+          <CardTitle>فواتير المورد ({purchases.length})</CardTitle>
           <CardDescription>قائمة بجميع فواتير الشراء من {supplier.name}.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -122,10 +192,11 @@ export default async function SupplierDetailsPage({
                         <TableHead>الكمية (م²)</TableHead>
                         <TableHead>سعر المتر ($)</TableHead>
                         <TableHead>الإجمالي ($)</TableHead>
+                        <TableHead>الإجراءات</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {supplierPurchases.map(purchase => (
+                    {purchases.map(purchase => (
                         <TableRow key={purchase.id}>
                             <TableCell>{format(new Date(purchase.date), 'yyyy-MM-dd')}</TableCell>
                             <TableCell>{purchase.materialName}</TableCell>
@@ -133,6 +204,17 @@ export default async function SupplierDetailsPage({
                             <TableCell className="font-mono">{purchase.quantity.toFixed(2)}</TableCell>
                             <TableCell className="font-mono">${purchase.purchasePricePerMeter.toFixed(2)}</TableCell>
                             <TableCell className="font-mono font-bold">${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}</TableCell>
+                            <TableCell>
+                                <div className="flex gap-2">
+                                    <Link href={`/admin/inventory/${purchase.id}/edit`}>
+                                        <Button size="icon" variant="outline" className="h-8 w-8">
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">تعديل الفاتورة</span>
+                                        </Button>
+                                    </Link>
+                                    <DeletePurchaseAlert purchaseId={purchase.id} />
+                                </div>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -143,5 +225,3 @@ export default async function SupplierDetailsPage({
     </main>
   );
 }
-
-    
