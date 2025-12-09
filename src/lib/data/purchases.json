@@ -1,5 +1,23 @@
 [
   {
+    "id": "PUR-1765300593605",
+    "date": "2025-12-09",
+    "materialName": "مدار",
+    "color": "بيج",
+    "supplierName": "شركة الأباجور الحديثة",
+    "quantity": 120,
+    "purchasePricePerMeter": 50
+  },
+  {
+    "id": "PUR-1765300575042",
+    "date": "2025-12-09",
+    "materialName": "مدار",
+    "color": "بيج",
+    "supplierName": "مصنع النخبة",
+    "quantity": 6,
+    "purchasePricePerMeter": 8
+  },
+  {
     "id": "PUR-1765300160693",
     "date": "2025-12-09",
     "materialName": "مدار",

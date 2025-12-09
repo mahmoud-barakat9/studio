@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -395,6 +395,33 @@ export async function createSupplier(formData: z.infer<typeof supplierSchema>) {
         revalidatePath('/admin/suppliers');
         revalidatePath('/admin/inventory/new');
         redirect('/admin/suppliers');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
+export async function updatePurchase(purchaseId: string, formData: z.infer<typeof purchaseSchema>) {
+    const validatedFields = purchaseSchema.safeParse(formData);
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+
+    try {
+        await updatePurchaseDB(purchaseId, validatedFields.data);
+        revalidatePath('/admin/inventory');
+        redirect('/admin/inventory');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
+
+export async function deletePurchase(purchaseId: string) {
+    try {
+        await deletePurchaseDB(purchaseId);
+        revalidatePath('/admin/inventory');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };

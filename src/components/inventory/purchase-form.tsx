@@ -29,10 +29,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { createPurchase } from '@/lib/actions';
+import { createPurchase, updatePurchase } from '@/lib/actions';
 import React, { useTransition, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { AbjourTypeData, Supplier } from '@/lib/definitions';
+import type { AbjourTypeData, Supplier, Purchase } from '@/lib/definitions';
 import { useRouter } from 'next/navigation';
 
 const purchaseSchema = z.object({
@@ -48,12 +48,21 @@ type PurchaseFormValues = z.infer<typeof purchaseSchema>;
 interface PurchaseFormProps {
     materials: AbjourTypeData[];
     suppliers: Supplier[];
+    purchase?: Purchase;
 }
 
-export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
+export function PurchaseForm({ materials, suppliers, purchase }: PurchaseFormProps) {
+  const isEditing = !!purchase;
+  
   const form = useForm<PurchaseFormValues>({
     resolver: zodResolver(purchaseSchema),
-    defaultValues: {
+    defaultValues: isEditing ? {
+        materialName: purchase.materialName,
+        color: purchase.color,
+        supplierName: purchase.supplierName,
+        quantity: purchase.quantity,
+        purchasePricePerMeter: purchase.purchasePricePerMeter,
+    } : {
       materialName: '',
       color: '',
       supplierName: '',
@@ -82,15 +91,19 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
 
   const onSubmit = (data: PurchaseFormValues) => {
      startTransition(async () => {
-        const result = await createPurchase(data);
+        const action = isEditing ? updatePurchase.bind(null, purchase.id) : createPurchase;
+        const result = await action(data);
+
         if (result?.success) {
             toast({
-                title: 'تم تسجيل فاتورة الشراء بنجاح!',
-                description: `تمت إضافة ${data.quantity} م² إلى مخزون ${data.materialName}.`,
+                title: isEditing ? 'تم تعديل الفاتورة بنجاح!' : 'تم تسجيل فاتورة الشراء بنجاح!',
+                description: isEditing ? `تم تحديث تفاصيل الفاتورة.` : `تمت إضافة ${data.quantity} م² إلى مخزون ${data.materialName}.`,
             });
-            setTimeout(() => {
-                router.push('/admin/inventory');
-            }, 2000);
+            if (!isEditing) {
+              setTimeout(() => {
+                  router.push('/admin/inventory');
+              }, 2000);
+            }
         } else if (result?.error) {
              toast({
                 variant: 'destructive',
@@ -106,7 +119,7 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>تفاصيل فاتورة الشراء</CardTitle>
+            <CardTitle>{isEditing ? `تعديل الفاتورة ${purchase.id}` : 'تفاصيل فاتورة الشراء'}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
              <FormField
@@ -216,7 +229,7 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
               {isPending && (
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               )}
-              حفظ الفاتورة وإضافة للمخزون
+              {isEditing ? 'حفظ التعديلات' : 'حفظ الفاتورة وإضافة للمخزون'}
             </Button>
           </CardFooter>
         </Card>

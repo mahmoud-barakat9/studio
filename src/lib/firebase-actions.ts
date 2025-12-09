@@ -365,6 +365,11 @@ export const getPurchases = async (): Promise<Purchase[]> => {
     return Promise.resolve(purchases.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 }
 
+export const getPurchaseById = async (id: string): Promise<Purchase | undefined> => {
+    const purchases = readData<Purchase>(purchasesFilePath);
+    return Promise.resolve(purchases.find(p => p.id === id));
+};
+
 export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): Promise<Purchase> => {
     let purchases = readData<Purchase>(purchasesFilePath);
     const newPurchase: Purchase = {
@@ -382,9 +387,6 @@ export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): 
     if (materialIndex !== -1) {
         materials[materialIndex].stock += purchaseData.quantity;
     } else {
-        // If the material doesn't exist, we can't add stock.
-        // This case might need more robust handling, like creating the material.
-        // For now, we'll log an error.
         console.error(`Attempted to add stock for non-existent material: ${purchaseData.materialName}`);
     }
     
@@ -393,6 +395,52 @@ export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): 
     revalidatePath('/admin/inventory');
     return Promise.resolve(newPurchase);
 }
+
+export const updatePurchase = async (purchaseId: string, purchaseData: Partial<Purchase>): Promise<Purchase> => {
+    let purchases = readData<Purchase>(purchasesFilePath);
+    const purchaseIndex = purchases.findIndex(p => p.id === purchaseId);
+    if (purchaseIndex === -1) throw new Error("Purchase not found");
+    
+    const originalPurchase = purchases[purchaseIndex];
+    const quantityDifference = (purchaseData.quantity ?? originalPurchase.quantity) - originalPurchase.quantity;
+
+    purchases[purchaseIndex] = { ...originalPurchase, ...purchaseData };
+    writeData<Purchase>(purchasesFilePath, purchases);
+
+    // Update stock if quantity changed
+    if (quantityDifference !== 0) {
+        let materials = readData<AbjourTypeData>(materialsFilePath);
+        const materialIndex = materials.findIndex(m => m.name === originalPurchase.materialName);
+        if (materialIndex !== -1) {
+            materials[materialIndex].stock += quantityDifference;
+            writeData<AbjourTypeData>(materialsFilePath, materials);
+        }
+    }
+    
+    revalidatePath('/admin/inventory');
+    return Promise.resolve(purchases[purchaseIndex]);
+};
+
+export const deletePurchase = async (purchaseId: string): Promise<{ success: boolean }> => {
+    let purchases = readData<Purchase>(purchasesFilePath);
+    const purchase = purchases.find(p => p.id === purchaseId);
+    if (!purchase) throw new Error("Purchase not found");
+
+    purchases = purchases.filter(p => p.id !== purchaseId);
+    writeData<Purchase>(purchasesFilePath, purchases);
+    
+    // Reverse the stock addition
+    let materials = readData<AbjourTypeData>(materialsFilePath);
+    const materialIndex = materials.findIndex(m => m.name === purchase.materialName);
+    if (materialIndex !== -1) {
+        materials[materialIndex].stock -= purchase.quantity;
+        writeData<AbjourTypeData>(materialsFilePath, materials);
+    }
+    
+    revalidatePath('/admin/inventory');
+    return Promise.resolve({ success: true });
+};
+
 
 // --- Suppliers ---
 export const getSuppliers = async (): Promise<Supplier[]> => {

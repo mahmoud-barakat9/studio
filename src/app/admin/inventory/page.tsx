@@ -11,13 +11,52 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, Package, DollarSign, FileText } from "lucide-react";
+import { PlusCircle, AlertTriangle, Package, DollarSign, FileText, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deletePurchase } from "@/lib/actions";
 
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
+
+function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">حذف الفاتورة</span>
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              هذا الإجراء لا يمكن التراجع عنه. سيؤدي هذا إلى حذف هذه الفاتورة نهائيًا وسيقوم بتحديث المخزون بناءً على ذلك.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <form action={deletePurchase.bind(null, purchaseId)}>
+              <AlertDialogAction type="submit">متابعة الحذف</AlertDialogAction>
+            </form>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
 
 export default async function AdminInventoryPage() {
     const materials = await getMaterials();
@@ -120,6 +159,7 @@ export default async function AdminInventoryPage() {
                             <TableHead>الكمية (م²)</TableHead>
                             <TableHead>سعر المتر ($)</TableHead>
                             <TableHead>الإجمالي ($)</TableHead>
+                            <TableHead>الإجراءات</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -133,6 +173,17 @@ export default async function AdminInventoryPage() {
                                 <TableCell className="font-mono">${purchase.purchasePricePerMeter.toFixed(2)}</TableCell>
                                 <TableCell className="font-mono font-bold bg-primary/5 text-primary">
                                     ${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-2">
+                                        <Link href={`/admin/inventory/${purchase.id}/edit`}>
+                                            <Button size="icon" variant="outline" className="h-8 w-8">
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">تعديل الفاتورة</span>
+                                            </Button>
+                                        </Link>
+                                        <DeletePurchaseAlert purchaseId={purchase.id} />
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
