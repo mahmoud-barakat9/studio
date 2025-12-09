@@ -61,39 +61,12 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
     <Sidebar side="right" variant="floating">
       <SidebarRail />
       <SidebarHeader>
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-sidebar-accent">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
-                        <AvatarFallback>A</AvatarFallback>
-                    </Avatar>
-                    {state === 'expanded' && (
-                        <div className="flex flex-col items-start text-right">
-                            <span className="font-semibold text-sm">مسؤول</span>
-                            <span className="text-xs text-sidebar-foreground/70">admin@abjour.com</span>
-                        </div>
-                    )}
-                </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="bottom" className="w-56">
-                <DropdownMenuLabel>حسابي</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                 <DropdownMenuItem asChild>
-                    <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
-                </DropdownMenuItem>
-                 <DropdownMenuItem asChild>
-                    <Link href="#"><Settings className="ml-2 h-4 w-4" /> الإعدادات</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+         <div className="flex items-center gap-3 p-2">
+            <BrandLogo />
+            {state === 'expanded' && (
+                <span className="font-bold text-lg">طلب أباجور</span>
+            )}
+        </div>
       </SidebarHeader>
       
       <SidebarContent>
@@ -127,6 +100,39 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
 
       <SidebarFooter className="flex flex-col gap-2">
          <Separator className="bg-sidebar-border/50"/>
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-sidebar-accent">
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
+                        <AvatarFallback>A</AvatarFallback>
+                    </Avatar>
+                    {state === 'expanded' && (
+                        <div className="flex flex-col items-start text-right">
+                            <span className="font-semibold text-sm">مسؤول</span>
+                            <span className="text-xs text-sidebar-foreground/70">admin@abjour.com</span>
+                        </div>
+                    )}
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="bottom" className="w-56">
+                <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                    <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                    <Link href="#"><Settings className="ml-2 h-4 w-4" /> الإعدادات</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard"><User className="ml-2 h-4 w-4" /> تبديل للمستخدم</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
          <SidebarMenu>
             <SidebarMenuItem>
                  <SidebarMenuButton
