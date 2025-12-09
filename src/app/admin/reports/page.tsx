@@ -261,7 +261,7 @@ export default function AdminReportsPage() {
                         <TableRow key={material.name}>
                             <TableCell className="font-medium">{material.name}</TableCell>
                             <TableCell className="font-mono">${material.totalSales.toFixed(2)}</TableCell>
-                            <TableCell className="font-mono text-green-600">${material.totalProfit.toFixed(2)}</TableCell>
+                            <TableCell className="font-mono font-semibold text-green-600">${material.totalProfit.toFixed(2)}</TableCell>
                             <TableCell>{material.orderCount}</TableCell>
                             <TableCell className="font-mono">${material.avgOrderValue.toFixed(2)}</TableCell>
                             <TableCell>{material.totalArea.toFixed(2)} م²</TableCell>
