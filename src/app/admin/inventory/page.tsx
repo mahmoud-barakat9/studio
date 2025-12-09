@@ -66,6 +66,13 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
   }
 
 function PurchasesTable({ purchases }: { purchases: Purchase[] }) {
+    if (purchases.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground p-8 border rounded-lg">
+                لا توجد فواتير لعرضها في هذا التصنيف.
+            </div>
+        )
+    }
     return (
          <Table>
             <TableHeader>
@@ -257,14 +264,16 @@ export default function AdminInventoryPage() {
                         </div>
                     </TabsContent>
                     <TabsContent value="by-material">
-                         <Tabs defaultValue={filterGroups.byMaterial[0]?.name} className="w-full">
-                            <div className="overflow-x-auto pb-2">
-                                <TabsList className="inline-flex w-max">
-                                     {filterGroups.byMaterial.map(group => (
-                                        <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
-                                     ))}
-                                </TabsList>
-                            </div>
+                         <Tabs defaultValue={filterGroups.byMaterial[0]?.name} className="w-full" key={filterGroups.byMaterial[0]?.name}>
+                            {filterGroups.byMaterial.length > 0 && (
+                                <div className="overflow-x-auto pb-2">
+                                    <TabsList className="inline-flex w-max">
+                                        {filterGroups.byMaterial.map(group => (
+                                            <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
+                                        ))}
+                                    </TabsList>
+                                </div>
+                            )}
                              {filterGroups.byMaterial.map(group => {
                                 const tabId = `mat-${group.name}`;
                                 const currentPage = currentTabs[tabId] || 1;
@@ -287,14 +296,16 @@ export default function AdminInventoryPage() {
                          </Tabs>
                     </TabsContent>
                      <TabsContent value="by-supplier">
-                         <Tabs defaultValue={filterGroups.bySupplier[0]?.name} className="w-full">
-                             <div className="overflow-x-auto pb-2">
-                                <TabsList className="inline-flex w-max">
-                                     {filterGroups.bySupplier.map(group => (
-                                        <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
-                                     ))}
-                                </TabsList>
-                            </div>
+                         <Tabs defaultValue={filterGroups.bySupplier[0]?.name} className="w-full" key={filterGroups.bySupplier[0]?.name}>
+                            {filterGroups.bySupplier.length > 0 && (
+                                <div className="overflow-x-auto pb-2">
+                                    <TabsList className="inline-flex w-max">
+                                        {filterGroups.bySupplier.map(group => (
+                                            <TabsTrigger key={group.name} value={group.name}>{group.name} ({group.purchases.length})</TabsTrigger>
+                                        ))}
+                                    </TabsList>
+                                </div>
+                            )}
                              {filterGroups.bySupplier.map(group => {
                                  const tabId = `sup-${group.name}`;
                                 const currentPage = currentTabs[tabId] || 1;
