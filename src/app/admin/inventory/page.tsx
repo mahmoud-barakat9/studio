@@ -77,10 +77,6 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
   }
 
 function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: Supplier[] }) {
-    const getSupplierName = (id: string) => {
-        if (!suppliers) return id;
-        return suppliers.find(s => s.id === id)?.name || id;
-    }
 
     if (purchases.length === 0) {
         return (
@@ -268,14 +264,14 @@ export default function AdminInventoryPage() {
                     <DropdownMenuContent className="w-56">
                         <DropdownMenuLabel>فلترة حسب</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleFilterChange('all', 'all')}>
+                        <DropdownMenuItem onSelect={() => handleFilterChange('all', 'all')}>
                             كل الفواتير
                         </DropdownMenuItem>
                         
                         <DropdownMenuGroup>
                             <DropdownMenuLabel>المادة</DropdownMenuLabel>
                             {materials?.map(m => (
-                                <DropdownMenuItem key={m.name} onClick={() => handleFilterChange('material', m.name)}>
+                                <DropdownMenuItem key={m.name} onSelect={() => handleFilterChange('material', m.name)}>
                                     {m.name}
                                 </DropdownMenuItem>
                             ))}
@@ -285,7 +281,7 @@ export default function AdminInventoryPage() {
                         <DropdownMenuGroup>
                              <DropdownMenuLabel>المورد</DropdownMenuLabel>
                              {suppliers?.map(s => (
-                                <DropdownMenuItem key={s.id} onClick={() => handleFilterChange('supplier', s.name)}>
+                                <DropdownMenuItem key={s.id} onSelect={() => handleFilterChange('supplier', s.name)}>
                                     {s.name}
                                 </DropdownMenuItem>
                             ))}
@@ -297,7 +293,7 @@ export default function AdminInventoryPage() {
             </CardHeader>
             <CardContent>
                  <div className="space-y-4">
-                    <PurchasesTable purchases={paginatedPurchases} suppliers={suppliers} />
+                    <PurchasesTable purchases={paginatedPurchases} suppliers={suppliers || []} />
                     {totalPages > 1 && (
                         <Pagination 
                             currentPage={currentPage}
