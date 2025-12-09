@@ -1,5 +1,4 @@
 
-
 'use server';
 import fs from 'fs';
 import path from 'path';
@@ -370,6 +369,11 @@ export const getPurchaseById = async (id: string): Promise<Purchase | undefined>
     return Promise.resolve(purchases.find(p => p.id === id));
 };
 
+export const getPurchasesBySupplierId = async (supplierName: string): Promise<Purchase[]> => {
+    const purchases = await getPurchases();
+    return purchases.filter(p => p.supplierName === supplierName);
+};
+
 export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): Promise<Purchase> => {
     let purchases = readData<Purchase>(purchasesFilePath);
     const newPurchase: Purchase = {
@@ -387,7 +391,7 @@ export const addPurchase = async (purchaseData: Omit<Purchase, 'id' | 'date'>): 
     if (materialIndex !== -1) {
         materials[materialIndex].stock += purchaseData.quantity;
     } else {
-        console.error(`Attempted to add stock for non-existent material: ${purchaseData.materialName}`);
+         console.error(`Attempted to add stock for non-existent material: ${purchaseData.materialName}`);
     }
     
     writeData<AbjourTypeData>(materialsFilePath, materials);
@@ -447,6 +451,12 @@ export const getSuppliers = async (): Promise<Supplier[]> => {
     return Promise.resolve(readData<Supplier>(suppliersFilePath));
 };
 
+export const getSupplierById = async (id: string): Promise<Supplier | undefined> => {
+    if (!id) return Promise.resolve(undefined);
+    const suppliers = readData<Supplier>(suppliersFilePath);
+    return Promise.resolve(suppliers.find(s => s.id === id));
+};
+
 export const addSupplier = async (supplierData: Omit<Supplier, 'id'>): Promise<Supplier> => {
     let suppliers = readData<Supplier>(suppliersFilePath);
     const newId = `${suppliers.length + 1}`;
@@ -460,3 +470,5 @@ export const addSupplier = async (supplierData: Omit<Supplier, 'id'>): Promise<S
     revalidatePath('/admin/suppliers');
     return Promise.resolve(newSupplier);
 };
+
+    

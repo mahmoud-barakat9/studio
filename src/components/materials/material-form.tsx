@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package } from 'lucide-react';
 import { createMaterial, updateMaterial } from '@/lib/actions';
 import React, { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -47,8 +47,8 @@ export function MaterialForm({ material }: MaterialFormProps) {
     resolver: zodResolver(materialSchema),
     defaultValues: {
       name: material?.name || '',
-      bladeWidth: material?.bladeWidth || 0,
-      pricePerSquareMeter: material?.pricePerSquareMeter || 0,
+      bladeWidth: material?.bladeWidth || undefined,
+      pricePerSquareMeter: material?.pricePerSquareMeter || undefined,
       colors: material?.colors.join(',') || '',
       stock: material?.stock || 0,
     },
@@ -102,6 +102,18 @@ export function MaterialForm({ material }: MaterialFormProps) {
                 </FormItem>
               )}
             />
+            {isEditing && material && (
+                <FormItem>
+                    <FormLabel>الكمية الحالية في المخزون (م²)</FormLabel>
+                     <div className="flex items-center gap-2">
+                        <Package className="h-5 w-5 text-muted-foreground" />
+                        <Input readOnly value={material.stock.toFixed(2)} className="w-auto font-mono bg-muted" />
+                    </div>
+                     <FormDescription>
+                        هذه هي الكمية المتاحة حاليًا. يتم تحديثها تلقائيًا مع الطلبات والمشتريات.
+                    </FormDescription>
+                </FormItem>
+            )}
             <FormField
               control={form.control}
               name="bladeWidth"
@@ -109,7 +121,7 @@ export function MaterialForm({ material }: MaterialFormProps) {
                 <FormItem>
                   <FormLabel>عرض الشفرة (سم)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.1" {...field} />
+                    <Input type="number" step="0.1" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +134,7 @@ export function MaterialForm({ material }: MaterialFormProps) {
                 <FormItem>
                   <FormLabel>سعر المتر المربع ($)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <Input type="number" step="0.01" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -152,7 +164,7 @@ export function MaterialForm({ material }: MaterialFormProps) {
                         <FormItem>
                         <FormLabel>الكمية المبدئية في المخزون (م²)</FormLabel>
                         <FormControl>
-                            <Input type="number" step="0.1" {...field} />
+                            <Input type="number" step="0.1" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormDescription>هذه هي الكمية التي تبدأ بها في المخزون.</FormDescription>
                         <FormMessage />
@@ -177,3 +189,5 @@ export function MaterialForm({ material }: MaterialFormProps) {
     </Form>
   );
 }
+
+    

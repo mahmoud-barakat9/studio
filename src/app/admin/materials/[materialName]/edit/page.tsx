@@ -1,3 +1,4 @@
+
 import { getMaterialByName } from "@/lib/firebase-actions";
 import { MaterialForm } from "@/components/materials/material-form";
 import Link from "next/link";
@@ -47,3 +48,5 @@ export default async function EditMaterialPage({
     </main>
   );
 }
+
+    

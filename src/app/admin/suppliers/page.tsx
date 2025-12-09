@@ -1,4 +1,5 @@
 
+
 import { getSuppliers, getPurchases } from "@/lib/firebase-actions";
 import {
   Table,
@@ -10,7 +11,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AddSupplierForm } from "@/components/suppliers/add-supplier-form";
-import { Package, DollarSign, ListOrdered } from "lucide-react";
+import { Package, DollarSign, ListOrdered, Eye } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminSuppliersPage() {
     const suppliers = await getSuppliers();
@@ -50,6 +53,7 @@ export default async function AdminSuppliersPage() {
                             <TableHead>إجمالي قيمة المشتريات</TableHead>
                             <TableHead>إجمالي الكمية (م²)</TableHead>
                             <TableHead>عدد الفواتير</TableHead>
+                            <TableHead>الإجراءات</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -74,6 +78,14 @@ export default async function AdminSuppliersPage() {
                                         <span className="font-mono">{supplier.purchaseCount}</span>
                                     </div>
                                 </TableCell>
+                                <TableCell>
+                                    <Link href={`/admin/suppliers/${supplier.id}`}>
+                                        <Button size="sm" variant="outline">
+                                            <Eye className="h-4 w-4 ml-2" />
+                                            عرض التفاصيل
+                                        </Button>
+                                    </Link>
+                                </TableCell>
                             </TableRow>
                         ))}
                         </TableBody>
@@ -89,3 +101,5 @@ export default async function AdminSuppliersPage() {
     </main>
   );
 }
+
+    
