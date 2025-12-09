@@ -1,12 +1,13 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import type { Order, User } from '@/lib/definitions';
-import { getOrders, getUsers, initializeTestUsers } from '@/lib/firebase-actions';
+import type { Order, User, Purchase } from '@/lib/definitions';
+import { getOrders, getUsers, getPurchases, initializeTestUsers } from '@/lib/firebase-actions';
 
 export function useOrdersAndUsers(userId?: string) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,9 +17,10 @@ export function useOrdersAndUsers(userId?: string) {
                 // Ensure test users are initialized, especially for dev environment
                 await initializeTestUsers();
                 
-                const [ordersData, usersData] = await Promise.all([
+                const [ordersData, usersData, purchasesData] = await Promise.all([
                     getOrders(),
-                    getUsers(true) // Fetch all users including admins
+                    getUsers(true), // Fetch all users including admins
+                    getPurchases(),
                 ]);
 
                 if (userId) {
@@ -28,6 +30,7 @@ export function useOrdersAndUsers(userId?: string) {
                     setOrders(ordersData);
                 }
                 setUsers(usersData);
+                setPurchases(purchasesData);
 
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -39,5 +42,7 @@ export function useOrdersAndUsers(userId?: string) {
         fetchData();
     }, [userId]);
 
-    return { orders, users, loading };
+    return { orders, users, purchases, loading };
 }
+
+    

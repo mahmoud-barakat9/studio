@@ -23,12 +23,12 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, CalendarCheck } from "lucide-react";
+import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, CalendarCheck, HandCoins } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Order, User } from "@/lib/definitions";
+import type { Order, User, Purchase } from "@/lib/definitions";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -124,7 +124,7 @@ function KpiCardSkeleton() {
 }
 
 export default function AdminDashboardPage() {
-    const { orders, users, loading } = useOrdersAndUsers();
+    const { orders, users, purchases, loading } = useOrdersAndUsers();
     
     const { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts } = useMemo(() => {
         if (loading || orders.length === 0) {
@@ -140,6 +140,22 @@ export default function AdminDashboardPage() {
         const lastMonth = lastMonthDate.getMonth();
         const lastMonthYear = lastMonthDate.getFullYear();
 
+        const avgPurchasePrices = purchases.reduce((acc, p) => {
+            if (!acc[p.materialName]) {
+                acc[p.materialName] = { totalCost: 0, totalQuantity: 0 };
+            }
+            acc[p.materialName].totalCost += p.purchasePricePerMeter * p.quantity;
+            acc[p.materialName].totalQuantity += p.quantity;
+            return acc;
+        }, {} as Record<string, { totalCost: number, totalQuantity: number }>);
+        
+        const materialCosts = Object.fromEntries(
+            Object.entries(avgPurchasePrices).map(([name, { totalCost, totalQuantity }]) => [
+                name,
+                totalQuantity > 0 ? totalCost / totalQuantity : 0,
+            ])
+        );
+
         // KPIs for today
         const todaysOrdersCount = orders.filter(o => o.date === today).length;
 
@@ -151,6 +167,11 @@ export default function AdminDashboardPage() {
         const monthlyOrdersCount = thisMonthOrders.length;
         const monthlyTotalArea = thisMonthOrders.reduce((sum, o) => sum + o.totalArea, 0);
         const monthlySales = thisMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+        const monthlyProfit = thisMonthOrders.reduce((sum, o) => {
+            const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
+            return sum + (o.totalCost - cogs);
+        }, 0);
+
 
         // KPIs for last month
         const lastMonthOrders = orders.filter(o => {
@@ -159,6 +180,11 @@ export default function AdminDashboardPage() {
         });
         const lastMonthOrdersCount = lastMonthOrders.length;
         const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+        const lastMonthProfit = lastMonthOrders.reduce((sum, o) => {
+            const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
+            return sum + (o.totalCost - cogs);
+        }, 0);
+
 
         // Operational KPIs
         const inProductionCount = orders.filter(o => o.status === 'Processing').length;
@@ -177,16 +203,19 @@ export default function AdminDashboardPage() {
         
         const monthlyOrdersComparison = getComparison(monthlyOrdersCount, lastMonthOrdersCount);
         const monthlySalesComparison = getComparison(monthlySales, lastMonthSales);
+        const monthlyProfitComparison = getComparison(monthlyProfit, lastMonthProfit);
         
         const kpiData = {
             todaysOrdersCount,
             monthlyOrdersCount,
             monthlyTotalArea,
             monthlySales,
+            monthlyProfit,
             inProductionCount,
             lateOrdersCount,
             monthlyOrdersComparison,
             monthlySalesComparison,
+            monthlyProfitComparison,
         };
 
         // Monthly trends for the last 12 months
@@ -261,7 +290,7 @@ export default function AdminDashboardPage() {
 
         return { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts };
 
-    }, [orders, users, loading]);
+    }, [orders, users, purchases, loading]);
 
     const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
 
@@ -269,7 +298,8 @@ export default function AdminDashboardPage() {
     if (loading) {
         return (
              <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-                 <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+                 <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+                    <KpiCardSkeleton />
                     <KpiCardSkeleton />
                     <KpiCardSkeleton />
                     <KpiCardSkeleton />
@@ -305,13 +335,14 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <KpiCard title="الطلبات الجديدة اليوم" value={`${kpiData.todaysOrdersCount}`} comparisonText="" isPositive={null} Icon={CalendarDays} />
         <KpiCard title="الطلبات الشهرية" value={`${kpiData.monthlyOrdersCount}`} comparisonText={kpiData.monthlyOrdersComparison.text} isPositive={kpiData.monthlyOrdersComparison.isPositive} Icon={ClipboardList} />
-        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
+        <KpiCard title="قيمة المبيعات الشهرية" value={`$${kpiData.monthlySales?.toFixed(2)}`} comparisonText={kpiData.monthlySalesComparison.text} isPositive={kpiData.monthlySalesComparison.isPositive} Icon={DollarSign} />
+        <KpiCard title="الأرباح الشهرية" value={`$${kpiData.monthlyProfit?.toFixed(2)}`} comparisonText={kpiData.monthlyProfitComparison.text} isPositive={kpiData.monthlyProfitComparison.isPositive} Icon={HandCoins} />
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <KpiCard title="قيمة المبيعات الشهرية" value={`$${kpiData.monthlySales?.toFixed(2)}`} comparisonText={kpiData.monthlySalesComparison.text} isPositive={kpiData.monthlySalesComparison.isPositive} Icon={DollarSign} />
+        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
         <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
         <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive" : ""} />
       </div>
@@ -480,5 +511,7 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+    
 
     

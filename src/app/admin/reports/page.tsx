@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell, YAxis, Tooltip, Legend, Line, LineChart } from "recharts";
 import {
   Card,
   CardContent,
@@ -54,7 +54,7 @@ const statusColors: Record<OrderStatus, string> = {
 
 
 export default function AdminReportsPage() {
-    const { orders, loading } = useOrdersAndUsers();
+    const { orders, purchases, loading } = useOrdersAndUsers();
 
     const { monthlyRevenueData, statusDistributionData, materialPerformanceData, revenueChartConfig, statusChartConfig } = useMemo(() => {
         if (loading || orders.length === 0) {
@@ -64,6 +64,22 @@ export default function AdminReportsPage() {
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
+
+         const avgPurchasePrices = purchases.reduce((acc, p) => {
+            if (!acc[p.materialName]) {
+                acc[p.materialName] = { totalCost: 0, totalQuantity: 0 };
+            }
+            acc[p.materialName].totalCost += p.purchasePricePerMeter * p.quantity;
+            acc[p.materialName].totalQuantity += p.quantity;
+            return acc;
+        }, {} as Record<string, { totalCost: number, totalQuantity: number }>);
+        
+        const materialCosts = Object.fromEntries(
+            Object.entries(avgPurchasePrices).map(([name, { totalCost, totalQuantity }]) => [
+                name,
+                totalQuantity > 0 ? totalCost / totalQuantity : 0,
+            ])
+        );
 
         // Monthly Revenue for last 12 months
         const monthlyRevenueData = Array.from({length: 12}, (_, i) => {
@@ -76,11 +92,20 @@ export default function AdminReportsPage() {
             });
 
             const revenue = monthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-            return { month: monthName, revenue: parseFloat(revenue.toFixed(0)) };
+            const profit = monthOrders.reduce((sum, o) => {
+                const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
+                return sum + (o.totalCost - cogs);
+            }, 0);
+            return { 
+                month: monthName, 
+                revenue: parseFloat(revenue.toFixed(0)),
+                profit: parseFloat(profit.toFixed(0)),
+             };
         });
 
         const revenueChartConfig = {
             revenue: { label: "الإيرادات", color: "hsl(var(--primary))" },
+            profit: { label: "الأرباح", color: "hsl(var(--chart-2))" },
         } satisfies ChartConfig;
 
 
@@ -108,13 +133,17 @@ export default function AdminReportsPage() {
         const materialData = orders.reduce((acc, order) => {
             const type = order.mainAbjourType;
             if (!acc[type]) {
-                acc[type] = { name: type, totalSales: 0, orderCount: 0, totalArea: 0 };
+                acc[type] = { name: type, totalSales: 0, orderCount: 0, totalArea: 0, totalProfit: 0 };
             }
             acc[type].totalSales += order.totalCost + (order.deliveryCost || 0);
             acc[type].orderCount += 1;
             acc[type].totalArea += order.totalArea;
+
+            const cogs = (materialCosts[order.mainAbjourType] || 0) * order.totalArea;
+            acc[type].totalProfit += order.totalCost - cogs;
+
             return acc;
-        }, {} as Record<string, {name: string, totalSales: number, orderCount: number, totalArea: number}>);
+        }, {} as Record<string, {name: string, totalSales: number, orderCount: number, totalArea: number, totalProfit: number}>);
 
         const materialPerformanceData = Object.values(materialData).map(m => ({
             ...m,
@@ -123,7 +152,7 @@ export default function AdminReportsPage() {
 
 
         return { monthlyRevenueData, statusDistributionData, materialPerformanceData, revenueChartConfig, statusChartConfig };
-    }, [orders, loading]);
+    }, [orders, purchases, loading]);
 
 
     if (loading) {
@@ -154,8 +183,8 @@ export default function AdminReportsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>الإيرادات الشهرية</CardTitle>
-            <CardDescription>إيرادات آخر 12 شهرًا.</CardDescription>
+            <CardTitle>الإيرادات والأرباح الشهرية</CardTitle>
+            <CardDescription>نظرة على إجمالي الإيرادات والأرباح لآخر 12 شهرًا.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={revenueChartConfig} className="h-72 w-full">
@@ -172,11 +201,9 @@ export default function AdminReportsPage() {
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Bar
-                  dataKey="revenue"
-                  fill="var(--color-revenue)"
-                  radius={4}
-                />
+                <ChartLegend />
+                <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} name="الإيرادات" />
+                <Bar dataKey="profit" fill="var(--color-profit)" radius={4} name="الأرباح" />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -215,7 +242,7 @@ export default function AdminReportsPage() {
       <Card>
         <CardHeader>
             <CardTitle>تقرير أداء المواد</CardTitle>
-            <CardDescription>تحليل لمبيعات كل نوع من أنواع الأباجور.</CardDescription>
+            <CardDescription>تحليل لمبيعات وأرباح كل نوع من أنواع الأباجور.</CardDescription>
         </CardHeader>
         <CardContent>
             <Table>
@@ -223,6 +250,7 @@ export default function AdminReportsPage() {
                     <TableRow>
                         <TableHead>نوع المادة</TableHead>
                         <TableHead>إجمالي المبيعات</TableHead>
+                        <TableHead>إجمالي الأرباح</TableHead>
                         <TableHead>عدد الطلبات</TableHead>
                         <TableHead>متوسط سعر الطلب</TableHead>
                         <TableHead>إجمالي م²</TableHead>
@@ -233,6 +261,7 @@ export default function AdminReportsPage() {
                         <TableRow key={material.name}>
                             <TableCell className="font-medium">{material.name}</TableCell>
                             <TableCell className="font-mono">${material.totalSales.toFixed(2)}</TableCell>
+                            <TableCell className="font-mono text-green-600">${material.totalProfit.toFixed(2)}</TableCell>
                             <TableCell>{material.orderCount}</TableCell>
                             <TableCell className="font-mono">${material.avgOrderValue.toFixed(2)}</TableCell>
                             <TableCell>{material.totalArea.toFixed(2)} م²</TableCell>
@@ -245,3 +274,5 @@ export default function AdminReportsPage() {
     </main>
   );
 }
+
+    
