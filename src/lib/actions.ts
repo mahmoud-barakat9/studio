@@ -373,7 +373,6 @@ export async function createPurchase(formData: z.infer<typeof purchaseSchema>) {
     try {
         await addPurchaseDB(validatedFields.data);
         revalidatePath('/admin/inventory');
-        redirect('/admin/inventory');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };

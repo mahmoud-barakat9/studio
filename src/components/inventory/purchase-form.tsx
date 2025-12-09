@@ -33,6 +33,7 @@ import { createPurchase } from '@/lib/actions';
 import React, { useTransition, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AbjourTypeData, Supplier } from '@/lib/definitions';
+import { useRouter } from 'next/navigation';
 
 const purchaseSchema = z.object({
   materialName: z.string().min(1, 'اسم المادة مطلوب.'),
@@ -62,6 +63,7 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
   });
 
   const { toast } = useToast();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const watchMaterialName = useWatch({ control: form.control, name: 'materialName' });
@@ -86,6 +88,9 @@ export function PurchaseForm({ materials, suppliers }: PurchaseFormProps) {
                 title: 'تم تسجيل فاتورة الشراء بنجاح!',
                 description: `تمت إضافة ${data.quantity} م² إلى مخزون ${data.materialName}.`,
             });
+            setTimeout(() => {
+                router.push('/admin/inventory');
+            }, 2000);
         } else if (result?.error) {
              toast({
                 variant: 'destructive',
