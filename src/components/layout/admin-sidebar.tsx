@@ -58,7 +58,7 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
   };
 
   return (
-    <Sidebar side="right">
+    <Sidebar side="right" variant="floating">
       <SidebarRail />
       <SidebarHeader>
          <DropdownMenu>
