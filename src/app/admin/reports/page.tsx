@@ -105,7 +105,7 @@ export default function AdminReportsPage() {
 
         const revenueChartConfig = {
             revenue: { label: "الإيرادات", color: "hsl(var(--primary))" },
-            profit: { label: "الأرباح", color: "hsl(var(--chart-2))" },
+            profit: { label: "الأرباح", color: "hsl(140, 70%, 50%)" },
         } satisfies ChartConfig;
 
 
@@ -273,3 +273,4 @@ export default function AdminReportsPage() {
 }
 
     
+
