@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -13,8 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { MapPin, LocateFixed } from "lucide-react";
+import React, { useState, useEffect, useTransition } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface MapSelectorProps {
   value?: string;
@@ -26,6 +28,9 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
   
   const [link, setLink] = useState('');
   const [notes, setNotes] = useState('');
+  const { toast } = useToast();
+  const [isLocating, startLocatingTransition] = useTransition();
+
 
   useEffect(() => {
     if (value) {
@@ -49,6 +54,50 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
     onChange(JSON.stringify(addressObject));
     setIsOpen(false);
   };
+
+  const handleGetCurrentLocation = () => {
+    startLocatingTransition(() => {
+        if (!navigator.geolocation) {
+        toast({
+            variant: "destructive",
+            title: "غير مدعوم",
+            description: "خاصية تحديد المواقع غير مدعومة في متصفحك.",
+        });
+        return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            setLink(googleMapsLink);
+            toast({
+            title: "تم تحديد الموقع بنجاح!",
+            description: "تم إنشاء رابط موقعك الحالي.",
+            });
+        },
+        (error) => {
+            let errorMessage = "حدث خطأ أثناء تحديد الموقع.";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "لقد رفضت طلب الوصول إلى موقعك.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "معلومات الموقع غير متاحة.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "انتهت مهلة طلب تحديد الموقع.";
+                    break;
+            }
+            toast({
+            variant: "destructive",
+            title: "خطأ في تحديد الموقع",
+            description: errorMessage,
+            });
+        }
+        );
+    });
+  };
   
   const displayValue = notes ? `${notes.substring(0, 30)}...` : link ? 'تم تحديد الموقع' : 'لم يتم التحديد';
 
@@ -64,7 +113,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
         <DialogHeader>
           <DialogTitle>تحديد موقع التوصيل</DialogTitle>
           <DialogDescription>
-            استخدم الخريطة للعثور على موقعك، ثم قم بنسخ الرابط ولصقه أدناه.
+            استخدم الخريطة للعثور على موقعك، ثم قم بنسخ الرابط ولصقه، أو استخدم زر تحديد الموقع الحالي.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -79,6 +128,10 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
                     title="Google Maps"
                 ></iframe>
             </div>
+             <Button variant="outline" className="w-full" onClick={handleGetCurrentLocation} disabled={isLocating}>
+                <LocateFixed className="ml-2 h-4 w-4" />
+                {isLocating ? 'جاري تحديد الموقع...' : 'تحديد موقعي الحالي'}
+            </Button>
             <div className="space-y-2">
                 <Label htmlFor="map-link">رابط خرائط جوجل</Label>
                 <Input
@@ -86,6 +139,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder="https://maps.app.goo.gl/..."
+                dir="ltr"
                 />
             </div>
             <div className="space-y-2">
