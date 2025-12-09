@@ -23,11 +23,14 @@ interface MapSelectorProps {
   onChange: (value: string) => void;
 }
 
+const DEFAULT_MAP_SRC = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102919.23126322045!2d37.09116744869384!3d36.202113300000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15255853d9943485%3A0x95cf94f86153e0a3!2sAleppo%2C%20Syria!5e0!3m2!1sen!2sae!4v1766020584288!5m2!1sen!2sae"
+
 export function MapSelector({ value, onChange }: MapSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   
   const [link, setLink] = useState('');
   const [notes, setNotes] = useState('');
+  const [mapSrc, setMapSrc] = useState(DEFAULT_MAP_SRC);
   const { toast } = useToast();
   const [isLocating, startLocatingTransition] = useTransition();
 
@@ -70,10 +73,14 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
         (position) => {
             const { latitude, longitude } = position.coords;
             const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            const embedMapLink = `https://maps.google.com/maps?q=${latitude},${longitude}&hl=ar&z=14&output=embed`;
+            
             setLink(googleMapsLink);
+            setMapSrc(embedMapLink);
+
             toast({
             title: "تم تحديد الموقع بنجاح!",
-            description: "تم إنشاء رابط موقعك الحالي.",
+            description: "تم تحديث الخريطة والرابط بموقعك الحالي.",
             });
         },
         (error) => {
@@ -119,13 +126,14 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
         <div className="space-y-4 py-4">
             <div className="relative h-64 w-full rounded-lg overflow-hidden border">
                 <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102919.23126322045!2d37.09116744869384!3d36.202113300000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15255853d9943485%3A0x95cf94f86153e0a3!2sAleppo%2C%20Syria!5e0!3m2!1sen!2sae!4v1766020584288!5m2!1sen!2sae"
+                    src={mapSrc}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
                     allowFullScreen={true}
                     loading="lazy"
                     title="Google Maps"
+                    key={mapSrc}
                 ></iframe>
             </div>
              <Button variant="outline" className="w-full" onClick={handleGetCurrentLocation} disabled={isLocating}>
