@@ -94,7 +94,7 @@ interface KpiCardProps {
 
 function KpiCard({ title, value, comparisonText, isPositive, Icon, className }: KpiCardProps) {
     return (
-        <Card className={cn(className)}>
+        <Card className={cn("shadow-lg hover:shadow-xl transition-shadow", className)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
@@ -351,10 +351,10 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
         <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
-        <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive" : ""} />
+        <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive shadow-lg hover:shadow-xl transition-shadow" : ""} />
       </div>
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-            <Card className="lg:col-span-2">
+            <Card className="lg:col-span-2 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
                     <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
                     <CardDescription>نظرة عامة على عدد الطلبات وإجمالي المتر المربع لآخر 12 شهرًا.</CardDescription>
@@ -374,7 +374,7 @@ export default function AdminDashboardPage() {
                     </ChartContainer>
                 </CardContent>
             </Card>
-             <Card>
+             <Card className="shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><BrainCircuit /> توقعات وتحليلات ذكية</CardTitle>
                     <CardDescription>تقديرات للشهر القادم بناءً على بيانات آخر 3 أشهر.</CardDescription>
@@ -411,7 +411,7 @@ export default function AdminDashboardPage() {
             </Card>
       </div>
       <div className="grid grid-cols-1 gap-4 md:gap-8">
-        <Card className="col-span-full">
+        <Card className="col-span-full shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader>
                 <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
                 <CardDescription>إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.</CardDescription>
@@ -440,7 +440,7 @@ export default function AdminDashboardPage() {
                 </ChartContainer>
             </CardContent>
         </Card>
-         <Card className="col-span-full">
+         <Card className="col-span-full shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
                     <CardTitle className="flex items-center gap-2"><ListChecks /> الطلبات الحرجة</CardTitle>
@@ -484,7 +484,7 @@ export default function AdminDashboardPage() {
       </div>
 
        <div className="grid grid-cols-1 gap-4 md:gap-8">
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
                     <CardTitle className="flex items-center gap-2"><Users /> أفضل العملاء</CardTitle>

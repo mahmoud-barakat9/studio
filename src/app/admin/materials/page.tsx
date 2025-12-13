@@ -57,10 +57,10 @@ export default async function AdminMaterialsPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
        <div className="flex items-center">
-        <h1 className="font-semibold text-lg md:text-2xl">إدارة المواد</h1>
+        <h1 className="font-semibold text-3xl">إدارة المواد</h1>
         <div className="mr-auto flex items-center gap-2">
             <Link href="/admin/materials/new">
-                <Button size="sm">
+                <Button>
                 <PlusCircle className="h-4 w-4 ml-2" />
                 إضافة مادة جديدة
                 </Button>
@@ -87,7 +87,7 @@ export default async function AdminMaterialsPage() {
                 </TableHeader>
                 <TableBody>
                   {materials.map((material) => (
-                    <TableRow key={material.name}>
+                    <TableRow key={material.name} className="even:bg-muted/40">
                       <TableCell className="font-medium">{material.name}</TableCell>
                       <TableCell>{material.bladeWidth}</TableCell>
                       <TableCell>${material.pricePerSquareMeter.toFixed(2)}</TableCell>

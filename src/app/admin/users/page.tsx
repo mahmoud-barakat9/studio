@@ -60,9 +60,12 @@ export default async function AdminUsersPage() {
     const users = await getUsers(true); // Get all users including admins
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+       <div className="flex items-center">
+        <h1 className="font-semibold text-3xl">إدارة المستخدمين</h1>
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle>إدارة المستخدمين</CardTitle>
+          <CardTitle>قائمة المستخدمين</CardTitle>
           <CardDescription>عرض وتعديل جميع المستخدمين في النظام.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,7 +81,7 @@ export default async function AdminUsersPage() {
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user.id} className="even:bg-muted/40">
                       <TableCell className="font-medium">
                         <Link href={`/admin/users/${user.id}`} className="hover:underline">
                             {user.name}

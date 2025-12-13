@@ -180,10 +180,10 @@ export default function AdminInventoryPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
        <div className="flex items-center">
-        <h1 className="font-semibold text-lg md:text-2xl">إدارة المخزون</h1>
+        <h1 className="font-semibold text-3xl">إدارة المخزون</h1>
         <div className="mr-auto flex items-center gap-2">
             <Link href="/admin/inventory/new">
-                <Button size="sm">
+                <Button>
                 <PlusCircle className="ml-2 h-4 w-4" />
                 إضافة فاتورة شراء
                 </Button>
@@ -200,7 +200,7 @@ export default function AdminInventoryPage() {
             {materialsWithCost.map((material) => {
               const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
               return (
-                  <Card key={material.name} className={cn("flex flex-col justify-between", isLowStock && "border-destructive")}>
+                  <Card key={material.name} className={cn("flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow", isLowStock && "border-destructive")}>
                     <CardHeader className="flex-row items-center justify-between pb-2">
                       <CardTitle className="text-base font-medium">{material.name}</CardTitle>
                       {isLowStock ? (

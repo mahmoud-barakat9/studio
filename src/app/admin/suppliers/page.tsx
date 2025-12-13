@@ -56,7 +56,7 @@ export default function AdminSuppliersPage() {
   return (
     <main className="flex flex-1 flex-col gap-8 p-4 md:p-8">
        <div className="flex items-center">
-        <h1 className="font-semibold text-lg md:text-2xl">إدارة الموردين</h1>
+        <h1 className="font-semibold text-3xl">إدارة الموردين</h1>
       </div>
       
       <Card>
@@ -78,7 +78,7 @@ export default function AdminSuppliersPage() {
                   </TableHeader>
                   <TableBody>
                   {suppliersWithStats.map((supplier) => (
-                      <TableRow key={supplier.id}>
+                      <TableRow key={supplier.id} className="even:bg-muted/40">
                           <TableCell className="font-medium">{supplier.name}</TableCell>
                           <TableCell>
                                <div className="flex items-center gap-2">
