@@ -70,22 +70,17 @@ export default function AdminOrdersPage() {
   }
   
   const ordersByStatus = allStatuses.reduce((acc, status) => {
-    const filteredOrders = orders.filter(order => order.status === status && !order.isArchived);
-    if (filteredOrders.length > 0) {
-      acc[status] = filteredOrders;
-    }
+    acc[status] = orders.filter(order => order.status === status && !order.isArchived);
     return acc;
   }, {} as Record<string, Order[]>);
 
   const archivedOrders = orders.filter(order => order.isArchived);
 
-  const statusTabs = allStatuses.filter(status => ordersByStatus[status]);
-
   const handlePageChange = (tab: string, page: number) => {
     setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
   
-  const defaultTab = statusTabs.length > 0 ? statusTabs[0] : (archivedOrders.length > 0 ? 'archived' : 'none');
+  const defaultTab = allStatuses.find(status => ordersByStatus[status].length > 0) || (archivedOrders.length > 0 ? 'archived' : allStatuses[0]);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -102,8 +97,8 @@ export default function AdminOrdersPage() {
       </div>
       
       <Tabs defaultValue={defaultTab} className="w-full">
-         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
-            {statusTabs.map(status => (
+         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
+            {allStatuses.map(status => (
                 <TabsTrigger key={status} value={status}>
                     {statusTranslations[status]} ({ordersByStatus[status].length})
                 </TabsTrigger>
@@ -113,10 +108,11 @@ export default function AdminOrdersPage() {
             )}
         </TabsList>
         
-        {statusTabs.map(status => {
+        {allStatuses.map(status => {
+            const ordersForStatus = ordersByStatus[status] || [];
             const currentPage = currentPages[status] || 1;
-            const totalPages = Math.ceil(ordersByStatus[status].length / ITEMS_PER_PAGE);
-            const paginatedOrders = ordersByStatus[status].slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(ordersForStatus.length / ITEMS_PER_PAGE);
+            const paginatedOrders = ordersForStatus.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
             return (
               <TabsContent value={status} key={status} className="pt-4">
