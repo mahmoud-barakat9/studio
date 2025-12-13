@@ -411,9 +411,9 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
-                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 20, right: 30 }}>
                         <CartesianGrid horizontal={false} />
-                        <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={60} />
+                        <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={80} />
                         <XAxis dataKey="totalArea" type="number" hide />
                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                         <Bar dataKey="totalArea" fill="var(--color-totalArea)" radius={4} name="إجمالي م²" />
@@ -510,10 +510,5 @@ export default function AdminDashboardPage() {
 
     </main>
   );
-}
-
-    
-
-    
 
     
