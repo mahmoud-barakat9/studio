@@ -77,7 +77,7 @@ export default function OrdersPage() {
       <MainHeader />
       <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
         <div id="orders" className="container mx-auto grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                 <h1 className="text-3xl font-bold tracking-tight">
                     طلباتي

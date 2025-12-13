@@ -598,15 +598,13 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                       <FormItem>
                         <FormLabel>اسم الطلب</FormLabel>
                         <FormControl>
-                          <div className="flex flex-col sm:flex-row items-center gap-2">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <Input
                               {...field}
                               placeholder="مثال: 'غرفة معيشة الفيلا'"
                             />
                             <Button
                               type="button"
-                              size="icon"
-                              variant="outline"
                               onClick={handleSuggestName}
                               disabled={isNamePending}
                               className="w-full sm:w-auto flex-shrink-0"
@@ -616,7 +614,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                               ) : (
                                 <Wand2 className="h-4 w-4" />
                               )}
-                              <span className="sr-only sm:not-sr-only sm:ml-2">اقتراح</span>
+                              <span className="ml-2">اقتراح</span>
                             </Button>
                           </div>
                         </FormControl>
@@ -667,7 +665,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                                         />
                                     ) : (
                                         <MapSelector
-                                            value={field.value}
+                                            value={field.value || ''}
                                             onChange={field.onChange}
                                         />
                                     )}
@@ -734,7 +732,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
           </div>
         </div>
         
-        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)]">
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t p-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)] md:hidden pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <div className="container mx-auto max-w-7xl">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">

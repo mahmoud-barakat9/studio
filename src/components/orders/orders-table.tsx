@@ -208,7 +208,7 @@ export function OrdersTable({
   isAdmin?: boolean;
 }) {
   const router = useRouter();
-  const isDesktop = useMediaQuery("(min-width: 640px)");
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.name || "غير معروف";

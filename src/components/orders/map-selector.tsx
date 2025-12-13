@@ -123,7 +123,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
             استخدم الخريطة للعثور على موقعك، أو استخدم زر تحديد الموقع الحالي، ثم قم بنسخ الرابط ولصقه.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 pt-4 sm:p-0 sm:pt-4 space-y-4">
             <div className="relative h-56 sm:h-64 w-full rounded-lg overflow-hidden border">
                 <iframe
                     src={mapSrc}
@@ -160,7 +160,7 @@ export function MapSelector({ value, onChange }: MapSelectorProps) {
                 />
             </div>
         </div>
-        <DialogFooter className="p-6 pt-0 sm:p-0 sm:pt-6 border-t sm:border-0 mt-auto">
+        <DialogFooter className="p-6 pt-0 sm:p-0 sm:pt-6 border-t sm:border-0 mt-auto flex-row justify-end gap-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>إلغاء</Button>
             <Button type="button" onClick={handleSave}>حفظ الموقع</Button>
         </DialogFooter>

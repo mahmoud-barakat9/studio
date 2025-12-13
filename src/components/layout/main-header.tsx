@@ -63,12 +63,6 @@ export function MainHeader() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-2">
-            <Button variant="ghost" asChild>
-                <Link href="/welcome">
-                    <Home />
-                    العودة للرئيسية
-                </Link>
-            </Button>
            <nav className="flex items-center gap-1">
             {userLinks.map(link => (
               <Button key={link.href} variant="ghost" asChild className={cn(
@@ -84,7 +78,12 @@ export function MainHeader() {
           </nav>
           
            <Separator orientation="vertical" className="h-6 mx-2" />
-
+           <Button variant="ghost" asChild>
+                <Link href="/welcome">
+                    <Home />
+                    العودة للرئيسية
+                </Link>
+            </Button>
            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="icon" className="rounded-full">
