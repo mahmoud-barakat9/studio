@@ -1,11 +1,12 @@
 
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Window, DoorOpen, Warehouse, Building2 } from "lucide-react";
+'use client';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppWindow, DoorOpen, Warehouse, Building2 } from "lucide-react";
 import { motion } from 'framer-motion';
 
 const productTypes = [
   {
-    icon: <Window className="w-10 h-10 text-primary" />,
+    icon: <AppWindow className="w-10 h-10 text-primary" />,
     title: "أباجور شبابيك",
     description: "حماية وأناقة لنوافذ منزلك، مع تحكم كامل في الإضاءة والخصوصية.",
   },
