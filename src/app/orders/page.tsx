@@ -23,15 +23,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 const DUMMY_USER_ID = "5"; 
 const ITEMS_PER_PAGE = 5;
 
-const activeStatuses: Array<Order['status']> = [
+const allStatuses: Array<Order['status']> = [
     "Pending", 
     "Approved", 
     "FactoryOrdered", 
     "Processing", 
     "FactoryShipped", 
-    "ReadyForDelivery"
+    "ReadyForDelivery",
+    "Delivered", 
+    "Rejected"
 ];
-const finishedStatuses: Array<Order['status']> = ["Delivered", "Rejected"];
 
 const statusTranslations: Record<string, string> = {
   "Pending": "بانتظار الموافقة",
@@ -76,7 +77,7 @@ export default function OrdersPage() {
      )
   }
   
-  const ordersByStatus = activeStatuses.reduce((acc, status) => {
+  const ordersByStatus = allStatuses.reduce((acc, status) => {
     const filteredOrders = userOrders.filter(order => order.status === status && !order.isArchived);
     if (filteredOrders.length > 0) {
       acc[status] = filteredOrders;
@@ -84,15 +85,13 @@ export default function OrdersPage() {
     return acc;
   }, {} as Record<string, Order[]>);
 
-  const finishedOrders = userOrders.filter(order => 
-      order.isArchived || finishedStatuses.includes(order.status)
-  );
+  const archivedOrders = userOrders.filter(order => order.isArchived);
 
   const handlePageChange = (tab: string, page: number) => {
     setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
-
-  const defaultAccordionValue = activeStatuses.find(status => ordersByStatus[status]?.length > 0) || (finishedOrders.length > 0 ? 'archived' : undefined);
+  
+  const defaultAccordionValue = allStatuses.find(status => ordersByStatus[status]?.length > 0) || (archivedOrders.length > 0 ? 'archived' : undefined);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -117,7 +116,7 @@ export default function OrdersPage() {
             </div>
 
             <Accordion type="single" collapsible defaultValue={defaultAccordionValue} className="w-full space-y-4">
-              {Object.keys(statusTranslations).map(status => {
+              {allStatuses.map(status => {
                   if (!ordersByStatus[status]) return null;
 
                   const currentPage = currentPages[status] || 1;
@@ -145,15 +144,15 @@ export default function OrdersPage() {
                   );
               })}
               
-              {finishedOrders.length > 0 && (() => {
+              {archivedOrders.length > 0 && (() => {
                   const currentPage = currentPages['archived'] || 1;
-                  const totalPages = Math.ceil(finishedOrders.length / ITEMS_PER_PAGE);
-                  const paginatedOrders = finishedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+                  const totalPages = Math.ceil(archivedOrders.length / ITEMS_PER_PAGE);
+                  const paginatedOrders = archivedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
                   
                   return (
                       <AccordionItem value="archived" className="border-b-0">
                           <AccordionTrigger className="text-lg font-medium bg-muted hover:bg-muted/80 px-4 py-3 rounded-lg border">
-                              الأرشيف ({finishedOrders.length})
+                              الأرشيف ({archivedOrders.length})
                           </AccordionTrigger>
                           <AccordionContent className="pt-4">
                               <div className="space-y-4">
