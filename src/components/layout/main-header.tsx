@@ -41,7 +41,6 @@ const userLinks = [
 
 const secondaryLinks = [
   { href: '/admin/dashboard', label: 'تبديل للمسؤول', icon: Shield },
-  { href: '/welcome', label: 'العودة للرئيسية', icon: Home },
 ];
 
 export function MainHeader() {
@@ -64,11 +63,17 @@ export function MainHeader() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-2">
-           <nav className="flex items-center gap-2">
+            <Button variant="ghost" asChild>
+                <Link href="/welcome">
+                    <Home />
+                    العودة للرئيسية
+                </Link>
+            </Button>
+           <nav className="flex items-center gap-1">
             {userLinks.map(link => (
               <Button key={link.href} variant="ghost" asChild className={cn(
                 'text-muted-foreground',
-                pathname === link.href && 'text-foreground'
+                pathname === link.href && 'text-foreground bg-accent'
               )}>
                 <Link href={link.href}>
                   {link.icon && <link.icon />}
@@ -94,12 +99,7 @@ export function MainHeader() {
                   <DropdownMenuLabel>مستخدم تجريبي</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                    <DropdownMenuItem asChild><Link href="#"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
-                   <DropdownMenuSeparator />
-                    {secondaryLinks.map(link => (
-                       <DropdownMenuItem key={link.href} asChild>
-                         <Link href={link.href}><link.icon className="ml-2 h-4 w-4" />{link.label}</Link>
-                       </DropdownMenuItem>
-                    ))}
+                   <DropdownMenuItem asChild><Link href="/admin/dashboard"><Shield className="ml-2 h-4 w-4" />تبديل للمسؤول</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <ThemeSwitcher />
@@ -184,6 +184,14 @@ export function MainHeader() {
                                             {link.label}
                                         </Link>
                                     ))}
+                                     <Link
+                                        href="/welcome"
+                                        onClick={() => setSheetOpen(false)}
+                                        className="text-muted-foreground hover:text-foreground w-full text-right py-3 px-2 rounded-md flex items-center gap-4 text-md font-medium"
+                                     >
+                                        <Home className="h-5 w-5" />
+                                        العودة للرئيسية
+                                    </Link>
                                 </nav>
                         </div>
 
