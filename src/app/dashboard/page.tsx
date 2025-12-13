@@ -11,22 +11,43 @@ import { OrdersTable } from "@/components/orders/orders-table";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { useMemo } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
+import { cn } from "@/lib/utils";
 
 const DUMMY_USER_ID = "5"; 
 
-function Stat({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | number }) {
+interface KpiCardProps {
+  title: string;
+  value: string;
+  Icon: React.ElementType;
+  className?: string;
+}
+
+function KpiCard({ title, value, Icon, className }: KpiCardProps) {
     return (
-        <div className="flex flex-col items-center justify-center gap-2 text-center flex-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-            </div>
-            <div className="text-center">
-                <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                <p className="text-lg font-bold">{value}</p>
-            </div>
-        </div>
+        <Card className={cn(className)}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function KpiCardSkeleton() {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-8 w-16 mb-1" />
+            </CardContent>
+        </Card>
     );
 }
 
@@ -73,20 +94,15 @@ export default function DashboardPage() {
             <MainHeader />
              <main className="flex-1 bg-muted/40 p-4 md:p-8">
                 <div className="max-w-7xl mx-auto grid gap-8">
-                    <div className="space-y-4">
-                        <Skeleton className="h-10 w-1/2 mx-auto" />
-                        <Skeleton className="h-5 w-2/3 mx-auto" />
-                        <Skeleton className="h-12 w-48 mx-auto" />
+                    <div>
+                        <Skeleton className="h-10 w-1/2" />
+                        <Skeleton className="h-5 w-2/3 mt-2" />
                     </div>
-                     <Card>
-                        <CardContent className="p-6">
-                            <div className="flex justify-around">
-                                <div className="flex flex-col items-center gap-2"><Skeleton className="h-12 w-12 rounded-full" /><Skeleton className="h-4 w-20" /><Skeleton className="h-8 w-12" /></div>
-                                <div className="flex flex-col items-center gap-2"><Skeleton className="h-12 w-12 rounded-full" /><Skeleton className="h-4 w-20" /><Skeleton className="h-8 w-12" /></div>
-                                <div className="flex flex-col items-center gap-2"><Skeleton className="h-12 w-12 rounded-full" /><Skeleton className="h-4 w-20" /><Skeleton className="h-8 w-12" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                     <div className="grid gap-4 md:grid-cols-3">
+                        <KpiCardSkeleton />
+                        <KpiCardSkeleton />
+                        <KpiCardSkeleton />
+                    </div>
                     <Skeleton className="h-96 w-full" />
                 </div>
             </main>
@@ -101,32 +117,28 @@ export default function DashboardPage() {
       <main className="flex-1 bg-muted/40 p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-7xl mx-auto grid gap-8">
             
-            <div className="text-center space-y-4">
-                <h1 className="text-4xl font-bold tracking-tight">
-                    {`أهلاً بك، ${currentUser?.name || 'User'}!`}
-                </h1>
-                <p className="text-muted-foreground max-w-xl mx-auto">
-                    نظرة عامة سريعة على نشاطك. انشئ طلبًا جديدًا أو تتبع طلباتك الحالية من هنا.
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {`أهلاً بك، ${currentUser?.name || 'User'}!`}
+                    </h1>
+                    <p className="text-muted-foreground">
+                        نظرة عامة سريعة على نشاطك. انشئ طلبًا جديدًا أو تتبع طلباتك الحالية من هنا.
+                    </p>
+                </div>
                  <Link href="/orders/new">
-                    <Button size="lg" className="w-full sm:w-auto sm:max-w-xs">
+                    <Button size="lg" className="w-full sm:w-auto">
                         <PlusCircle className="ml-2 h-5 w-5" />
                         إنشاء طلب جديد
                     </Button>
                 </Link>
             </div>
 
-            <Card className="shadow-lg">
-                <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center justify-around">
-                        <Stat icon={ClipboardList} label="طلبات الشهر" value={kpiData.monthlyOrdersCount || 0} />
-                        <Separator orientation="vertical" className="h-16" />
-                        <Stat icon={Ruler} label="إجمالي الأمتار" value={`${kpiData.totalApprovedMeters?.toFixed(2) || '0.00'} م²`} />
-                        <Separator orientation="vertical" className="h-16" />
-                        <Stat icon={Package} label="الطلبات النشطة" value={kpiData.activeOrdersCount || 0} />
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="grid gap-4 md:grid-cols-3">
+                <KpiCard title="طلبات هذا الشهر" value={`${kpiData.monthlyOrdersCount || 0}`} Icon={ClipboardList} />
+                <KpiCard title="إجمالي الأمتار المنفذة" value={`${kpiData.totalApprovedMeters?.toFixed(2) || '0.00'} م²`} Icon={Ruler} />
+                <KpiCard title="الطلبات النشطة" value={`${kpiData.activeOrdersCount || 0}`} Icon={Package} />
+            </div>
 
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
