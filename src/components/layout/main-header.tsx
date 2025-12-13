@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
+import { ThemeSwitcher } from '../theme-switcher';
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
@@ -112,6 +113,10 @@ export function MainHeader() {
                      <DropdownMenuItem asChild><Link href="#"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/admin/dashboard"><Shield className="ml-2 h-4 w-4" />تبديل للمسؤول</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <ThemeSwitcher />
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem>
                         <LogOut className="ml-2 h-4 w-4" />
                         تسجيل الخروج
@@ -171,6 +176,10 @@ export function MainHeader() {
                                     {link.label}
                                 </Link>
                             ))}
+                            <Separator className="my-4" />
+                            <div className="px-2">
+                               <ThemeSwitcher />
+                            </div>
                             <Separator className="my-4" />
                              {secondaryLinks.map((link) => (
                                 <Link

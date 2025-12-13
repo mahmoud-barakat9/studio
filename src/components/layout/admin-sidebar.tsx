@@ -36,8 +36,8 @@ import {
 } from "@/components/ui/avatar";
 import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { ThemeSwitcher } from "../theme-switcher";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -130,6 +130,10 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/welcome"><Home className="ml-2 h-4 w-4" /> العودة للرئيسية</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <ThemeSwitcher />
                 </DropdownMenuItem>
                  <DropdownMenuSeparator />
                  <DropdownMenuItem asChild>
