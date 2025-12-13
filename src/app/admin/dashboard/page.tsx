@@ -1,6 +1,6 @@
 
 "use client";
-import { LineChart, Line, Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import { LineChart, Line, Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import {
   Card,
   CardContent,
@@ -53,6 +53,13 @@ const topMaterialsChartConfig = {
   },
 } satisfies ChartConfig;
 
+const CHART_COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+];
 
 const delayThresholds: Partial<Record<Order['status'], number>> = {
     Pending: 2,
@@ -411,12 +418,24 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
-                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical">
+                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10 }}>
                         <CartesianGrid horizontal={false} />
-                        <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={80} />
+                        <YAxis 
+                            dataKey="name" 
+                            type="category" 
+                            tickLine={false} 
+                            tickMargin={10} 
+                            axisLine={false} 
+                            width={100}
+                            tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
+                        />
                         <XAxis dataKey="totalArea" type="number" hide />
                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                        <Bar dataKey="totalArea" fill="var(--color-totalArea)" radius={4} name="إجمالي م²" />
+                        <Bar dataKey="totalArea" radius={4}>
+                            {topMaterialsData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                        </Bar>
                     </BarChart>
                 </ChartContainer>
             </CardContent>
@@ -510,5 +529,8 @@ export default function AdminDashboardPage() {
 
     </main>
   );
+
+    
+
 
     
