@@ -69,6 +69,8 @@ export default function AdminOrdersPage() {
     );
   }
   
+  const allActiveOrders = orders.filter(order => !order.isArchived);
+
   const ordersByStatus = allStatuses.reduce((acc, status) => {
     acc[status] = orders.filter(order => order.status === status && !order.isArchived);
     return acc;
@@ -80,7 +82,7 @@ export default function AdminOrdersPage() {
     setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
   
-  const defaultOpenValue = allStatuses.find(status => ordersByStatus[status].length > 0) || (archivedOrders.length > 0 ? 'archived' : undefined);
+  const defaultOpenValue = "all_active";
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -97,11 +99,25 @@ export default function AdminOrdersPage() {
       </div>
       
       <Accordion type="single" collapsible className="w-full space-y-2" defaultValue={defaultOpenValue}>
+        <AccordionItem value="all_active" className="border-b-0">
+            <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
+                <span>كل الطلبات النشطة ({allActiveOrders.length})</span>
+            </AccordionTrigger>
+            <AccordionContent className="border border-t-0 rounded-b-md bg-card p-0">
+                <div className="space-y-4 p-4">
+                    <OrdersTable orders={allActiveOrders} users={users} isAdmin={true} />
+                    {/* Pagination for all active orders can be added here if needed */}
+                </div>
+            </AccordionContent>
+        </AccordionItem>
+        
          {allStatuses.map(status => {
             const ordersForStatus = ordersByStatus[status] || [];
             const currentPage = currentPages[status] || 1;
             const totalPages = Math.ceil(ordersForStatus.length / ITEMS_PER_PAGE);
             const paginatedOrders = ordersForStatus.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+            
+            if (ordersForStatus.length === 0) return null;
 
             return (
               <AccordionItem value={status} key={status} className="border-b-0">
