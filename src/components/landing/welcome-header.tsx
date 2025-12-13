@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
@@ -12,18 +12,36 @@ import { cn } from "@/lib/utils";
 const guestLinks = [
   { href: "/welcome", label: "الرئيسية" },
   { href: "/welcome#features", label: "المميزات" },
+  { href: "/welcome#projects", label: "أعمالنا" },
+  { href: "/welcome#testimonials", label: "آراء العملاء" },
   { href: "/welcome#contact", label: "تواصل معنا" },
 ];
 
 export function WelcomeHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const [hash, setHash] = useState("");
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setHash(window.location.hash);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    // Set initial hash
+    setHash(window.location.hash);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const handleLinkClick = () => {
     setIsOpen(false);
   };
   
   const homeUrl = "/welcome";
+  const currentPath = pathname + hash;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,7 +57,7 @@ export function WelcomeHeader() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                (pathname + (typeof window !== 'undefined' ? window.location.hash : '')) === link.href ? "text-primary" : "text-muted-foreground"
+                currentPath === link.href ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.label}
@@ -67,7 +85,7 @@ export function WelcomeHeader() {
                 onClick={handleLinkClick}
                 className={cn(
                   "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                   (pathname + (typeof window !== 'undefined' ? window.location.hash: '')) === link.href ? "text-primary" : "text-foreground"
+                   currentPath === link.href ? "text-primary" : "text-foreground"
                 )}
               >
                 {link.label}

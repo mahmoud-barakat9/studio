@@ -5,6 +5,42 @@
       "description": "Abstract blue and purple geometric shapes",
       "imageUrl": "https://images.unsplash.com/photo-1488972685288-c3fd157d7c7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGdlb21ldHJpY3xlbnwwfHx8fDE3NjM0MjU1NDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract geometric"
+    },
+    {
+      "id": "project-before-1",
+      "description": "Old, worn-out window shutters on a rustic building facade.",
+      "imageUrl": "https://images.unsplash.com/photo-1509573563917-a778dc0a5477?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxvbGQlMjB3aW5kb3d8ZW58MHx8fHwxNzY1NjQ1ODM2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "old window"
+    },
+    {
+      "id": "project-after-1",
+      "description": "New, modern aluminum shutters on a renovated building facade.",
+      "imageUrl": "https://images.unsplash.com/photo-1596486516160-7c46395011a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtb2Rlcm4lMjBzaHV0dGVyc3xlbnwwfHx8fDE3NjU2NDU4MzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern shutters"
+    },
+    {
+      "id": "project-before-2",
+      "description": "An old garage door, faded and slightly damaged.",
+      "imageUrl": "https://images.unsplash.com/photo-1504370223796-6fe920a20b16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxvbGQlMjBnYXJhZ2V8ZW58MHx8fHwxNzY1NjQ1ODM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "old garage"
+    },
+    {
+      "id": "project-after-2",
+      "description": "A new, sleek industrial roll-up shutter door on a commercial building.",
+      "imageUrl": "https://images.unsplash.com/photo-1758024264451-5cbfa9bee420?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxpbmR1c3RyaWFsJTIwZG9vcnxlbnwwfHx8fDE3NjU2NDU4MzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "industrial door"
+    },
+    {
+      "id": "project-before-3",
+      "description": "A residential house with no window coverings, looking plain.",
+      "imageUrl": "https://images.unsplash.com/photo-1580618398679-2d5e5d5d4af4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwbGFpbiUyMGhvdXNlfGVufDB8fHx8MTc2NTY0NTgzN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "plain house"
+    },
+    {
+      "id": "project-after-3",
+      "description": "The same residential house now with elegant, matching window shutters.",
+      "imageUrl": "https://images.unsplash.com/photo-1759688410464-7bdfba50693c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZWxlZ2FudCUyMGhvdXNlfGVufDB8fHx8MTc2NTY0NTgzNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "elegant house"
     }
   ]
 }
