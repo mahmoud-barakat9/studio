@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const statusTranslations: Record<string, string> = {
   "Pending": "بانتظار الموافقة",
-  "Approved": "جاهزة للإرسال للمعمل",
+  "Approved": "تمت الموافقة",
   "FactoryOrdered": "تم الطلب من المعمل",
   "Processing": "قيد التجهيز",
   "FactoryShipped": "تم الشحن من المعمل",
@@ -28,13 +28,15 @@ const statusTranslations: Record<string, string> = {
   "Rejected": "مرفوض",
 };
 
-const activeStatuses: Array<Order['status']> = [
-    "Pending", 
-    "Approved", 
-    "FactoryOrdered", 
-    "Processing", 
-    "FactoryShipped", 
-    "ReadyForDelivery"
+const allStatuses: Array<Order['status']> = [
+    "Pending",
+    "Approved",
+    "FactoryOrdered",
+    "Processing",
+    "FactoryShipped",
+    "ReadyForDelivery",
+    "Delivered",
+    "Rejected",
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -66,12 +68,8 @@ export default function AdminOrdersPage() {
         </main>
     );
   }
-
-  const finishedOrders = orders.filter(order => 
-      order.isArchived || order.status === 'Delivered' || order.status === 'Rejected'
-  );
   
-  const ordersByStatus = activeStatuses.reduce((acc, status) => {
+  const ordersByStatus = allStatuses.reduce((acc, status) => {
     const filteredOrders = orders.filter(order => order.status === status && !order.isArchived);
     if (filteredOrders.length > 0) {
       acc[status] = filteredOrders;
@@ -79,12 +77,15 @@ export default function AdminOrdersPage() {
     return acc;
   }, {} as Record<string, Order[]>);
 
+  const archivedOrders = orders.filter(order => order.isArchived);
+
+  const statusTabs = allStatuses.filter(status => ordersByStatus[status]);
+
   const handlePageChange = (tab: string, page: number) => {
     setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
   
-  const defaultTabValue = activeStatuses.find(status => ordersByStatus[status]?.length > 0) || (finishedOrders.length > 0 ? 'archived' : undefined);
-
+  const defaultTab = statusTabs.length > 0 ? statusTabs[0] : (archivedOrders.length > 0 ? 'archived' : 'none');
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -100,24 +101,19 @@ export default function AdminOrdersPage() {
         </div>
       </div>
       
-      <Tabs defaultValue={defaultTabValue} className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
-            {activeStatuses.map(status => {
-                if (!ordersByStatus[status]) return null;
-                return (
-                    <TabsTrigger key={status} value={status}>
-                        {statusTranslations[status]} ({ordersByStatus[status].length})
-                    </TabsTrigger>
-                );
-            })}
-             {finishedOrders.length > 0 && (
-                <TabsTrigger value="archived">الأرشيف ({finishedOrders.length})</TabsTrigger>
+            {statusTabs.map(status => (
+                <TabsTrigger key={status} value={status}>
+                    {statusTranslations[status]} ({ordersByStatus[status].length})
+                </TabsTrigger>
+            ))}
+             {archivedOrders.length > 0 && (
+                <TabsTrigger value="archived">الأرشيف ({archivedOrders.length})</TabsTrigger>
             )}
         </TabsList>
         
-        {activeStatuses.map(status => {
-            if (!ordersByStatus[status]) return null;
-
+        {statusTabs.map(status => {
             const currentPage = currentPages[status] || 1;
             const totalPages = Math.ceil(ordersByStatus[status].length / ITEMS_PER_PAGE);
             const paginatedOrders = ordersByStatus[status].slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -138,10 +134,10 @@ export default function AdminOrdersPage() {
             );
         })}
         
-        {finishedOrders.length > 0 && (() => {
+        {archivedOrders.length > 0 && (() => {
             const currentPage = currentPages['archived'] || 1;
-            const totalPages = Math.ceil(finishedOrders.length / ITEMS_PER_PAGE);
-            const paginatedOrders = finishedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(archivedOrders.length / ITEMS_PER_PAGE);
+            const paginatedOrders = archivedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
             
             return (
                 <TabsContent value="archived" className="pt-4">
