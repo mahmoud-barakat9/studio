@@ -122,7 +122,7 @@ export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: 
                     <Link href="/admin/profile"><User className="ml-2 h-4 w-4" /> الملف الشخصي</Link>
                 </DropdownMenuItem>
                  <DropdownMenuItem asChild>
-                    <Link href="#"><Settings className="ml-2 h-4 w-4" /> الإعدادات</Link>
+                    <Link href="/admin/settings"><Settings className="ml-2 h-4 w-4" /> الإعدادات</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
