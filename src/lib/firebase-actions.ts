@@ -1,4 +1,5 @@
 
+
 'use server';
 import fs from 'fs';
 import path from 'path';
@@ -277,6 +278,29 @@ export const addUserAndGetId = async (userData: Partial<User> & { email: string 
 
     revalidatePath('/admin/orders/new');
     return Promise.resolve(newId);
+};
+
+export const addUser = async (userData: Partial<User> & { email: string; name: string, role: "admin" | "user" }): Promise<User> => {
+    let users = readData<User>(usersFilePath);
+    let existingUser = users.find(u => u.email === userData.email);
+    if (existingUser) {
+        throw new Error("مستخدم بهذا البريد الإلكتروني موجود بالفعل.");
+    }
+    
+    const newId = `${users.length + 1}`;
+    const newUser: User = {
+        id: newId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone || '',
+        role: userData.role,
+    };
+    users.push(newUser);
+    writeData<User>(usersFilePath, users);
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/users/new');
+    return Promise.resolve(newUser);
 };
 
 

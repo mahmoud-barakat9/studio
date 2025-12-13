@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB, addUser } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -234,6 +234,30 @@ export async function deleteOrder(orderId: string) {
   await deleteOrderDB(orderId);
   revalidatePath('/admin/orders');
   revalidatePath('/orders');
+}
+
+const userSchema = z.object({
+  name: z.string().min(1, 'الاسم مطلوب.'),
+  email: z.string().email('بريد إلكتروني غير صالح.'),
+  phone: z.string().optional(),
+  role: z.enum(['admin', 'user'], { required_error: 'الدور مطلوب.' }),
+  password: z.string().min(6, 'كلمة المرور مطلوبة ويجب أن تكون 6 أحرف على الأقل.'),
+});
+
+export async function createUser(formData: z.infer<typeof userSchema>) {
+    const validatedFields = userSchema.safeParse(formData);
+
+    if (!validatedFields.success) {
+        return { error: "البيانات المدخلة غير صالحة." };
+    }
+
+    try {
+        await addUser(validatedFields.data);
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error: any) {
+        return { error: error.message };
+    }
 }
 
 

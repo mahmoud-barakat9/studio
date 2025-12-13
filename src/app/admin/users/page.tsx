@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Eye, MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2, Eye, MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -62,6 +62,14 @@ export default async function AdminUsersPage() {
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
        <div className="flex items-center">
         <h1 className="font-semibold text-3xl">إدارة المستخدمين</h1>
+        <div className="mr-auto">
+            <Link href="/admin/users/new">
+                <Button>
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                    إضافة مستخدم جديد
+                </Button>
+            </Link>
+        </div>
       </div>
       <Card>
         <CardHeader>
