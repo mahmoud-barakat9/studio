@@ -5,10 +5,16 @@ import { OrdersTable } from "@/components/orders/orders-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import type { Order } from "@/lib/definitions";
 import { Pagination } from "@/components/pagination";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const statusTranslations: Record<string, string> = {
@@ -35,7 +41,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function AdminOrdersPage() {
   const { orders, users, loading } = useOrdersAndUsers();
-  const [currentTabs, setCurrentTabs] = useState<Record<string, number>>({});
+  const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
 
   if (loading) {
     return (
@@ -52,8 +58,10 @@ export default function AdminOrdersPage() {
                 </div>
             </div>
             <div className="space-y-4">
-                <div className="h-10 w-full animate-pulse rounded-md bg-muted"></div>
-                <div className="h-96 w-full animate-pulse rounded-md bg-muted"></div>
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-96 w-full" />
             </div>
         </main>
     );
@@ -65,15 +73,17 @@ export default function AdminOrdersPage() {
   
   const ordersByStatus = activeStatuses.reduce((acc, status) => {
     const filteredOrders = orders.filter(order => order.status === status && !order.isArchived);
-    acc[status] = filteredOrders;
+    if (filteredOrders.length > 0) {
+      acc[status] = filteredOrders;
+    }
     return acc;
   }, {} as Record<string, Order[]>);
 
   const handlePageChange = (tab: string, page: number) => {
-    setCurrentTabs(prev => ({ ...prev, [tab]: page }));
+    setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
   
-  const defaultTab = activeStatuses.find(status => ordersByStatus[status].length > 0) || (finishedOrders.length > 0 ? 'archived' : 'Pending');
+  const defaultAccordionValue = activeStatuses.find(status => ordersByStatus[status]?.length > 0) || (finishedOrders.length > 0 ? 'archived' : undefined);
 
 
   return (
@@ -90,61 +100,62 @@ export default function AdminOrdersPage() {
         </div>
       </div>
       
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <div className="overflow-x-auto pb-2">
-            <TabsList className="inline-flex w-max">
-                {activeStatuses.map(status => (
-                    <TabsTrigger key={status} value={status}>
-                        {statusTranslations[status]} ({ordersByStatus[status].length})
-                    </TabsTrigger>
-                ))}
-                {finishedOrders.length > 0 && <TabsTrigger value="archived">الأرشيف ({finishedOrders.length})</TabsTrigger>}
-            </TabsList>
-        </div>
-
+      <Accordion type="single" collapsible defaultValue={defaultAccordionValue} className="w-full space-y-4">
         {activeStatuses.map(status => {
-            const currentPage = currentTabs[status] || 1;
+            if (!ordersByStatus[status]) return null;
+
+            const currentPage = currentPages[status] || 1;
             const totalPages = Math.ceil(ordersByStatus[status].length / ITEMS_PER_PAGE);
             const paginatedOrders = ordersByStatus[status].slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
             return (
-             <TabsContent key={status} value={status}>
-                <div className="space-y-4">
-                    <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                    {totalPages > 1 && (
-                        <Pagination 
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={(page) => handlePageChange(status, page)}
-                        />
-                    )}
-                </div>
-             </TabsContent>
+              <AccordionItem value={status} key={status} className="border-b-0">
+                <AccordionTrigger className="text-lg font-medium bg-muted hover:bg-muted/80 px-4 py-3 rounded-lg border">
+                  {statusTranslations[status]} ({ordersByStatus[status].length})
+                </AccordionTrigger>
+                <AccordionContent className="pt-4">
+                  <div className="space-y-4">
+                      <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
+                      {totalPages > 1 && (
+                          <Pagination 
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              onPageChange={(page) => handlePageChange(status, page)}
+                          />
+                      )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             );
         })}
         
         {finishedOrders.length > 0 && (() => {
-            const currentPage = currentTabs['archived'] || 1;
+            const currentPage = currentPages['archived'] || 1;
             const totalPages = Math.ceil(finishedOrders.length / ITEMS_PER_PAGE);
             const paginatedOrders = finishedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
             
             return (
-                <TabsContent value="archived">
-                  <div className="space-y-4">
-                    <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                    {totalPages > 1 && (
-                        <Pagination 
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={(page) => handlePageChange('archived', page)}
-                        />
-                    )}
-                  </div>
-                </TabsContent>
+                <AccordionItem value="archived" className="border-b-0">
+                    <AccordionTrigger className="text-lg font-medium bg-muted hover:bg-muted/80 px-4 py-3 rounded-lg border">
+                        الأرشيف ({finishedOrders.length})
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-4">
+                        <div className="space-y-4">
+                            <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
+                            {totalPages > 1 && (
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page) => handlePageChange('archived', page)}
+                                />
+                            )}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
             );
         })()}
 
-      </Tabs>
+      </Accordion>
     </main>
   );
 }
