@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import type { Order } from "@/lib/definitions";
 import { Pagination } from "@/components/pagination";
 import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
@@ -80,7 +80,7 @@ export default function AdminOrdersPage() {
     setCurrentPages(prev => ({ ...prev, [tab]: page }));
   };
   
-  const defaultTab = allStatuses.find(status => ordersByStatus[status].length > 0) || (archivedOrders.length > 0 ? 'archived' : allStatuses[0]);
+  const defaultOpenValue = allStatuses.find(status => ordersByStatus[status].length > 0) || (archivedOrders.length > 0 ? 'archived' : undefined);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -96,37 +96,31 @@ export default function AdminOrdersPage() {
         </div>
       </div>
       
-      <Tabs defaultValue={defaultTab} className="w-full">
-         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
-            {allStatuses.map(status => (
-                <TabsTrigger key={status} value={status}>
-                    {statusTranslations[status]} ({ordersByStatus[status].length})
-                </TabsTrigger>
-            ))}
-             {archivedOrders.length > 0 && (
-                <TabsTrigger value="archived">الأرشيف ({archivedOrders.length})</TabsTrigger>
-            )}
-        </TabsList>
-        
-        {allStatuses.map(status => {
+      <Accordion type="single" collapsible className="w-full space-y-2" defaultValue={defaultOpenValue}>
+         {allStatuses.map(status => {
             const ordersForStatus = ordersByStatus[status] || [];
             const currentPage = currentPages[status] || 1;
             const totalPages = Math.ceil(ordersForStatus.length / ITEMS_PER_PAGE);
             const paginatedOrders = ordersForStatus.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
             return (
-              <TabsContent value={status} key={status} className="pt-4">
-                  <div className="space-y-4">
-                      <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                      {totalPages > 1 && (
-                          <Pagination 
-                              currentPage={currentPage}
-                              totalPages={totalPages}
-                              onPageChange={(page) => handlePageChange(status, page)}
-                          />
-                      )}
-                  </div>
-              </TabsContent>
+              <AccordionItem value={status} key={status} className="border-b-0">
+                  <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
+                    <span>{statusTranslations[status]} ({ordersForStatus.length})</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="border border-t-0 rounded-b-md bg-card p-0">
+                      <div className="space-y-4 p-4">
+                          <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
+                          {totalPages > 1 && (
+                              <Pagination 
+                                  currentPage={currentPage}
+                                  totalPages={totalPages}
+                                  onPageChange={(page) => handlePageChange(status, page)}
+                              />
+                          )}
+                      </div>
+                  </AccordionContent>
+              </AccordionItem>
             );
         })}
         
@@ -136,22 +130,27 @@ export default function AdminOrdersPage() {
             const paginatedOrders = archivedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
             
             return (
-                <TabsContent value="archived" className="pt-4">
-                    <div className="space-y-4">
-                        <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                        {totalPages > 1 && (
-                            <Pagination 
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={(page) => handlePageChange('archived', page)}
-                            />
-                        )}
-                    </div>
-                </TabsContent>
+                <AccordionItem value="archived" className="border-b-0">
+                    <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
+                       <span>الأرشيف ({archivedOrders.length})</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="border border-t-0 rounded-b-md bg-card p-0">
+                        <div className="space-y-4 p-4">
+                            <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
+                            {totalPages > 1 && (
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page) => handlePageChange('archived', page)}
+                                />
+                            )}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
             );
         })()}
 
-      </Tabs>
+      </Accordion>
     </main>
   );
 }
