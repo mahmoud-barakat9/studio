@@ -411,7 +411,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
-                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 20, right: 30 }}>
+                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical">
                         <CartesianGrid horizontal={false} />
                         <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={80} />
                         <XAxis dataKey="totalArea" type="number" hide />
