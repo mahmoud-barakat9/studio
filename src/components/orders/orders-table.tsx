@@ -352,11 +352,11 @@ export function OrdersTable({
                     ) : (
                         <>
                          <div className="flex justify-between items-center w-full">
-                            <div>
+                            <div className="flex items-center">
                                 <OrderDetailsDialog order={order} />
                                 <UserOrderActions order={order} />
                              </div>
-                             <Button asChild variant="outline" size="sm">
+                             <Button asChild variant="outline" size="sm" className="w-full">
                                  <Link href={`/orders/${order.id}`}>
                                     عرض التفاصيل الكاملة
                                  </Link>
@@ -379,8 +379,8 @@ export function OrdersTable({
             <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>اسم الطلب</TableHead>
                     <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
+                    <TableHead>اسم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
                     <TableHead>الحالة</TableHead>
@@ -401,6 +401,7 @@ export function OrdersTable({
                         onClick={() => handleRowClick(order.id)}
                         className="cursor-pointer"
                       >
+                        <TableCell className="hidden sm:table-cell font-mono">{order.id}</TableCell>
                         <TableCell>
                           <div className="font-medium flex items-center gap-2">
                              {order.isEditRequested && (
@@ -418,7 +419,6 @@ export function OrdersTable({
                              {order.orderName}
                           </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell font-mono">{order.id}</TableCell>
                         {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
                         <TableCell>

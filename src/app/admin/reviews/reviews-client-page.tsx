@@ -70,8 +70,8 @@ export function ReviewsClientPage({ reviewedOrders, users }: ReviewsClientPagePr
                         <Table>
                         <TableHeader>
                             <TableRow>
-                            <TableHead>الطلب</TableHead>
                             <TableHead>رقم الطلب</TableHead>
+                            <TableHead>الطلب</TableHead>
                             <TableHead>العميل</TableHead>
                             <TableHead>التقييم</TableHead>
                             <TableHead>المراجعة</TableHead>
@@ -81,12 +81,12 @@ export function ReviewsClientPage({ reviewedOrders, users }: ReviewsClientPagePr
                         <TableBody>
                             {reviewedOrders.map((order) => (
                                 <TableRow key={order.id}>
+                                <TableCell className="font-mono">{order.id}</TableCell>
                                 <TableCell>
                                     <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
                                     {order.orderName}
                                     </Link>
                                 </TableCell>
-                                <TableCell className="font-mono">{order.id}</TableCell>
                                 <TableCell>{getUserName(order.userId)}</TableCell>
                                 <TableCell>
                                     <StarRating rating={order.rating} />
