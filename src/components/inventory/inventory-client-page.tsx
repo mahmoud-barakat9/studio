@@ -49,7 +49,7 @@ type FilterValue = string;
 function DeletePurchaseAlert({ purchaseId, asChild, children }: { purchaseId: string, asChild?: boolean, children?: React.ReactNode }) {
     return (
       <AlertDialog>
-        <AlertDialogTrigger asChild={asChild === undefined ? !children : asChild} onClick={(e) => e.stopPropagation()}>
+        <AlertDialogTrigger asChild={asChild === undefined ? true : asChild} onClick={(e) => e.stopPropagation()}>
           {children || (
             <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
                 <Trash2 className="h-4 w-4" />
@@ -179,67 +179,90 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
 function CurrentInventoryDisplay({ materialsWithCost }: { materialsWithCost: (AbjourTypeData & { totalStockValue: number })[] }) {
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    const MaterialStockCard = ({ material }: { material: AbjourTypeData & { totalStockValue: number } }) => {
-        const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
-        return (
-             <Card className={cn("flex flex-col justify-between shadow-lg", isLowStock && "border-destructive")}>
-                <CardHeader className="flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-base font-medium">{material.name}</CardTitle>
-                    {isLowStock ? (
-                        <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
-                            <AlertTriangle className="h-3 w-3" />
-                            مخزون منخفض
-                        </Badge>
-                    ) : (
-                        <Badge variant="secondary">متوفر</Badge>
-                    )}
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <Package className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                            <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
-                            <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <DollarSign className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                            <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
-                            <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
-
     if (!isDesktop) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {materialsWithCost.map((material) => (
-                    <MaterialStockCard key={material.name} material={material} />
-                ))}
+                {materialsWithCost.map((material) => {
+                     const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
+                    return (
+                        <Card key={material.name} className={cn("flex flex-col justify-between shadow-lg", isLowStock && "border-destructive")}>
+                            <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-base font-medium">{material.name}</CardTitle>
+                                {isLowStock ? (
+                                    <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        مخزون منخفض
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary">متوفر</Badge>
+                                )}
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <Package className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
+                                        <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <DollarSign className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
+                                        <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )
+                })}
             </div>
         );
     }
     
     return (
-        <Tabs defaultValue={materialsWithCost[0]?.name || ''} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                 {materialsWithCost.map((material) => (
-                    <TabsTrigger key={material.name} value={material.name}>
-                        {material.name}
-                         {material.stock < LOW_STOCK_THRESHOLD && <AlertTriangle className="mr-2 h-4 w-4 text-destructive" />}
-                    </TabsTrigger>
-                 ))}
-            </TabsList>
-             {materialsWithCost.map((material) => (
-                <TabsContent key={material.name} value={material.name} className="mt-4">
-                   <MaterialStockCard material={material} />
-                </TabsContent>
-            ))}
-        </Tabs>
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>اسم المادة</TableHead>
+                    <TableHead>الكمية المتاحة (م²)</TableHead>
+                    <TableHead>قيمة المخزون ($)</TableHead>
+                    <TableHead>الحالة</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {materialsWithCost.map((material) => {
+                    const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
+                    return (
+                        <TableRow key={material.name} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/15")}>
+                            <TableCell className="font-medium">{material.name}</TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-mono">{material.stock.toFixed(2)}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-mono font-semibold">${material.totalStockValue.toFixed(2)}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                {isLowStock ? (
+                                    <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        مخزون منخفض
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary">متوفر</Badge>
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    )
+                })}
+            </TableBody>
+        </Table>
     )
 }
 
