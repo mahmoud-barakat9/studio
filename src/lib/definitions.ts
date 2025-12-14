@@ -36,6 +36,8 @@ export type Order = {
   deliveryCost: number;
   deliveryAddress: string;
   delayed?: boolean;
+  rating?: number;
+  review?: string;
 };
 
 export type User = {

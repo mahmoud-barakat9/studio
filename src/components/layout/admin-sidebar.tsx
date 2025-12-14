@@ -16,6 +16,7 @@ import {
   Building,
   LogOut,
   Settings,
+  Star,
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +43,7 @@ import { ThemeSwitcher } from "../theme-switcher";
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badgeKey: 'pending' },
+  { href: "/admin/reviews", label: "المراجعات", icon: Star, badgeKey: 'reviews' },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
   { href: "/admin/inventory", label: "المخزون", icon: Warehouse },
@@ -49,12 +51,13 @@ const links = [
   { href: "/admin/reports", label: "التقارير", icon: LineChart },
 ];
 
-export function AdminSidebar({ pendingOrdersCount = 0 }: { pendingOrdersCount?: number }) {
+export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0 }: { pendingOrdersCount?: number, newReviewsCount?: number }) {
   const pathname = usePathname();
   const { state } = useSidebar();
 
   const badgeCounts = {
     pending: pendingOrdersCount,
+    reviews: newReviewsCount,
   };
 
   return (

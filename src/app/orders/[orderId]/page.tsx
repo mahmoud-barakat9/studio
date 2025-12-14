@@ -19,12 +19,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box, Ruler, ExternalLink } from "lucide-react";
+import { ArrowRight, Truck, AlertTriangle, BadgeDollarSign, Calendar, Hash, Palette, Box, Ruler, ExternalLink, Star } from "lucide-react";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
 import { Separator } from "@/components/ui/separator";
+import { SubmitReviewForm } from "@/components/orders/submit-review-form";
 
 function parseDeliveryAddress(address: string) {
     try {
@@ -107,6 +108,32 @@ export default async function OrderDetailPage({ params }: { params: { orderId: s
                              <OrderTracker order={order} />
                         </CardContent>
                     </Card>
+
+                    {order.status === 'Delivered' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>تقييم الطلب</CardTitle>
+                                <CardDescription>
+                                    {order.rating ? "شكرًا لك على تقييم هذا الطلب!" : "يهمنا رأيك! الرجاء تقييم تجربتك مع هذا الطلب."}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {order.rating ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-1">
+                                            {Array(5).fill(0).map((_, i) => (
+                                                <Star key={i} className={`w-6 h-6 ${i < order.rating! ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                                            ))}
+                                        </div>
+                                        <p className="text-muted-foreground italic">"{order.review}"</p>
+                                    </div>
+                                ) : (
+                                    <SubmitReviewForm orderId={order.id} />
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                    
                     <Card>
                         <CardHeader>
                         <CardTitle>تفاصيل القطع</CardTitle>

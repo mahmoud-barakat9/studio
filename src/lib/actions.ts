@@ -451,3 +451,30 @@ export async function deletePurchase(purchaseId: string) {
         return { error: error.message };
     }
 }
+
+const reviewSchema = z.object({
+  rating: z.number().min(1).max(5),
+  review: z.string().min(10).max(500),
+});
+
+export async function submitOrderReview(orderId: string, formData: z.infer<typeof reviewSchema>) {
+  const validatedFields = reviewSchema.safeParse(formData);
+
+  if (!validatedFields.success) {
+    return { success: false, error: 'البيانات المدخلة غير صالحة.' };
+  }
+
+  try {
+    await updateOrderDB(orderId, {
+      rating: validatedFields.data.rating,
+      review: validatedFields.data.review,
+    });
+
+    revalidatePath(`/orders/${orderId}`);
+    revalidatePath('/admin/reviews');
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'فشل إرسال التقييم.' };
+  }
+}
