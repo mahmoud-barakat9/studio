@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Phone, MessageSquare } from "lucide-react";
 export function Contact() {
   return (
     <section id="contact" className="py-20 bg-muted/40">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold">تواصل سريع</h2>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
