@@ -108,6 +108,7 @@ export default function AdminReviewsPage() {
                                     <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
                                     {order.orderName}
                                     </Link>
+                                    <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                                 </TableCell>
                                 <TableCell>{getUserName(order.userId)}</TableCell>
                                 <TableCell>
@@ -137,7 +138,9 @@ export default function AdminReviewsPage() {
                                         </Link>
                                     </CardTitle>
                                     <CardDescription>
-                                        بواسطة: {getUserName(order.userId)}
+                                        <span className="font-mono text-xs">{order.id}</span>
+                                        <span className="mx-1">•</span>
+                                        <span>بواسطة: {getUserName(order.userId)}</span>
                                     </CardDescription>
                                 </div>
                                 <StarRating rating={order.rating} />

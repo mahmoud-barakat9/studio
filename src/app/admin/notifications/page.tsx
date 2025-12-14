@@ -26,7 +26,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 import { BellRing, CheckCircle, Edit, Star } from "lucide-react";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +62,10 @@ function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
                 {orders.map((order) => (
                     <TableRow key={order.id}>
                         <TableCell>
-                        <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
-                            {order.orderName}
-                        </Link>
+                            <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
+                                {order.orderName}
+                            </Link>
+                            <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                         </TableCell>
                         <TableCell>{getUserName(order.userId)}</TableCell>
                         <TableCell>
