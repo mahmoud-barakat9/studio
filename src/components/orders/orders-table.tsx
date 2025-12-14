@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle, BadgeDollarSign } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle, BadgeDollarSign, BellRing } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, generateWhatsAppEditRequest, sendToFactory } from "@/lib/actions";
+import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, requestOrderEdit, sendToFactory } from "@/lib/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,7 @@ import {
 import { OrderDetailsDialog } from "./order-details-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import React from "react";
+import { useToast } from "@/hooks/use-toast";
 
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
@@ -197,6 +198,57 @@ function AdminOrderActions({ order }: { order: Order }) {
   );
 }
 
+function UserOrderActions({ order }: { order: Order }) {
+  const { toast } = useToast();
+
+  const handleRequestEdit = async () => {
+    const result = await requestOrderEdit(order.id);
+    if (result.success) {
+      toast({
+        title: "تم إرسال طلب التعديل",
+        description: "لقد أرسلنا طلبك إلى الإدارة وسيتواصلون معك قريبًا.",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "فشل إرسال الطلب",
+        description: result.error,
+      });
+    }
+  };
+  
+  if (order.isArchived) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">فتح القائمة</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {order.status === 'Pending' && !order.isArchived ? (
+          <DropdownMenuItem asChild>
+            <Link href={`/orders/${order.id}/edit`}>
+              <Pencil className="ml-2 h-4 w-4" />
+              تعديل الطلب
+            </Link>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onClick={handleRequestEdit}
+            disabled={order.isEditRequested}
+          >
+            <MessageSquareQuote className="ml-2 h-4 w-4" />
+            {order.isEditRequested ? "تم طلب التعديل" : "طلب تعديل من الإدارة"}
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 
 export function OrdersTable({
   orders,
@@ -252,7 +304,10 @@ export function OrdersTable({
             <Card key={order.id} onClick={() => handleRowClick(order.id)} className="cursor-pointer">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{order.orderName}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        {order.isEditRequested && <BellRing className="h-4 w-4 text-primary" />}
+                        {order.orderName}
+                    </CardTitle>
                     <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
                         {order.isArchived ? "مؤرشف" : statusStyle.text}
                     </Badge>
@@ -300,33 +355,7 @@ export function OrdersTable({
                             عرض التفاصيل
                             </Link>
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">فتح القائمة</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                            {order.status === 'Pending' && !order.isArchived ? (
-                                <DropdownMenuItem asChild>
-                                <Link href={`/orders/${order.id}/edit`}>
-                                    <Pencil className="ml-2 h-4 w-4" />
-                                    تعديل الطلب
-                                </Link>
-                                </DropdownMenuItem>
-                            ) : !order.isArchived ? (
-                                <form action={generateWhatsAppEditRequest.bind(null, order.id, order.orderName)} className="w-full">
-                                    <DropdownMenuItem asChild>
-                                    <button type="submit" className="w-full">
-                                        <MessageSquareQuote className="ml-2 h-4 w-4" />
-                                        طلب تعديل من الإدارة
-                                    </button>
-                                    </DropdownMenuItem>
-                                </form>
-                            ) : null}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <UserOrderActions order={order} />
                         </>
                     )}
               </CardFooter>
@@ -366,7 +395,21 @@ export function OrdersTable({
                         className="cursor-pointer"
                       >
                         <TableCell>
-                          <div className="font-medium">{order.orderName}</div>
+                          <div className="font-medium flex items-center gap-2">
+                             {order.isEditRequested && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <BellRing className="h-4 w-4 text-primary" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>تم طلب تعديل لهذا الطلب</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                             )}
+                             {order.orderName}
+                          </div>
                           <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                         </TableCell>
                         {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
@@ -418,33 +461,7 @@ export function OrdersTable({
                                       <span className="sr-only">عرض التفاصيل الكاملة</span>
                                     </Link>
                                   </Button>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">فتح القائمة</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      {order.status === 'Pending' && !order.isArchived ? (
-                                        <DropdownMenuItem asChild>
-                                          <Link href={`/orders/${order.id}/edit`}>
-                                            <Pencil className="ml-2 h-4 w-4" />
-                                            تعديل الطلب
-                                          </Link>
-                                        </DropdownMenuItem>
-                                      ) : !order.isArchived ? (
-                                         <form action={generateWhatsAppEditRequest.bind(null, order.id, order.orderName)} className="w-full">
-                                            <DropdownMenuItem asChild>
-                                               <button type="submit" className="w-full">
-                                                  <MessageSquareQuote className="ml-2 h-4 w-4" />
-                                                  طلب تعديل من الإدارة
-                                                </button>
-                                            </DropdownMenuItem>
-                                          </form>
-                                      ) : null}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
+                                  <UserOrderActions order={order} />
                                 </>
                               )}
                             </div>

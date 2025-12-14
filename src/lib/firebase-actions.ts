@@ -133,6 +133,7 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
         hasDelivery: orderData.hasDelivery,
         deliveryCost: deliveryCost,
         deliveryAddress: orderData.deliveryAddress,
+        isEditRequested: false,
     };
     
     orders.unshift(newOrder);

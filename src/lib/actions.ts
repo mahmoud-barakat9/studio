@@ -116,6 +116,7 @@ export async function createOrder(formData: any, asAdmin: boolean) {
 export async function updateOrder(orderId: string, formData: any, asAdmin: boolean) {
   const orderData = {
     ...formData,
+    isEditRequested: false, // Reset the flag after editing
     status: formData.status, 
     scheduledDeliveryDate: formData.scheduledDeliveryDate,
   };
@@ -187,12 +188,15 @@ export async function rejectOrder(orderId: string) {
   return { success: true, whatsappUrl };
 }
 
-export async function generateWhatsAppEditRequest(orderId: string, orderName: string) {
-  const message = encodeURIComponent(
-    `مرحبًا، أود طلب تعديل على الطلب رقم ${orderId} (الاسم: ${orderName}). الرجاء التواصل معي لمناقشة التغييرات المطلوبة.`
-  );
-  const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${message}`;
-  redirect(whatsappUrl);
+export async function requestOrderEdit(orderId: string) {
+  try {
+    await updateOrderDB(orderId, { isEditRequested: true });
+    revalidatePath('/orders');
+    revalidatePath('/admin/notifications');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'فشل إرسال طلب التعديل.' };
+  }
 }
 
 export async function scheduleOrder(orderId: string, days: number) {

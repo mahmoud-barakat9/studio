@@ -258,6 +258,8 @@
     "deliveryCost": 0,
     "deliveryAddress": "",
     "scheduledDeliveryDate": "2025-12-12",
-    "actualDeliveryDate": "2025-12-09"
+    "actualDeliveryDate": "2025-12-09",
+    "rating": 5,
+    "review": "واااااو بجنننننننننن"
   }
 ]

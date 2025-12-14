@@ -38,6 +38,7 @@ export type Order = {
   delayed?: boolean;
   rating?: number;
   review?: string;
+  isEditRequested?: boolean;
 };
 
 export type User = {

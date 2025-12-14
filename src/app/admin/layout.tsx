@@ -17,11 +17,12 @@ export default async function AdminLayout({
   const orders = await getOrders();
   const pendingOrdersCount = orders.filter(o => o.status === 'Pending' && !o.isArchived).length;
   const newReviewsCount = orders.filter(o => o.rating && o.review).length;
+  const editRequestsCount = orders.filter(o => o.isEditRequested).length;
 
 
   return (
     <SidebarProvider>
-      <AdminSidebar pendingOrdersCount={pendingOrdersCount} newReviewsCount={newReviewsCount} />
+      <AdminSidebar pendingOrdersCount={pendingOrdersCount} newReviewsCount={newReviewsCount} editRequestsCount={editRequestsCount} />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
