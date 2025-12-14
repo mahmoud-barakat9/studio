@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, AlertTriangle, Package, DollarSign, Pencil, Trash2, SlidersHorizontal } from "lucide-react";
@@ -175,6 +176,73 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
     )
 }
 
+function CurrentInventoryDisplay({ materialsWithCost }: { materialsWithCost: (AbjourTypeData & { totalStockValue: number })[] }) {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    const MaterialStockCard = ({ material }: { material: AbjourTypeData & { totalStockValue: number } }) => {
+        const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
+        return (
+             <Card className={cn("flex flex-col justify-between shadow-lg", isLowStock && "border-destructive")}>
+                <CardHeader className="flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-base font-medium">{material.name}</CardTitle>
+                    {isLowStock ? (
+                        <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
+                            <AlertTriangle className="h-3 w-3" />
+                            مخزون منخفض
+                        </Badge>
+                    ) : (
+                        <Badge variant="secondary">متوفر</Badge>
+                    )}
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <Package className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
+                            <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <DollarSign className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
+                            <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (!isDesktop) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {materialsWithCost.map((material) => (
+                    <MaterialStockCard key={material.name} material={material} />
+                ))}
+            </div>
+        );
+    }
+    
+    return (
+        <Tabs defaultValue={materialsWithCost[0]?.name || ''} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                 {materialsWithCost.map((material) => (
+                    <TabsTrigger key={material.name} value={material.name}>
+                        {material.name}
+                         {material.stock < LOW_STOCK_THRESHOLD && <AlertTriangle className="mr-2 h-4 w-4 text-destructive" />}
+                    </TabsTrigger>
+                 ))}
+            </TabsList>
+             {materialsWithCost.map((material) => (
+                <TabsContent key={material.name} value={material.name} className="mt-4">
+                   <MaterialStockCard material={material} />
+                </TabsContent>
+            ))}
+        </Tabs>
+    )
+}
+
 export function InventoryClientPageContent({ materials, purchases, suppliers }: { materials: AbjourTypeData[], purchases: Purchase[], suppliers: Supplier[] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [filter, setFilter] = useState<{type: FilterType, value: FilterValue}>({ type: 'all', value: 'all' });
@@ -220,42 +288,7 @@ export function InventoryClientPageContent({ materials, purchases, suppliers }: 
                     <CardDescription>عرض الكميات المتاحة من كل مادة في المخزون.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {materialsWithCost.map((material) => {
-                        const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
-                        return (
-                            <Card key={material.name} className={cn("flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow", isLowStock && "border-destructive")}>
-                                <CardHeader className="flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-base font-medium">{material.name}</CardTitle>
-                                {isLowStock ? (
-                                    <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
-                                        <AlertTriangle className="h-3 w-3" />
-                                        مخزون منخفض
-                                    </Badge>
-                                ) : (
-                                    <Badge variant="secondary">متوفر</Badge>
-                                )}
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <Package className="h-5 w-5 text-muted-foreground" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
-                                        <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <DollarSign className="h-5 w-5 text-muted-foreground" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
-                                        <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
-                                    </div>
-                                </div>
-                                </CardContent>
-                            </Card>
-                        );
-                        })}
-                    </div>
+                    <CurrentInventoryDisplay materialsWithCost={materialsWithCost} />
                 </CardContent>
             </Card>
             <Card>
