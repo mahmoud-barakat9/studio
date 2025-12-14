@@ -35,10 +35,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { deletePurchase } from "@/lib/actions";
-import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
+import { getMaterials, getPurchases, getSuppliers } from "@/lib/firebase-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/pagination";
-import type { Purchase, Supplier } from "@/lib/definitions";
+import type { Purchase, Supplier, AbjourTypeData } from "@/lib/definitions";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
@@ -177,8 +177,7 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
     )
 }
 
-export default function AdminInventoryPage() {
-    const { materials, purchases, suppliers, loading } = useOrdersAndUsers();
+function InventoryClientPage({ materials, purchases, suppliers }: { materials: AbjourTypeData[], purchases: Purchase[], suppliers: Supplier[] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [filter, setFilter] = useState<{type: FilterType, value: FilterValue}>({ type: 'all', value: 'all' });
     
@@ -197,7 +196,7 @@ export default function AdminInventoryPage() {
               totalStockValue,
           };
       });
-  }, [materials, purchases]);
+    }, [materials, purchases]);
 
     const filteredPurchases = useMemo(() => {
         if (!purchases) return [];
@@ -215,137 +214,136 @@ export default function AdminInventoryPage() {
         setCurrentPage(1); // Reset to first page on filter change
     };
 
-    if (loading) {
-        return (
-            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-                 <div className="flex items-center">
-                    <h1 className="font-semibold text-lg md:text-2xl">إدارة المخزون</h1>
-                    <div className="mr-auto"><Skeleton className="h-10 w-36" /></div>
-                </div>
-                <Card><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
-                 <Card><CardContent><Skeleton className="h-96 w-full" /></CardContent></Card>
-            </main>
-        )
-    }
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle>المخزون الحالي</CardTitle>
+                    <CardDescription>عرض الكميات المتاحة من كل مادة في المخزون.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {materialsWithCost.map((material) => {
+                        const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
+                        return (
+                            <Card key={material.name} className={cn("flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow", isLowStock && "border-destructive")}>
+                                <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-base font-medium">{material.name}</CardTitle>
+                                {isLowStock ? (
+                                    <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        مخزون منخفض
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary">متوفر</Badge>
+                                )}
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <Package className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
+                                        <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <DollarSign className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
+                                        <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                                </CardContent>
+                            </Card>
+                        );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <CardTitle>سجل فواتير الشراء</CardTitle>
+                        <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+                        <Button 
+                            size="sm"
+                            variant={filter.type === 'all' ? 'default' : 'outline'}
+                            onClick={() => handleFilterChange('all', 'all')}
+                        >
+                            كل الفواتير
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant={filter.type === 'material' ? 'default' : 'outline'}>
+                                    <SlidersHorizontal className="ml-2 h-4 w-4" />
+                                    الفلترة حسب المادة
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {materials?.map(m => (
+                                    <DropdownMenuItem key={m.name} onSelect={() => handleFilterChange('material', m.name)}>
+                                        {m.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant={filter.type === 'supplier' ? 'default' : 'outline'}>
+                                    <SlidersHorizontal className="ml-2 h-4 w-4" />
+                                    الفلترة حسب المورد
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                            {suppliers?.map(s => (
+                                    <DropdownMenuItem key={s.id} onSelect={() => handleFilterChange('supplier', s.name)}>
+                                        {s.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <PurchasesTable purchases={paginatedPurchases} suppliers={suppliers || []} />
+                        {totalPages > 1 && (
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={(page) => setCurrentPage(page)}
+                            />
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+        </>
+    )
+}
 
-  return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-       <div className="flex items-center">
-        <h1 className="font-semibold text-3xl">إدارة المخزون</h1>
-        <div className="mr-auto flex items-center gap-2">
-            <Link href="/admin/inventory/new">
-                <Button>
-                <PlusCircle className="ml-2 h-4 w-4" />
-                إضافة فاتورة شراء
-                </Button>
-            </Link>
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>المخزون الحالي</CardTitle>
-          <CardDescription>عرض الكميات المتاحة من كل مادة في المخزون.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {materialsWithCost.map((material) => {
-              const isLowStock = material.stock < LOW_STOCK_THRESHOLD;
-              return (
-                  <Card key={material.name} className={cn("flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow", isLowStock && "border-destructive")}>
-                    <CardHeader className="flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-base font-medium">{material.name}</CardTitle>
-                      {isLowStock ? (
-                          <Badge variant="destructive" className="flex items-center gap-1.5 w-fit">
-                              <AlertTriangle className="h-3 w-3" />
-                              مخزون منخفض
-                          </Badge>
-                      ) : (
-                          <Badge variant="secondary">متوفر</Badge>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                       <div className="flex items-center gap-3">
-                          <Package className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">الكمية المتاحة (م²)</p>
-                            <p className="text-xl font-bold font-mono">{material.stock.toFixed(2)}</p>
-                          </div>
-                      </div>
-                       <div className="flex items-center gap-3">
-                          <DollarSign className="h-5 w-5 text-muted-foreground" />
-                           <div>
-                            <p className="text-sm text-muted-foreground">قيمة المخزون الإجمالية</p>
-                            <p className="text-xl font-bold font-mono">${material.totalStockValue.toFixed(2)}</p>
-                          </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-              );
-              })}
-          </div>
-        </CardContent>
-      </Card>
+export default async function AdminInventoryPage() {
+    const [materials, purchases, suppliers] = await Promise.all([
+        getMaterials(),
+        getPurchases(),
+        getSuppliers(),
+    ]);
 
-        <Card>
-            <CardHeader className="flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <CardTitle>سجل فواتير الشراء</CardTitle>
-                    <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
-                </div>
-                 <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
-                    <Button 
-                        size="sm"
-                        variant={filter.type === 'all' ? 'default' : 'outline'}
-                        onClick={() => handleFilterChange('all', 'all')}
-                    >
-                        كل الفواتير
+    return (
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        <div className="flex items-center">
+            <h1 className="font-semibold text-3xl">إدارة المخزون</h1>
+            <div className="mr-auto flex items-center gap-2">
+                <Link href="/admin/inventory/new">
+                    <Button>
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                    إضافة فاتورة شراء
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant={filter.type === 'material' ? 'default' : 'outline'}>
-                                <SlidersHorizontal className="ml-2 h-4 w-4" />
-                                الفلترة حسب المادة
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            {materials?.map(m => (
-                                <DropdownMenuItem key={m.name} onSelect={() => handleFilterChange('material', m.name)}>
-                                    {m.name}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button size="sm" variant={filter.type === 'supplier' ? 'default' : 'outline'}>
-                                <SlidersHorizontal className="ml-2 h-4 w-4" />
-                                الفلترة حسب المورد
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                           {suppliers?.map(s => (
-                                <DropdownMenuItem key={s.id} onSelect={() => handleFilterChange('supplier', s.name)}>
-                                    {s.name}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-            </CardHeader>
-            <CardContent>
-                 <div className="space-y-4">
-                    <PurchasesTable purchases={paginatedPurchases} suppliers={suppliers || []} />
-                    {totalPages > 1 && (
-                        <Pagination 
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={(page) => setCurrentPage(page)}
-                        />
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    </main>
-  );
+                </Link>
+            </div>
+        </div>
+        <InventoryClientPage materials={materials} purchases={purchases} suppliers={suppliers} />
+        </main>
+    );
 }

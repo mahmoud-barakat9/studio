@@ -1,5 +1,4 @@
 
-"use client";
 import { LineChart, Line, Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import {
   Card,
@@ -25,11 +24,9 @@ import {
 } from "@/components/ui/chart";
 import { DollarSign, ClipboardList, TrendingUp, TrendingDown, AlertTriangle, Package, Ruler, CalendarDays, Users, ListChecks, BrainCircuit, CalendarCheck, HandCoins } from "lucide-react";
 import type { ChartConfig } from "@/components/ui/chart";
-import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
-import { Skeleton } from "@/components/ui/skeleton";
+import { getOrders, getUsers, getPurchases } from "@/lib/firebase-actions";
 import { cn } from "@/lib/utils";
-import type { Order, User, Purchase } from "@/lib/definitions";
-import { useMemo } from "react";
+import type { Order, User } from "@/lib/definitions";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -115,245 +112,11 @@ function KpiCard({ title, value, comparisonText, isPositive, Icon, className }: 
     )
 }
 
-function KpiCardSkeleton() {
+// Client component for charts that need interactivity
+function DashboardCharts({ monthlyTrendsData, topMaterialsData }: { monthlyTrendsData: any[], topMaterialsData: any[] }) {
+    "use client";
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-8 w-16 mb-1" />
-                <Skeleton className="h-3 w-32" />
-            </CardContent>
-        </Card>
-    );
-}
-
-export default function AdminDashboardPage() {
-    const { orders, users, purchases, loading } = useOrdersAndUsers();
-    
-    const { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts } = useMemo(() => {
-        if (loading || orders.length === 0) {
-            return { kpiData: {}, monthlyTrendsData: [], topMaterialsData: [], criticalOrders: [], topCustomers: [], forecasts: {} };
-        }
-
-        const now = new Date();
-        const today = now.toISOString().split('T')[0];
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonth = lastMonthDate.getMonth();
-        const lastMonthYear = lastMonthDate.getFullYear();
-
-        const avgPurchasePrices = purchases.reduce((acc, p) => {
-            if (!acc[p.materialName]) {
-                acc[p.materialName] = { totalCost: 0, totalQuantity: 0 };
-            }
-            acc[p.materialName].totalCost += p.purchasePricePerMeter * p.quantity;
-            acc[p.materialName].totalQuantity += p.quantity;
-            return acc;
-        }, {} as Record<string, { totalCost: number, totalQuantity: number }>);
-        
-        const materialCosts = Object.fromEntries(
-            Object.entries(avgPurchasePrices).map(([name, { totalCost, totalQuantity }]) => [
-                name,
-                totalQuantity > 0 ? totalCost / totalQuantity : 0,
-            ])
-        );
-
-        // KPIs for today
-        const todaysOrdersCount = orders.filter(o => o.date === today).length;
-
-        // KPIs for current month
-        const thisMonthOrders = orders.filter(o => {
-            const orderDate = new Date(o.date);
-            return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
-        });
-        const monthlyOrdersCount = thisMonthOrders.length;
-        const monthlyTotalArea = thisMonthOrders.reduce((sum, o) => sum + o.totalArea, 0);
-        const monthlySales = thisMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-        const monthlyProfit = thisMonthOrders.reduce((sum, o) => {
-            const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
-            return sum + (o.totalCost - cogs);
-        }, 0);
-
-
-        // KPIs for last month
-        const lastMonthOrders = orders.filter(o => {
-            const orderDate = new Date(o.date);
-            return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
-        });
-        const lastMonthOrdersCount = lastMonthOrders.length;
-        const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-        const lastMonthProfit = lastMonthOrders.reduce((sum, o) => {
-            const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
-            return sum + (o.totalCost - cogs);
-        }, 0);
-
-
-        // Operational KPIs
-        const inProductionCount = orders.filter(o => o.status === 'Processing').length;
-        const lateOrdersCount = orders.filter(isOrderDelayed).length;
-
-
-        // Comparison logic
-        const getComparison = (current: number, previous: number) => {
-            if (previous === 0) return { text: current > 0 ? "زيادة" : "لا تغيير", isPositive: current > 0 ? true : null };
-            const percentageChange = ((current - previous) / previous) * 100;
-            return {
-                text: `${Math.abs(percentageChange).toFixed(1)}% عن الشهر الماضي`,
-                isPositive: percentageChange >= 0
-            };
-        };
-        
-        const monthlyOrdersComparison = getComparison(monthlyOrdersCount, lastMonthOrdersCount);
-        const monthlySalesComparison = getComparison(monthlySales, lastMonthSales);
-        const monthlyProfitComparison = getComparison(monthlyProfit, lastMonthProfit);
-        
-        const kpiData = {
-            todaysOrdersCount,
-            monthlyOrdersCount,
-            monthlyTotalArea,
-            monthlySales,
-            monthlyProfit,
-            inProductionCount,
-            lateOrdersCount,
-            monthlyOrdersComparison,
-            monthlySalesComparison,
-            monthlyProfitComparison,
-        };
-
-        // Monthly trends for the last 12 months
-        const monthlyTrendsData = Array.from({length: 12}, (_, i) => {
-            const d = new Date(currentYear, currentMonth - 11 + i, 1);
-            const month = d.toLocaleString('ar-EG', { month: 'short' });
-            const year = d.getFullYear();
-            const monthKey = `${month} ${year}`
-
-            const monthOrders = orders.filter(o => {
-                const orderDate = new Date(o.date);
-                return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
-            });
-            return {
-                name: monthKey,
-                monthName: month,
-                orders: monthOrders.length,
-                totalArea: parseFloat(monthOrders.reduce((sum, o) => sum + o.totalArea, 0).toFixed(2)),
-            };
-        });
-        
-        // Top materials by totalArea
-        const materialsData = orders.reduce((acc, order) => {
-            const type = order.mainAbjourType;
-            if (!acc[type]) {
-                acc[type] = { name: type, totalArea: 0 };
-            }
-            acc[type].totalArea += order.totalArea;
-            return acc;
-        }, {} as Record<string, {name: string, totalArea: number}>);
-
-        const topMaterialsData = Object.values(materialsData)
-            .sort((a,b) => b.totalArea - a.totalArea)
-            .map(m => ({ ...m, totalArea: parseFloat(m.totalArea.toFixed(2))}));
-
-        
-        // Critical Orders
-        const criticalOrders = orders.filter(isOrderDelayed);
-
-        // Top Customers
-        const customersData = users.map(user => {
-            const userOrders = orders.filter(o => o.userId === user.id);
-            if (userOrders.length === 0) return null;
-            
-            const totalOrders = userOrders.length;
-            const totalArea = userOrders.reduce((sum, o) => sum + o.totalArea, 0);
-            const totalSpent = userOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
-
-            return {
-                id: user.id,
-                name: user.name,
-                totalOrders,
-                totalArea,
-                totalSpent,
-            };
-        }).filter(Boolean) as { id: string; name: string; totalOrders: number; totalArea: number; totalSpent: number; }[];
-
-        const topCustomers = customersData.sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
-
-        // AI Forecasting
-        const last3Months = monthlyTrendsData.slice(-3);
-        const nextMonthOrdersForecast = Math.round(last3Months.reduce((sum, m) => sum + m.orders, 0) / (last3Months.length || 1));
-        const nextMonthAreaForecast = parseFloat((last3Months.reduce((sum, m) => sum + m.totalArea, 0) / (last3Months.length || 1)).toFixed(1));
-        
-        const peakPeriods = [...monthlyTrendsData].sort((a, b) => b.orders - a.orders).slice(0, 3).map(m => m.monthName);
-
-        const forecasts = {
-            nextMonthOrdersForecast,
-            nextMonthAreaForecast,
-            peakPeriods,
-        };
-
-        return { kpiData, monthlyTrendsData, topMaterialsData, criticalOrders, topCustomers, forecasts };
-
-    }, [orders, users, purchases, loading]);
-
-    const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
-
-
-    if (loading) {
-        return (
-             <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-                 <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-                    <KpiCardSkeleton />
-                    <KpiCardSkeleton />
-                    <KpiCardSkeleton />
-                    <KpiCardSkeleton />
-                 </div>
-                 <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-                    <KpiCardSkeleton />
-                    <KpiCardSkeleton />
-                    <KpiCardSkeleton />
-                 </div>
-                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                    <Card className="col-span-full lg:col-span-4">
-                        <CardHeader>
-                            <Skeleton className="h-6 w-48"/>
-                             <Skeleton className="h-4 w-64"/>
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-72 w-full"/>
-                        </CardContent>
-                    </Card>
-                    <Card className="col-span-full lg:col-span-3">
-                        <CardHeader>
-                            <Skeleton className="h-6 w-48"/>
-                             <Skeleton className="h-4 w-64"/>
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-72 w-full"/>
-                        </CardContent>
-                    </Card>
-                 </div>
-            </main>
-        )
-    }
-
-  return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        <KpiCard title="الطلبات الجديدة اليوم" value={`${kpiData.todaysOrdersCount}`} comparisonText="" isPositive={null} Icon={CalendarDays} />
-        <KpiCard title="الطلبات الشهرية" value={`${kpiData.monthlyOrdersCount}`} comparisonText={kpiData.monthlyOrdersComparison.text} isPositive={kpiData.monthlyOrdersComparison.isPositive} Icon={ClipboardList} />
-        <KpiCard title="قيمة المبيعات الشهرية" value={`$${kpiData.monthlySales?.toFixed(2)}`} comparisonText={kpiData.monthlySalesComparison.text} isPositive={kpiData.monthlySalesComparison.isPositive} Icon={DollarSign} />
-        <KpiCard title="الأرباح الشهرية" value={`$${kpiData.monthlyProfit?.toFixed(2)}`} comparisonText={kpiData.monthlyProfitComparison.text} isPositive={kpiData.monthlyProfitComparison.isPositive} Icon={HandCoins} />
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
-        <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
-        <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive shadow-lg hover:shadow-xl transition-shadow" : ""} />
-      </div>
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <>
             <Card className="lg:col-span-2 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
                     <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
@@ -374,6 +137,217 @@ export default function AdminDashboardPage() {
                     </ChartContainer>
                 </CardContent>
             </Card>
+            <Card className="col-span-full shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                    <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
+                    <CardDescription>إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
+                        <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10 }}>
+                            <CartesianGrid horizontal={false} />
+                            <YAxis 
+                                dataKey="name" 
+                                type="category" 
+                                tickLine={false} 
+                                tickMargin={10} 
+                                axisLine={false} 
+                                width={100}
+                                tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
+                            />
+                            <XAxis dataKey="totalArea" type="number" hide />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                            <Bar dataKey="totalArea" radius={4}>
+                                {topMaterialsData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+        </>
+    );
+}
+
+
+export default async function AdminDashboardPage() {
+    const [orders, users, purchases] = await Promise.all([
+        getOrders(),
+        getUsers(true),
+        getPurchases(),
+    ]);
+
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonth = lastMonthDate.getMonth();
+    const lastMonthYear = lastMonthDate.getFullYear();
+
+    const avgPurchasePrices = purchases.reduce((acc, p) => {
+        if (!acc[p.materialName]) {
+            acc[p.materialName] = { totalCost: 0, totalQuantity: 0 };
+        }
+        acc[p.materialName].totalCost += p.purchasePricePerMeter * p.quantity;
+        acc[p.materialName].totalQuantity += p.quantity;
+        return acc;
+    }, {} as Record<string, { totalCost: number, totalQuantity: number }>);
+    
+    const materialCosts = Object.fromEntries(
+        Object.entries(avgPurchasePrices).map(([name, { totalCost, totalQuantity }]) => [
+            name,
+            totalQuantity > 0 ? totalCost / totalQuantity : 0,
+        ])
+    );
+
+    // KPIs for today
+    const todaysOrdersCount = orders.filter(o => o.date === today).length;
+
+    // KPIs for current month
+    const thisMonthOrders = orders.filter(o => {
+        const orderDate = new Date(o.date);
+        return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    });
+    const monthlyOrdersCount = thisMonthOrders.length;
+    const monthlyTotalArea = thisMonthOrders.reduce((sum, o) => sum + o.totalArea, 0);
+    const monthlySales = thisMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+    const monthlyProfit = thisMonthOrders.reduce((sum, o) => {
+        const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
+        return sum + (o.totalCost - cogs);
+    }, 0);
+
+    // KPIs for last month
+    const lastMonthOrders = orders.filter(o => {
+        const orderDate = new Date(o.date);
+        return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+    });
+    const lastMonthOrdersCount = lastMonthOrders.length;
+    const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+    const lastMonthProfit = lastMonthOrders.reduce((sum, o) => {
+        const cogs = (materialCosts[o.mainAbjourType] || 0) * o.totalArea;
+        return sum + (o.totalCost - cogs);
+    }, 0);
+
+    // Operational KPIs
+    const inProductionCount = orders.filter(o => o.status === 'Processing').length;
+    const lateOrdersCount = orders.filter(isOrderDelayed).length;
+
+    // Comparison logic
+    const getComparison = (current: number, previous: number) => {
+        if (previous === 0) return { text: current > 0 ? "زيادة" : "لا تغيير", isPositive: current > 0 ? true : null };
+        const percentageChange = ((current - previous) / previous) * 100;
+        return {
+            text: `${Math.abs(percentageChange).toFixed(1)}% عن الشهر الماضي`,
+            isPositive: percentageChange >= 0
+        };
+    };
+    
+    const monthlyOrdersComparison = getComparison(monthlyOrdersCount, lastMonthOrdersCount);
+    const monthlySalesComparison = getComparison(monthlySales, lastMonthSales);
+    const monthlyProfitComparison = getComparison(monthlyProfit, lastMonthProfit);
+    
+    const kpiData = {
+        todaysOrdersCount,
+        monthlyOrdersCount,
+        monthlyTotalArea,
+        monthlySales,
+        monthlyProfit,
+        inProductionCount,
+        lateOrdersCount,
+        monthlyOrdersComparison,
+        monthlySalesComparison,
+        monthlyProfitComparison,
+    };
+
+    // Monthly trends for the last 12 months
+    const monthlyTrendsData = Array.from({length: 12}, (_, i) => {
+        const d = new Date(currentYear, currentMonth - 11 + i, 1);
+        const month = d.toLocaleString('ar-EG', { month: 'short' });
+        const year = d.getFullYear();
+        const monthKey = `${month} ${year}`
+
+        const monthOrders = orders.filter(o => {
+            const orderDate = new Date(o.date);
+            return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
+        });
+        return {
+            name: monthKey,
+            monthName: month,
+            orders: monthOrders.length,
+            totalArea: parseFloat(monthOrders.reduce((sum, o) => sum + o.totalArea, 0).toFixed(2)),
+        };
+    });
+    
+    // Top materials by totalArea
+    const materialsData = orders.reduce((acc, order) => {
+        const type = order.mainAbjourType;
+        if (!acc[type]) {
+            acc[type] = { name: type, totalArea: 0 };
+        }
+        acc[type].totalArea += order.totalArea;
+        return acc;
+    }, {} as Record<string, {name: string, totalArea: number}>);
+
+    const topMaterialsData = Object.values(materialsData)
+        .sort((a,b) => b.totalArea - a.totalArea)
+        .map(m => ({ ...m, totalArea: parseFloat(m.totalArea.toFixed(2))}));
+
+    // Critical Orders
+    const criticalOrders = orders.filter(isOrderDelayed);
+
+    // Top Customers
+    const customersData = users.map(user => {
+        const userOrders = orders.filter(o => o.userId === user.id);
+        if (userOrders.length === 0) return null;
+        
+        const totalOrders = userOrders.length;
+        const totalArea = userOrders.reduce((sum, o) => sum + o.totalArea, 0);
+        const totalSpent = userOrders.reduce((sum, o) => sum + o.totalCost + (o.deliveryCost || 0), 0);
+
+        return {
+            id: user.id,
+            name: user.name,
+            totalOrders,
+            totalArea,
+            totalSpent,
+        };
+    }).filter(Boolean) as { id: string; name: string; totalOrders: number; totalArea: number; totalSpent: number; }[];
+
+    const topCustomers = customersData.sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
+
+    // AI Forecasting
+    const last3Months = monthlyTrendsData.slice(-3);
+    const nextMonthOrdersForecast = Math.round(last3Months.reduce((sum, m) => sum + m.orders, 0) / (last3Months.length || 1));
+    const nextMonthAreaForecast = parseFloat((last3Months.reduce((sum, m) => sum + m.totalArea, 0) / (last3Months.length || 1)).toFixed(1));
+    
+    const peakPeriods = [...monthlyTrendsData].sort((a, b) => b.orders - a.orders).slice(0, 3).map(m => m.monthName);
+
+    const forecasts = {
+        nextMonthOrdersForecast,
+        nextMonthAreaForecast,
+        peakPeriods,
+    };
+
+    const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
+
+  return (
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <KpiCard title="الطلبات الجديدة اليوم" value={`${kpiData.todaysOrdersCount}`} comparisonText="" isPositive={null} Icon={CalendarDays} />
+        <KpiCard title="الطلبات الشهرية" value={`${kpiData.monthlyOrdersCount}`} comparisonText={kpiData.monthlyOrdersComparison.text} isPositive={kpiData.monthlyOrdersComparison.isPositive} Icon={ClipboardList} />
+        <KpiCard title="قيمة المبيعات الشهرية" value={`$${kpiData.monthlySales?.toFixed(2)}`} comparisonText={kpiData.monthlySalesComparison.text} isPositive={kpiData.monthlySalesComparison.isPositive} Icon={DollarSign} />
+        <KpiCard title="الأرباح الشهرية" value={`$${kpiData.monthlyProfit?.toFixed(2)}`} comparisonText={kpiData.monthlyProfitComparison.text} isPositive={kpiData.monthlyProfitComparison.isPositive} Icon={HandCoins} />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+        <KpiCard title="إجمالي المتر المربع (شهري)" value={`${kpiData.monthlyTotalArea?.toFixed(2)} م²`} comparisonText="" isPositive={null} Icon={Ruler} />
+        <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
+        <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive shadow-lg hover:shadow-xl transition-shadow" : ""} />
+      </div>
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+            <DashboardCharts monthlyTrendsData={monthlyTrendsData} topMaterialsData={topMaterialsData} />
              <Card className="shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><BrainCircuit /> توقعات وتحليلات ذكية</CardTitle>
@@ -411,35 +385,7 @@ export default function AdminDashboardPage() {
             </Card>
       </div>
       <div className="grid grid-cols-1 gap-4 md:gap-8">
-        <Card className="col-span-full shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader>
-                <CardTitle>أنواع الأباجور الأكثر طلبًا</CardTitle>
-                <CardDescription>إجمالي الأمتار المربعة المطلوبة لكل نوع أباجور.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={topMaterialsChartConfig} className="h-72 w-full">
-                    <BarChart accessibilityLayer data={topMaterialsData} layout="vertical" margin={{ left: 10 }}>
-                        <CartesianGrid horizontal={false} />
-                        <YAxis 
-                            dataKey="name" 
-                            type="category" 
-                            tickLine={false} 
-                            tickMargin={10} 
-                            axisLine={false} 
-                            width={100}
-                            tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
-                        />
-                        <XAxis dataKey="totalArea" type="number" hide />
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                        <Bar dataKey="totalArea" radius={4}>
-                            {topMaterialsData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        
          <Card className="col-span-full shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="flex flex-row items-center">
                 <div className="grid gap-2">
@@ -529,9 +475,4 @@ export default function AdminDashboardPage() {
 
     </main>
   );
-
-    
-
-
-    
-
+}

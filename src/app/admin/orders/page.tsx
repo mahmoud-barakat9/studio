@@ -1,6 +1,4 @@
 
-'use client';
-import { useState } from "react";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,9 +11,8 @@ import {
 } from "@/components/ui/accordion";
 import type { Order } from "@/lib/definitions";
 import { Pagination } from "@/components/pagination";
-import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { getOrders, getUsers } from "@/lib/firebase-actions";
+import { OrdersClientPage } from "./orders-client-page";
 
 const statusTranslations: Record<string, string> = {
   "Pending": "بانتظار الموافقة",
@@ -39,35 +36,8 @@ const allStatuses: Array<Order['status']> = [
     "Rejected",
 ];
 
-const ITEMS_PER_PAGE = 10;
-
-export default function AdminOrdersPage() {
-  const { orders, users, loading } = useOrdersAndUsers();
-  const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
-
-  if (loading) {
-    return (
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div className="flex items-center">
-                <h1 className="font-semibold text-lg md:text-2xl">كل الطلبات</h1>
-                <div className="mr-auto flex items-center gap-2">
-                    <Link href="/admin/orders/new">
-                        <Button size="sm">
-                        <PlusCircle className="h-4 w-4 ml-2" />
-                        إنشاء طلب
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-            <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-96 w-full" />
-            </div>
-        </main>
-    );
-  }
+export default async function AdminOrdersPage() {
+  const [orders, users] = await Promise.all([getOrders(), getUsers(true)]);
   
   const ordersByStatus = allStatuses.reduce((acc, status) => {
     acc[status] = orders.filter(order => order.status === status && !order.isArchived);
@@ -75,13 +45,6 @@ export default function AdminOrdersPage() {
   }, {} as Record<string, Order[]>);
 
   const archivedOrders = orders.filter(order => order.isArchived);
-
-  const handlePageChange = (tab: string, page: number) => {
-    setCurrentPages(prev => ({ ...prev, [tab]: page }));
-  };
-  
-  const defaultOpenValue = allStatuses.find(status => ordersByStatus[status]?.length > 0) || (archivedOrders.length > 0 ? 'archived' : undefined);
-
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -97,61 +60,13 @@ export default function AdminOrdersPage() {
         </div>
       </div>
       
-      <Accordion type="single" collapsible className="w-full space-y-2" defaultValue={defaultOpenValue}>
-        {allStatuses.map(status => {
-            const ordersForStatus = ordersByStatus[status] || [];
-            const currentPage = currentPages[status] || 1;
-            const totalPages = Math.ceil(ordersForStatus.length / ITEMS_PER_PAGE);
-            const paginatedOrders = ordersForStatus.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-            return (
-              <AccordionItem value={status} key={status} className="border-b-0">
-                  <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
-                    <span>{statusTranslations[status]} ({ordersForStatus.length})</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="border border-t-0 rounded-b-md bg-card p-0">
-                      <div className="space-y-4 p-4">
-                          <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                          {totalPages > 1 && (
-                              <Pagination 
-                                  currentPage={currentPage}
-                                  totalPages={totalPages}
-                                  onPageChange={(page) => handlePageChange(status, page)}
-                              />
-                          )}
-                      </div>
-                  </AccordionContent>
-              </AccordionItem>
-            );
-        })}
-        
-        {(() => {
-            const currentPage = currentPages['archived'] || 1;
-            const totalPages = Math.ceil(archivedOrders.length / ITEMS_PER_PAGE);
-            const paginatedOrders = archivedOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-            
-            return (
-                <AccordionItem value="archived" className="border-b-0">
-                    <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
-                       <span>الأرشيف ({archivedOrders.length})</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="border border-t-0 rounded-b-md bg-card p-0">
-                        <div className="space-y-4 p-4">
-                            <OrdersTable orders={paginatedOrders} users={users} isAdmin={true} />
-                            {totalPages > 1 && (
-                                <Pagination 
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={(page) => handlePageChange('archived', page)}
-                                />
-                            )}
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-            );
-        })()}
-
-      </Accordion>
+      <OrdersClientPage 
+        ordersByStatus={ordersByStatus}
+        archivedOrders={archivedOrders}
+        users={users}
+        allStatuses={allStatuses}
+        statusTranslations={statusTranslations}
+      />
     </main>
   );
 }

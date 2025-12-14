@@ -1,7 +1,5 @@
 
-'use client';
-
-import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
+import { getOrders, getUsers } from "@/lib/firebase-actions";
 import { OrdersTable } from "@/components/orders/orders-table";
 import {
   Card,
@@ -25,14 +23,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Order, User } from "@/lib/definitions";
 import { BellRing, CheckCircle, Edit, Star } from "lucide-react";
-import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { NotificationsClient } from "./notifications-client";
 
 
 function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
@@ -108,7 +104,7 @@ function NotificationSection({ title, description, badgeCount, children }: { tit
     );
 }
 
-const notificationSections = [
+export const notificationSections = [
     {
         id: 'new-orders',
         title: 'طلبات جديدة',
@@ -148,45 +144,12 @@ const notificationSections = [
     }
 ];
 
-export default function AdminNotificationsPage() {
-  const { orders, users, loading } = useOrdersAndUsers();
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+export default async function AdminNotificationsPage() {
+  const [orders, users] = await Promise.all([getOrders(), getUsers(true)]);
 
-  const { editRequestOrders, pendingOrders, newReviews } = useMemo(() => {
-    const editRequestOrders = orders.filter(order => order.isEditRequested && !order.isArchived);
-    const pendingOrders = orders.filter(order => order.status === 'Pending' && !order.isArchived);
-    const newReviews = orders.filter(order => order.rating && order.review && !order.isArchived);
-    return { editRequestOrders, pendingOrders, newReviews };
-  }, [orders]);
-
-  const ordersMap = {
-    'new-orders': pendingOrders,
-    'edit-requests': editRequestOrders,
-    'new-reviews': newReviews
-  };
-
-
-  if (loading) {
-    return (
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center">
-            <Skeleton className="h-10 w-48" />
-        </div>
-        <Skeleton className="h-12 w-full" />
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/3" />
-            <Skeleton className="h-4 w-2/3" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
-      </main>
-    );
-  }
-  
-  const firstOpenSection = notificationSections.find(s => ordersMap[s.id as keyof typeof ordersMap].length > 0)?.id;
+  const editRequestOrders = orders.filter(order => order.isEditRequested && !order.isArchived);
+  const pendingOrders = orders.filter(order => order.status === 'Pending' && !order.isArchived);
+  const newReviews = orders.filter(order => order.rating && order.review && !order.isArchived);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -198,54 +161,12 @@ export default function AdminNotificationsPage() {
         </div>
       </div>
       
-      {isDesktop ? (
-          <Tabs defaultValue={firstOpenSection || "new-orders"}>
-            <TabsList className="grid w-full grid-cols-3">
-                {notificationSections.map(section => (
-                    <TabsTrigger key={section.id} value={section.id}>
-                        <section.icon className="ml-2 h-4 w-4" />
-                        {section.title}
-                        {ordersMap[section.id as keyof typeof ordersMap].length > 0 && <Badge className="mr-2">{ordersMap[section.id as keyof typeof ordersMap].length}</Badge>}
-                    </TabsTrigger>
-                ))}
-            </TabsList>
-
-             {notificationSections.map(section => (
-                 <TabsContent key={section.id} value={section.id}>
-                    <NotificationSection 
-                        title={section.title} 
-                        description={section.description} 
-                        badgeCount={ordersMap[section.id as keyof typeof ordersMap].length}
-                    >
-                        {section.content(ordersMap[section.id as keyof typeof ordersMap], users)}
-                    </NotificationSection>
-                </TabsContent>
-            ))}
-          </Tabs>
-      ) : (
-          <Accordion type="single" collapsible className="w-full space-y-2" defaultValue={firstOpenSection}>
-            {notificationSections.map(section => {
-                const sectionOrders = ordersMap[section.id as keyof typeof ordersMap];
-                if (sectionOrders.length === 0) return null;
-
-                return (
-                    <AccordionItem value={section.id} key={section.id}>
-                        <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
-                            <div className="flex items-center gap-2">
-                                <section.icon className="h-5 w-5" />
-                                <span>{section.title}</span>
-                                <Badge>{sectionOrders.length}</Badge>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="border border-t-0 rounded-b-md bg-card p-4">
-                             {section.content(sectionOrders, users)}
-                        </AccordionContent>
-                    </AccordionItem>
-                )
-            })}
-        </Accordion>
-      )}
-
+      <NotificationsClient 
+        pendingOrders={pendingOrders}
+        editRequestOrders={editRequestOrders}
+        newReviews={newReviews}
+        users={users}
+      />
     </main>
   );
 }
