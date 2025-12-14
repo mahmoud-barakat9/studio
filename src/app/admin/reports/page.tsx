@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell, YAxis, Tooltip, Legend, Line, LineChart } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -159,7 +159,7 @@ export default function AdminReportsPage() {
         return (
             <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
                 <h1 className="font-semibold text-lg md:text-2xl">التقارير</h1>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <Card>
                         <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
                         <CardContent><Skeleton className="h-72 w-full" /></CardContent>
@@ -180,7 +180,7 @@ export default function AdminReportsPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <h1 className="font-semibold text-lg md:text-2xl">التقارير</h1>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>الإيرادات والأرباح الشهرية</CardTitle>
@@ -218,20 +218,22 @@ export default function AdminReportsPage() {
           <CardContent className="flex items-center justify-center">
             <ChartContainer
               config={statusChartConfig}
-              className="mx-auto aspect-square h-64"
+              className="mx-auto aspect-square h-[250px] w-full"
             >
-              <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie data={statusDistributionData} dataKey="count" nameKey="status" innerRadius={60}>
-                </Pie>
-                <ChartLegend
-                  content={<ChartLegendContent nameKey="status" />}
-                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/3 [&>*]:justify-center"
-                />
-              </PieChart>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                    <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie data={statusDistributionData} dataKey="count" nameKey="status" innerRadius={60}>
+                    </Pie>
+                    <ChartLegend
+                    content={<ChartLegendContent nameKey="status" />}
+                    className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                    />
+                </PieChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -242,35 +244,34 @@ export default function AdminReportsPage() {
             <CardDescription>تحليل لمبيعات وأرباح كل نوع من أنواع الأباجور.</CardDescription>
         </CardHeader>
         <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>نوع المادة</TableHead>
-                        <TableHead>إجمالي المبيعات</TableHead>
-                        <TableHead>إجمالي الأرباح</TableHead>
-                        <TableHead>عدد الطلبات</TableHead>
-                        <TableHead>متوسط سعر الطلب</TableHead>
-                        <TableHead>إجمالي م²</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {materialPerformanceData.map(material => (
-                        <TableRow key={material.name}>
-                            <TableCell className="font-medium">{material.name}</TableCell>
-                            <TableCell className="font-mono">${material.totalSales.toFixed(2)}</TableCell>
-                            <TableCell className="font-mono font-semibold text-green-600">${material.totalProfit.toFixed(2)}</TableCell>
-                            <TableCell>{material.orderCount}</TableCell>
-                            <TableCell className="font-mono">${material.avgOrderValue.toFixed(2)}</TableCell>
-                            <TableCell>{material.totalArea.toFixed(2)} م²</TableCell>
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>نوع المادة</TableHead>
+                            <TableHead>إجمالي المبيعات</TableHead>
+                            <TableHead className="hidden sm:table-cell">إجمالي الأرباح</TableHead>
+                            <TableHead className="hidden md:table-cell">عدد الطلبات</TableHead>
+                            <TableHead className="hidden lg:table-cell">متوسط سعر الطلب</TableHead>
+                            <TableHead className="hidden lg:table-cell">إجمالي م²</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {materialPerformanceData.map(material => (
+                            <TableRow key={material.name}>
+                                <TableCell className="font-medium">{material.name}</TableCell>
+                                <TableCell className="font-mono">${material.totalSales.toFixed(2)}</TableCell>
+                                <TableCell className="font-mono font-semibold text-green-600 hidden sm:table-cell">${material.totalProfit.toFixed(2)}</TableCell>
+                                <TableCell className="hidden md:table-cell">{material.orderCount}</TableCell>
+                                <TableCell className="font-mono hidden lg:table-cell">${material.avgOrderValue.toFixed(2)}</TableCell>
+                                <TableCell className="hidden lg:table-cell">{material.totalArea.toFixed(2)} م²</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </CardContent>
       </Card>
     </main>
   );
 }
-
-    
-

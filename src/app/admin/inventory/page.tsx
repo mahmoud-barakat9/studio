@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, AlertTriangle, Package, DollarSign, Pencil, Trash2, SlidersHorizontal } from "lucide-react";
@@ -39,6 +39,7 @@ import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/pagination";
 import type { Purchase, Supplier } from "@/lib/definitions";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 const LOW_STOCK_THRESHOLD = 50; // in square meters
 const ITEMS_PER_PAGE = 10;
@@ -46,14 +47,16 @@ const ITEMS_PER_PAGE = 10;
 type FilterType = 'all' | 'material' | 'supplier';
 type FilterValue = string;
 
-function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
+function DeletePurchaseAlert({ purchaseId, asChild, children }: { purchaseId: string, asChild?: boolean, children?: React.ReactNode }) {
     return (
       <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
-              <Trash2 className="h-4 w-4" />
-              <span className="sr-only">حذف الفاتورة</span>
-          </Button>
+        <AlertDialogTrigger asChild={asChild} onClick={(e) => e.stopPropagation()}>
+          {children || (
+            <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">حذف الفاتورة</span>
+            </Button>
+          )}
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -74,6 +77,7 @@ function DeletePurchaseAlert({ purchaseId }: { purchaseId: string }) {
   }
 
 function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppliers: Supplier[] }) {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     if (purchases.length === 0) {
         return (
@@ -82,6 +86,53 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
             </div>
         )
     }
+
+    if (!isDesktop) {
+        return (
+            <div className="grid gap-4">
+                {purchases.map(purchase => (
+                    <Card key={purchase.id}>
+                        <CardHeader>
+                             <div className="flex justify-between items-start">
+                                <CardTitle className="text-base">{purchase.materialName} ({purchase.color})</CardTitle>
+                                 <span className="text-sm font-medium font-mono">${(purchase.quantity * purchase.purchasePricePerMeter).toFixed(2)}</span>
+                            </div>
+                            <CardDescription>
+                                المورد: {purchase.supplierName}
+                                <br />
+                                بتاريخ: {format(new Date(purchase.date), 'yyyy-MM-dd')}
+                            </CardDescription>
+                        </CardHeader>
+                         <CardContent className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="space-y-1">
+                                <p className="text-muted-foreground">الكمية (م²)</p>
+                                <p className="font-mono font-medium">{purchase.quantity.toFixed(2)}</p>
+                            </div>
+                             <div className="space-y-1">
+                                <p className="text-muted-foreground">سعر المتر ($)</p>
+                                <p className="font-mono font-medium">${purchase.purchasePricePerMeter.toFixed(2)}</p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end gap-2">
+                            <Link href={`/admin/inventory/${purchase.id}/edit`}>
+                                <Button size="sm" variant="outline">
+                                    <Pencil className="h-4 w-4 ml-2" />
+                                    تعديل
+                                </Button>
+                            </Link>
+                            <DeletePurchaseAlert purchaseId={purchase.id}>
+                               <Button size="sm" variant="destructive">
+                                    <Trash2 className="h-4 w-4 ml-2" />
+                                    حذف
+                                </Button>
+                            </DeletePurchaseAlert>
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        )
+    }
+
     return (
          <Table>
             <TableHeader>
@@ -241,8 +292,9 @@ export default function AdminInventoryPage() {
                     <CardTitle>سجل فواتير الشراء</CardTitle>
                     <CardDescription>قائمة بجميع فواتير الشراء التي تم تسجيلها، مع إمكانية الفلترة.</CardDescription>
                 </div>
-                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                 <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                     <Button 
+                        size="sm"
                         variant={filter.type === 'all' ? 'default' : 'outline'}
                         onClick={() => handleFilterChange('all', 'all')}
                     >
@@ -250,7 +302,7 @@ export default function AdminInventoryPage() {
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant={filter.type === 'material' ? 'default' : 'outline'}>
+                            <Button size="sm" variant={filter.type === 'material' ? 'default' : 'outline'}>
                                 <SlidersHorizontal className="ml-2 h-4 w-4" />
                                 الفلترة حسب المادة
                             </Button>
@@ -265,7 +317,7 @@ export default function AdminInventoryPage() {
                     </DropdownMenu>
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                           <Button variant={filter.type === 'supplier' ? 'default' : 'outline'}>
+                           <Button size="sm" variant={filter.type === 'supplier' ? 'default' : 'outline'}>
                                 <SlidersHorizontal className="ml-2 h-4 w-4" />
                                 الفلترة حسب المورد
                             </Button>
