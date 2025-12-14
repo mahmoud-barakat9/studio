@@ -312,7 +312,7 @@ export function OrdersTable({
                         {order.isArchived ? "مؤرشف" : statusStyle.text}
                     </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground font-mono">{order.id}</div>
+                <div className="text-sm text-muted-foreground">رقم الطلب: <span className="font-mono">{order.id}</span></div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {isAdmin && (
@@ -374,6 +374,7 @@ export function OrdersTable({
                 <TableHeader>
                   <TableRow>
                     <TableHead>اسم الطلب</TableHead>
+                    <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
                     <TableHead>الحالة</TableHead>
@@ -410,8 +411,8 @@ export function OrdersTable({
                              )}
                              {order.orderName}
                           </div>
-                          <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                         </TableCell>
+                        <TableCell className="hidden sm:table-cell font-mono">{order.id}</TableCell>
                         {isAdmin && <TableCell className="hidden lg:table-cell">{getUserName(order.userId)}</TableCell>}
                         <TableCell className="hidden lg:table-cell">{order.date}</TableCell>
                         <TableCell>

@@ -71,6 +71,7 @@ export function ReviewsClientPage({ reviewedOrders, users }: ReviewsClientPagePr
                         <TableHeader>
                             <TableRow>
                             <TableHead>الطلب</TableHead>
+                            <TableHead>رقم الطلب</TableHead>
                             <TableHead>العميل</TableHead>
                             <TableHead>التقييم</TableHead>
                             <TableHead>المراجعة</TableHead>
@@ -84,8 +85,8 @@ export function ReviewsClientPage({ reviewedOrders, users }: ReviewsClientPagePr
                                     <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
                                     {order.orderName}
                                     </Link>
-                                    <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                                 </TableCell>
+                                <TableCell className="font-mono">{order.id}</TableCell>
                                 <TableCell>{getUserName(order.userId)}</TableCell>
                                 <TableCell>
                                     <StarRating rating={order.rating} />
@@ -117,16 +118,18 @@ export function ReviewsClientPage({ reviewedOrders, users }: ReviewsClientPagePr
                                   </Link>
                               </CardTitle>
                               <CardDescription>
+                                  <span>رقم الطلب: </span>
                                   <span className="font-mono text-xs">{order.id}</span>
-                                  <span className="mx-1">•</span>
-                                  <span>بواسطة: {getUserName(order.userId)}</span>
                               </CardDescription>
                           </div>
                           <StarRating rating={order.rating} />
                        </div>
                   </CardHeader>
                   <CardContent>
-                      <p className="text-sm text-muted-foreground italic">"{order.review}"</p>
+                       <div className="text-sm text-muted-foreground mb-4">
+                            <span>بواسطة: {getUserName(order.userId)}</span>
+                        </div>
+                      <p className="text-sm italic">"{order.review}"</p>
                   </CardContent>
                    <CardFooter className="text-xs text-muted-foreground">
                       بتاريخ: {order.date}

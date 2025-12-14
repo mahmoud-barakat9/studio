@@ -49,6 +49,7 @@ function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
             <TableHeader>
                 <TableRow>
                     <TableHead>الطلب</TableHead>
+                    <TableHead>رقم الطلب</TableHead>
                     <TableHead>العميل</TableHead>
                     <TableHead>التقييم</TableHead>
                     <TableHead>المراجعة</TableHead>
@@ -61,8 +62,8 @@ function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
                             <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
                                 {order.orderName}
                             </Link>
-                            <div className="text-xs text-muted-foreground font-mono">{order.id}</div>
                         </TableCell>
+                        <TableCell className="font-mono">{order.id}</TableCell>
                         <TableCell>{getUserName(order.userId)}</TableCell>
                         <TableCell>
                         <div className="flex items-center" dir="ltr">
