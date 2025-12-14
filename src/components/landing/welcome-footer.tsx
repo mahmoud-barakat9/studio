@@ -43,7 +43,6 @@ export function WelcomeFooter() {
               <h4 className="font-semibold text-foreground mb-3">روابط هامة</h4>
               <nav className="flex flex-col gap-2">
                 <Link href="/dashboard" className="hover:text-primary transition-colors">لوحة التحكم</Link>
-                <Link href="/admin/dashboard" className="hover:text-primary transition-colors">قسم المسؤول</Link>
               </nav>
             </div>
             <div>
