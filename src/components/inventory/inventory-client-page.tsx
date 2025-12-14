@@ -48,7 +48,7 @@ type FilterValue = string;
 function DeletePurchaseAlert({ purchaseId, asChild, children }: { purchaseId: string, asChild?: boolean, children?: React.ReactNode }) {
     return (
       <AlertDialog>
-        <AlertDialogTrigger asChild={asChild} onClick={(e) => e.stopPropagation()}>
+        <AlertDialogTrigger asChild={asChild === undefined ? !children : asChild} onClick={(e) => e.stopPropagation()}>
           {children || (
             <Button size="icon" variant="outline" className="h-8 w-8 border-destructive text-destructive hover:bg-destructive/10">
                 <Trash2 className="h-4 w-4" />
