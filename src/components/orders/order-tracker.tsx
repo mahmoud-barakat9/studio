@@ -57,7 +57,7 @@ export function OrderTracker({ order }: { order: Order }) {
       <div className="absolute top-1/2 right-0 w-full h-1 bg-border -translate-y-1/2" />
       {/* Progress Track */}
       <div 
-        className="absolute top-1/2 right-0 h-1 bg-green-500 -translate-y-1/2 transition-all duration-500 ease-in-out" 
+        className="absolute top-1/2 right-0 h-1 bg-primary -translate-y-1/2 transition-all duration-500 ease-in-out" 
         style={{ width: `${progressPercentage}%` }}
       />
       
@@ -71,20 +71,19 @@ export function OrderTracker({ order }: { order: Order }) {
               <div
                 className={cn(
                   'w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2 bg-background',
-                  isCompleted ? 'border-green-500 bg-green-500' : 'border-border',
-                  isCurrent && 'border-primary bg-primary'
+                  isCompleted ? 'border-primary bg-primary' : 'border-border',
+                  isCurrent && 'border-primary bg-accent ring-4 ring-primary/20'
                 )}
               >
                 <stage.icon className={cn(
                   'w-6 h-6 transition-colors',
-                  isCompleted ? 'text-white' : 'text-muted-foreground',
-                  isCurrent && 'text-primary-foreground'
+                  isCompleted ? 'text-primary-foreground' : 'text-muted-foreground',
+                  isCurrent && 'text-primary'
                 )} />
               </div>
               <p className={cn(
                 'text-xs font-medium max-w-[60px]',
-                 (isCompleted) ? 'text-green-600' : 'text-muted-foreground',
-                 (isCurrent) ? 'text-primary' : 'text-muted-foreground'
+                 (isCompleted || isCurrent) ? 'text-primary' : 'text-muted-foreground'
               )}>
                 {stage.label}
               </p>
@@ -95,4 +94,3 @@ export function OrderTracker({ order }: { order: Order }) {
     </div>
   );
 }
-
