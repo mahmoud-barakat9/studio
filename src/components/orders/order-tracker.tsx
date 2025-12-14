@@ -63,7 +63,7 @@ export function OrderTracker({ order }: { order: Order }) {
       
       <div className="relative flex justify-between w-full">
         {stagesToShow.map((stage, index) => {
-          const isCompleted = mainFlowCurrentIndex >= index;
+          const isCompleted = mainFlowCurrentIndex > index;
           const isCurrent = mainFlowCurrentIndex === index;
 
           return (
@@ -72,17 +72,18 @@ export function OrderTracker({ order }: { order: Order }) {
                 className={cn(
                   'w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 border-2 bg-background',
                   isCompleted ? 'border-primary' : 'border-border',
-                  isCurrent && 'ring-4 ring-primary/20'
+                  isCurrent && 'bg-primary border-primary'
                 )}
               >
                 <stage.icon className={cn(
                   'w-6 h-6 transition-colors',
-                  isCompleted ? 'text-primary' : 'text-muted-foreground'
+                  isCompleted ? 'text-primary' : 'text-muted-foreground',
+                  isCurrent && 'text-primary-foreground'
                 )} />
               </div>
               <p className={cn(
                 'text-xs font-medium max-w-[60px]',
-                 isCompleted ? 'text-primary' : 'text-muted-foreground'
+                 (isCompleted || isCurrent) ? 'text-primary' : 'text-muted-foreground'
               )}>
                 {stage.label}
               </p>
