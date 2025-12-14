@@ -344,18 +344,24 @@ export function OrdersTable({
                     </div>
                   </div>
               </CardContent>
-              <CardFooter className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+              <CardFooter className="flex flex-col items-stretch gap-2" onClick={(e) => e.stopPropagation()}>
                     {isAdmin ? (
-                        <AdminOrderActions order={order} />
+                        <div className="flex justify-end w-full">
+                            <AdminOrderActions order={order} />
+                        </div>
                     ) : (
                         <>
-                        <OrderDetailsDialog order={order} />
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={`/orders/${order.id}`}>
-                            عرض التفاصيل
-                            </Link>
-                        </Button>
-                        <UserOrderActions order={order} />
+                         <div className="flex justify-between items-center w-full">
+                            <div>
+                                <OrderDetailsDialog order={order} />
+                                <UserOrderActions order={order} />
+                             </div>
+                             <Button asChild variant="outline" size="sm">
+                                 <Link href={`/orders/${order.id}`}>
+                                    عرض التفاصيل الكاملة
+                                 </Link>
+                             </Button>
+                         </div>
                         </>
                     )}
               </CardFooter>
