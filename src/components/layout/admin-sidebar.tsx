@@ -43,8 +43,8 @@ import { ThemeSwitcher } from "../theme-switcher";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList, badgeKey: 'pending' },
-  { href: "/admin/notifications", label: "الإشعارات", icon: Bell, badgeKey: 'requests' },
+  { href: "/admin/orders", label: "الطلبات", icon: ClipboardList },
+  { href: "/admin/notifications", label: "الإشعارات", icon: Bell, badgeKey: 'notifications' },
   { href: "/admin/reviews", label: "المراجعات", icon: Star, badgeKey: 'reviews' },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
@@ -64,9 +64,8 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
   const { state } = useSidebar();
 
   const badgeCounts = {
-    pending: pendingOrdersCount,
+    notifications: pendingOrdersCount + editRequestsCount,
     reviews: newReviewsCount,
-    requests: editRequestsCount,
   };
 
   return (
