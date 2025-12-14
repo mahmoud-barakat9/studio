@@ -8,7 +8,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 export function Hero() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'login-background');
   return (
-    <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center text-white text-center bg-gray-900">
+    <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center text-white text-center bg-gray-900 -mx-4 md:mx-0">
       <div className="absolute inset-0">
           {heroImage && (
             <Image
