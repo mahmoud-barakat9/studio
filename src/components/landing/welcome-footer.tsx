@@ -48,8 +48,8 @@ export function WelcomeFooter() {
             <div>
               <h4 className="font-semibold text-foreground mb-3">قانوني</h4>
               <nav className="flex flex-col gap-2">
-                <Link href="#" className="hover:text-primary transition-colors">سياسة الخصوصية</Link>
-                <Link href="#" className="hover:text-primary transition-colors">شروط الخدمة</Link>
+                <Link href="/privacy" className="hover:text-primary transition-colors">سياسة الخصوصية</Link>
+                <Link href="/terms" className="hover:text-primary transition-colors">شروط الخدمة</Link>
               </nav>
             </div>
           </div>
