@@ -5,7 +5,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
-import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home, CheckCircle2 } from 'lucide-react';
+import { Check, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
@@ -15,7 +15,7 @@ const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = 
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: Truck },
     { name: "ReadyForDelivery", label: "جاهز للتسليم", icon: PackageCheck },
-    { name: "Delivered", label: "تم التوصيل", icon: CheckCircle },
+    { name: "Delivered", label: "تم التوصيل", icon: Check },
 ];
 
 const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
@@ -24,7 +24,7 @@ const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: Home },
-    { name: "Delivered", label: "تم الاستلام", icon: CheckCircle },
+    { name: "Delivered", label: "تم الاستلام", icon: Check },
 ];
 
 
@@ -54,10 +54,10 @@ export function OrderTracker({ order }: { order: Order }) {
   return (
     <div className="relative w-full py-4">
       {/* Background Track */}
-      <div className="absolute top-1/2 left-0 w-full h-1 bg-border -translate-y-1/2" />
+      <div className="absolute top-1/2 right-0 w-full h-1 bg-border -translate-y-1/2" />
       {/* Progress Track */}
       <div 
-        className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 transition-all duration-500 ease-in-out" 
+        className="absolute top-1/2 right-0 h-1 bg-primary -translate-y-1/2 transition-all duration-500 ease-in-out" 
         style={{ width: `${progressPercentage}%` }}
       />
       
