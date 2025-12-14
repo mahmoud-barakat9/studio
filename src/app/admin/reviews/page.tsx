@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -23,9 +24,28 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Order } from "@/lib/definitions";
 import { useMemo } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+const StarRating = ({ rating }: { rating: number }) => (
+    <div className="flex items-center" dir="ltr">
+        {Array(5).fill(0).map((_, i) => (
+            <Star
+                key={i}
+                className={cn(
+                "h-5 w-5",
+                i < rating
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-muted-foreground"
+                )}
+            />
+        ))}
+    </div>
+);
+
 
 export default function AdminReviewsPage() {
   const { orders, users, loading } = useOrdersAndUsers();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const reviewedOrders = useMemo(() => {
     return orders
@@ -61,66 +81,86 @@ export default function AdminReviewsPage() {
       <div className="flex items-center">
         <h1 className="font-semibold text-3xl">مراجعات العملاء</h1>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>قائمة المراجعات</CardTitle>
-          <CardDescription>عرض جميع تقييمات العملاء على الطلبات المكتملة.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الطلب</TableHead>
-                  <TableHead>العميل</TableHead>
-                  <TableHead>التقييم</TableHead>
-                  <TableHead>المراجعة</TableHead>
-                  <TableHead>التاريخ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reviewedOrders.length > 0 ? (
-                  reviewedOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
-                          {order.orderName}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{getUserName(order.userId)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center" dir="ltr">
-                          {Array(5).fill(0).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn(
-                                "h-5 w-5",
-                                i < order.rating
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-muted-foreground"
-                              )}
-                            />
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-sm">
-                        <p className="truncate">{order.review}</p>
-                      </TableCell>
-                      <TableCell>{order.date}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      لا توجد مراجعات حتى الآن.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+
+      {reviewedOrders.length > 0 ? (
+        isDesktop ? (
+            <Card>
+                <CardHeader>
+                    <CardTitle>قائمة المراجعات</CardTitle>
+                    <CardDescription>عرض جميع تقييمات العملاء على الطلبات المكتملة.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead>الطلب</TableHead>
+                            <TableHead>العميل</TableHead>
+                            <TableHead>التقييم</TableHead>
+                            <TableHead>المراجعة</TableHead>
+                            <TableHead>التاريخ</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {reviewedOrders.map((order) => (
+                                <TableRow key={order.id}>
+                                <TableCell>
+                                    <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
+                                    {order.orderName}
+                                    </Link>
+                                </TableCell>
+                                <TableCell>{getUserName(order.userId)}</TableCell>
+                                <TableCell>
+                                    <StarRating rating={order.rating} />
+                                </TableCell>
+                                <TableCell className="max-w-sm">
+                                    <p className="truncate">{order.review}</p>
+                                </TableCell>
+                                <TableCell>{order.date}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        ) : (
+             <div className="grid gap-4">
+                {reviewedOrders.map((order) => (
+                    <Card key={order.id}>
+                        <CardHeader>
+                             <div className="flex justify-between items-start gap-4">
+                                <div>
+                                    <CardTitle className="text-base">
+                                        <Link href={`/admin/orders/${order.id}`} className="hover:underline">
+                                            {order.orderName}
+                                        </Link>
+                                    </CardTitle>
+                                    <CardDescription>
+                                        بواسطة: {getUserName(order.userId)}
+                                    </CardDescription>
+                                </div>
+                                <StarRating rating={order.rating} />
+                             </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground italic">"{order.review}"</p>
+                        </CardContent>
+                         <CardFooter className="text-xs text-muted-foreground">
+                            بتاريخ: {order.date}
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        )
+      ) : (
+         <Card>
+            <CardContent className="p-12 text-center">
+                <p className="text-muted-foreground">لا توجد مراجعات حتى الآن.</p>
+            </CardContent>
+        </Card>
+      )}
+
     </main>
   );
 }
