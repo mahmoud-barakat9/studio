@@ -118,7 +118,7 @@ function PurchasesTable({ purchases, suppliers }: { purchases: Purchase[], suppl
                                     تعديل
                                 </Button>
                             </Link>
-                            <DeletePurchaseAlert purchaseId={purchase.id}>
+                            <DeletePurchaseAlert purchaseId={purchase.id} asChild>
                                <Button size="sm" variant="destructive">
                                     <Trash2 className="h-4 w-4 ml-2" />
                                     حذف
