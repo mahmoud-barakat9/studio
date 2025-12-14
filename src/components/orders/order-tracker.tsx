@@ -5,11 +5,12 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Order, OrderStatus } from '@/lib/definitions';
-import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home } from 'lucide-react';
+import { CheckCircle, Truck, Cog, PackageCheck, Factory, FileQuestion, XCircle, Home, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card';
 
 const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
     { name: "Pending", label: "بانتظار الموافقة", icon: FileQuestion },
+    { name: "Approved", label: "تمت الموافقة", icon: CheckCircle2 },
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "FactoryShipped", label: "تم الشحن من المعمل", icon: Truck },
@@ -19,6 +20,7 @@ const STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = 
 
 const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType }[] = [
     { name: "Pending", label: "بانتظار الموافقة", icon: FileQuestion },
+    { name: "Approved", label: "تمت الموافقة", icon: CheckCircle2 },
     { name: "FactoryOrdered", label: "تم الطلب من المعمل", icon: Factory },
     { name: "Processing", label: "قيد التجهيز", icon: Cog },
     { name: "ReadyForDelivery", label: "جاهز للاستلام", icon: Home },
@@ -29,9 +31,9 @@ const PICKUP_STAGES: { name: OrderStatus; label: string; icon: React.ElementType
 export function OrderTracker({ order }: { order: Order }) {
   const { status: currentStatus, hasDelivery } = order;
   
-  const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES.filter(stage => STAGES.some(s => s.name === stage.name));
+  const stagesToShow = hasDelivery ? STAGES : PICKUP_STAGES;
   
-  const mainFlowCurrentIndex = STAGES.findIndex(s => s.name === currentStatus);
+  const mainFlowCurrentIndex = stagesToShow.findIndex(s => s.name === currentStatus);
 
   if (currentStatus === 'Rejected') {
     return (
@@ -50,10 +52,8 @@ export function OrderTracker({ order }: { order: Order }) {
   return (
       <div className="flex items-start justify-between w-full gap-1 md:gap-2">
         {stagesToShow.map((stage, index) => {
-          const originalIndex = STAGES.findIndex(s => s.name === stage.name);
-          
-          const isCompleted = originalIndex < mainFlowCurrentIndex;
-          const isCurrent = originalIndex === mainFlowCurrentIndex;
+          const isCompleted = mainFlowCurrentIndex > index;
+          const isCurrent = mainFlowCurrentIndex === index;
 
           return (
             <React.Fragment key={stage.name}>
@@ -79,7 +79,7 @@ export function OrderTracker({ order }: { order: Order }) {
                {index < stagesToShow.length - 1 && (
                  <div className={cn(
                     "flex-1 h-0.5 mt-6 rounded-full transition-colors duration-300",
-                    isCompleted ? 'bg-primary' : 'bg-border'
+                    isCompleted || isCurrent ? 'bg-primary' : 'bg-border'
                  )}></div>
                )}
             </React.Fragment>
