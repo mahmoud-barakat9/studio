@@ -10,20 +10,89 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Order } from "@/lib/definitions";
-import { BellRing, CheckCircle, Edit } from "lucide-react";
+import { BellRing, CheckCircle, Edit, Star } from "lucide-react";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+
+function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
+    const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
+
+    if (orders.length === 0) {
+        return (
+             <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-12 border-2 border-dashed rounded-lg">
+                <CheckCircle className="h-12 w-12 mb-4 text-green-500"/>
+                <h3 className="text-lg font-semibold text-foreground">لا توجد مراجعات جديدة</h3>
+                <p className="text-sm">لا توجد حاليًا أي مراجعات جديدة من العملاء.</p>
+            </div>
+        )
+    }
+    
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>الطلب</TableHead>
+                    <TableHead>العميل</TableHead>
+                    <TableHead>التقييم</TableHead>
+                    <TableHead>المراجعة</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {orders.map((order) => (
+                    <TableRow key={order.id}>
+                        <TableCell>
+                        <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
+                            {order.orderName}
+                        </Link>
+                        </TableCell>
+                        <TableCell>{getUserName(order.userId)}</TableCell>
+                        <TableCell>
+                        <div className="flex items-center" dir="ltr">
+                            {Array(5).fill(0).map((_, i) => (
+                            <Star
+                                key={i}
+                                className={cn(
+                                "h-5 w-5",
+                                order.rating && i < order.rating
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-muted-foreground"
+                                )}
+                            />
+                            ))}
+                        </div>
+                        </TableCell>
+                        <TableCell className="max-w-sm">
+                        <p className="truncate">{order.review}</p>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 
 export default function AdminNotificationsPage() {
   const { orders, users, loading } = useOrdersAndUsers();
 
-  const { editRequestOrders, pendingOrders } = useMemo(() => {
+  const { editRequestOrders, pendingOrders, newReviews } = useMemo(() => {
     const editRequestOrders = orders.filter(order => order.isEditRequested && !order.isArchived);
     const pendingOrders = orders.filter(order => order.status === 'Pending' && !order.isArchived);
-    return { editRequestOrders, pendingOrders };
+    const newReviews = orders.filter(order => order.rating && order.review && !order.isArchived);
+    return { editRequestOrders, pendingOrders, newReviews };
   }, [orders]);
 
 
@@ -57,16 +126,21 @@ export default function AdminNotificationsPage() {
         </div>
       </div>
       <Tabs defaultValue="new-orders">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="new-orders">
                 <CheckCircle className="ml-2 h-4 w-4" />
-                طلبات جديدة للموافقة
+                طلبات جديدة
                 {pendingOrders.length > 0 && <Badge className="mr-2">{pendingOrders.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="edit-requests">
                 <Edit className="ml-2 h-4 w-4" />
                 طلبات تعديل
                 {editRequestOrders.length > 0 && <Badge className="mr-2">{editRequestOrders.length}</Badge>}
+            </TabsTrigger>
+             <TabsTrigger value="new-reviews">
+                <Star className="ml-2 h-4 w-4" />
+                مراجعات جديدة
+                {newReviews.length > 0 && <Badge className="mr-2">{newReviews.length}</Badge>}
             </TabsTrigger>
         </TabsList>
 
@@ -110,6 +184,20 @@ export default function AdminNotificationsPage() {
                             <p className="text-sm">لا توجد حاليًا طلبات تعديل معلقة من العملاء.</p>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+         <TabsContent value="new-reviews">
+            <Card>
+                <CardHeader>
+                <CardTitle>المراجعات الجديدة من العملاء</CardTitle>
+                <CardDescription>
+                    عرض جميع تقييمات العملاء على الطلبات المكتملة.
+                </CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <ReviewsTable orders={newReviews} users={users} />
                 </CardContent>
             </Card>
         </TabsContent>

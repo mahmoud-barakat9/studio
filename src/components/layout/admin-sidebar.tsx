@@ -45,7 +45,7 @@ const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/admin/orders", label: "الطلبات", icon: ClipboardList },
   { href: "/admin/notifications", label: "الإشعارات", icon: Bell, badgeKey: 'notifications' },
-  { href: "/admin/reviews", label: "المراجعات", icon: Star, badgeKey: 'reviews' },
+  { href: "/admin/reviews", label: "المراجعات", icon: Star },
   { href: "/admin/users", label: "المستخدمون", icon: Users },
   { href: "/admin/materials", label: "المواد", icon: Boxes },
   { href: "/admin/inventory", label: "المخزون", icon: Warehouse },
@@ -64,8 +64,7 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
   const { state } = useSidebar();
 
   const badgeCounts = {
-    notifications: pendingOrdersCount + editRequestsCount,
-    reviews: newReviewsCount,
+    notifications: pendingOrdersCount + editRequestsCount + newReviewsCount,
   };
 
   return (
