@@ -19,6 +19,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Order } from "@/lib/definitions";
 import { BellRing, CheckCircle, Edit, Star } from "lucide-react";
@@ -26,6 +32,8 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
 
 function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
     const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || "غير معروف";
@@ -84,9 +92,64 @@ function ReviewsTable({ orders, users }: { orders: Order[], users: any[] }) {
     )
 }
 
+function NotificationSection({ title, description, badgeCount, children }: { title: string, description: string, badgeCount: number, children: React.ReactNode }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    {title}
+                    {badgeCount > 0 && <Badge>{badgeCount}</Badge>}
+                </CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+        </Card>
+    );
+}
+
+const notificationSections = [
+    {
+        id: 'new-orders',
+        title: 'طلبات جديدة',
+        icon: CheckCircle,
+        description: 'هذه الطلبات تم إنشاؤها حديثًا وتتطلب موافقتك أو رفضك.',
+        content: (orders: Order[], users: User[]) => orders.length > 0 ? (
+            <OrdersTable orders={orders} users={users} isAdmin={true} />
+        ) : (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-12 border-2 border-dashed rounded-lg">
+                <CheckCircle className="h-12 w-12 mb-4 text-green-500"/>
+                <h3 className="text-lg font-semibold text-foreground">لا توجد طلبات جديدة</h3>
+                <p className="text-sm">لا توجد حاليًا طلبات بانتظار الموافقة.</p>
+            </div>
+        )
+    },
+    {
+        id: 'edit-requests',
+        title: 'طلبات تعديل',
+        icon: Edit,
+        description: 'هذه الطلبات تم الإبلاغ عنها من قبل العملاء وتتطلب مراجعة وتعديلاً.',
+        content: (orders: Order[], users: User[]) => orders.length > 0 ? (
+            <OrdersTable orders={orders} users={users} isAdmin={true} />
+        ) : (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-12 border-2 border-dashed rounded-lg">
+                <CheckCircle className="h-12 w-12 mb-4 text-green-500"/>
+                <h3 className="text-lg font-semibold text-foreground">لا توجد طلبات تعديل</h3>
+                <p className="text-sm">لا توجد حاليًا طلبات تعديل معلقة من العملاء.</p>
+            </div>
+        )
+    },
+    {
+        id: 'new-reviews',
+        title: 'مراجعات جديدة',
+        icon: Star,
+        description: 'عرض جميع تقييمات العملاء على الطلبات المكتملة.',
+        content: (orders: Order[], users: User[]) => <ReviewsTable orders={orders} users={users} />
+    }
+];
 
 export default function AdminNotificationsPage() {
   const { orders, users, loading } = useOrdersAndUsers();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const { editRequestOrders, pendingOrders, newReviews } = useMemo(() => {
     const editRequestOrders = orders.filter(order => order.isEditRequested && !order.isArchived);
@@ -94,6 +157,12 @@ export default function AdminNotificationsPage() {
     const newReviews = orders.filter(order => order.rating && order.review && !order.isArchived);
     return { editRequestOrders, pendingOrders, newReviews };
   }, [orders]);
+
+  const ordersMap = {
+    'new-orders': pendingOrders,
+    'edit-requests': editRequestOrders,
+    'new-reviews': newReviews
+  };
 
 
   if (loading) {
@@ -115,6 +184,8 @@ export default function AdminNotificationsPage() {
       </main>
     );
   }
+  
+  const firstOpenSection = notificationSections.find(s => ordersMap[s.id as keyof typeof ordersMap].length > 0)?.id;
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -125,83 +196,55 @@ export default function AdminNotificationsPage() {
             <p className="text-muted-foreground">عرض التنبيهات والطلبات التي تحتاج إلى انتباهك الفوري.</p>
         </div>
       </div>
-      <Tabs defaultValue="new-orders">
-        <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="new-orders">
-                <CheckCircle className="ml-2 h-4 w-4" />
-                طلبات جديدة
-                {pendingOrders.length > 0 && <Badge className="mr-2">{pendingOrders.length}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="edit-requests">
-                <Edit className="ml-2 h-4 w-4" />
-                طلبات تعديل
-                {editRequestOrders.length > 0 && <Badge className="mr-2">{editRequestOrders.length}</Badge>}
-            </TabsTrigger>
-             <TabsTrigger value="new-reviews">
-                <Star className="ml-2 h-4 w-4" />
-                مراجعات جديدة
-                {newReviews.length > 0 && <Badge className="mr-2">{newReviews.length}</Badge>}
-            </TabsTrigger>
-        </TabsList>
+      
+      {isDesktop ? (
+          <Tabs defaultValue={firstOpenSection || "new-orders"}>
+            <TabsList className="grid w-full grid-cols-3">
+                {notificationSections.map(section => (
+                    <TabsTrigger key={section.id} value={section.id}>
+                        <section.icon className="ml-2 h-4 w-4" />
+                        {section.title}
+                        {ordersMap[section.id as keyof typeof ordersMap].length > 0 && <Badge className="mr-2">{ordersMap[section.id as keyof typeof ordersMap].length}</Badge>}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
 
-        <TabsContent value="new-orders">
-            <Card>
-                <CardHeader>
-                <CardTitle>طلبات جديدة بانتظار الموافقة</CardTitle>
-                <CardDescription>
-                    هذه الطلبات تم إنشاؤها حديثًا وتتطلب موافقتك أو رفضك.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {pendingOrders.length > 0 ? (
-                        <OrdersTable orders={pendingOrders} users={users} isAdmin={true} />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-12 border-2 border-dashed rounded-lg">
-                            <CheckCircle className="h-12 w-12 mb-4 text-green-500"/>
-                            <h3 className="text-lg font-semibold text-foreground">لا توجد طلبات جديدة</h3>
-                            <p className="text-sm">لا توجد حاليًا طلبات بانتظار الموافقة.</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </TabsContent>
+             {notificationSections.map(section => (
+                 <TabsContent key={section.id} value={section.id}>
+                    <NotificationSection 
+                        title={section.title} 
+                        description={section.description} 
+                        badgeCount={ordersMap[section.id as keyof typeof ordersMap].length}
+                    >
+                        {section.content(ordersMap[section.id as keyof typeof ordersMap], users)}
+                    </NotificationSection>
+                </TabsContent>
+            ))}
+          </Tabs>
+      ) : (
+          <Accordion type="single" collapsible className="w-full space-y-2" defaultValue={firstOpenSection}>
+            {notificationSections.map(section => {
+                const sectionOrders = ordersMap[section.id as keyof typeof ordersMap];
+                if (sectionOrders.length === 0) return null;
 
-        <TabsContent value="edit-requests">
-            <Card>
-                <CardHeader>
-                <CardTitle>طلبات التعديل المعلقة</CardTitle>
-                <CardDescription>
-                    هذه الطلبات تم الإبلاغ عنها من قبل العملاء وتتطلب مراجعة وتعديلاً.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {editRequestOrders.length > 0 ? (
-                        <OrdersTable orders={editRequestOrders} users={users} isAdmin={true} />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-12 border-2 border-dashed rounded-lg">
-                            <CheckCircle className="h-12 w-12 mb-4 text-green-500"/>
-                            <h3 className="text-lg font-semibold text-foreground">لا توجد طلبات تعديل</h3>
-                            <p className="text-sm">لا توجد حاليًا طلبات تعديل معلقة من العملاء.</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </TabsContent>
+                return (
+                    <AccordionItem value={section.id} key={section.id}>
+                        <AccordionTrigger className="flex rounded-md border bg-card px-4 py-3 text-base font-medium hover:bg-muted/50 data-[state=open]:rounded-b-none data-[state=open]:border-b-0">
+                            <div className="flex items-center gap-2">
+                                <section.icon className="h-5 w-5" />
+                                <span>{section.title}</span>
+                                <Badge>{sectionOrders.length}</Badge>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="border border-t-0 rounded-b-md bg-card p-4">
+                             {section.content(sectionOrders, users)}
+                        </AccordionContent>
+                    </AccordionItem>
+                )
+            })}
+        </Accordion>
+      )}
 
-         <TabsContent value="new-reviews">
-            <Card>
-                <CardHeader>
-                <CardTitle>المراجعات الجديدة من العملاء</CardTitle>
-                <CardDescription>
-                    عرض جميع تقييمات العملاء على الطلبات المكتملة.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <ReviewsTable orders={newReviews} users={users} />
-                </CardContent>
-            </Card>
-        </TabsContent>
-      </Tabs>
     </main>
   );
 }
