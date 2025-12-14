@@ -15,43 +15,41 @@ export function MainFooter() {
   }, []);
 
   const homeUrl = '/dashboard';
-  const newOrderUrl = '/orders/new'; 
-  const myOrdersUrl = '/orders';
 
   return (
-    <footer className="bg-muted text-muted-foreground">
+    <footer className="bg-muted text-muted-foreground hidden md:block">
       <div className="container py-12 px-4 md:px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8 text-center md:text-right">
           <div className="flex flex-col items-center md:items-start gap-2">
             <Link href={homeUrl} className="flex items-center gap-2 mb-2">
               <BrandLogo />
               <span className="font-bold text-lg text-foreground">طلب أباجور</span>
             </Link>
-            <p className="text-sm max-w-xs text-center md:text-right">
+            <p className="text-sm max-w-xs">
               نظامك المتكامل لإنشاء وتتبع طلبات الأباجور بكفاءة وسهولة.
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-center md:text-right">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <div>
-              <h4 className="font-semibold text-foreground mb-2">الشركة</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="#" className="hover:text-primary">من نحن</Link>
-                <Link href="#" className="hover:text-primary">الوظائف</Link>
-                <Link href="#" className="hover:text-primary">الصحافة</Link>
+              <h4 className="font-semibold text-foreground mb-3">التطبيق</h4>
+              <nav className="flex flex-col gap-2">
+                <Link href="/dashboard" className="hover:text-primary transition-colors">لوحة التحكم</Link>
+                <Link href="/orders" className="hover:text-primary transition-colors">طلباتي</Link>
+                <Link href="/orders/new" className="hover:text-primary transition-colors">طلب جديد</Link>
+              </nav>
+            </div>
+             <div>
+              <h4 className="font-semibold text-foreground mb-3">روابط أخرى</h4>
+              <nav className="flex flex-col gap-2">
+                <Link href="/welcome" className="hover:text-primary transition-colors">الصفحة الرئيسية</Link>
+                <Link href="/welcome#contact" className="hover:text-primary transition-colors">تواصل معنا</Link>
               </nav>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-2">روابط سريعة</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href={newOrderUrl} className="hover:text-primary">طلب جديد</Link>
-                <Link href={myOrdersUrl} className="hover:text-primary">طلباتي</Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-2">قانوني</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="#" className="hover:text-primary">سياسة الخصوصية</Link>
-                <Link href="#" className="hover:text-primary">شروط الخدمة</Link>
+              <h4 className="font-semibold text-foreground mb-3">قانوني</h4>
+              <nav className="flex flex-col gap-2">
+                <Link href="#" className="hover:text-primary transition-colors">سياسة الخصوصية</Link>
+                <Link href="#" className="hover:text-primary transition-colors">شروط الخدمة</Link>
               </nav>
             </div>
           </div>
