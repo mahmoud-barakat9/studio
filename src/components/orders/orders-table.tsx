@@ -1,4 +1,5 @@
 
+
 'use client';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,6 +45,7 @@ import { OrderDetailsDialog } from "./order-details-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
+import { RequestEditDialog } from "./request-edit-dialog";
 
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
@@ -200,22 +202,6 @@ function AdminOrderActions({ order }: { order: Order }) {
 
 function UserOrderActions({ order }: { order: Order }) {
   const { toast } = useToast();
-
-  const handleRequestEdit = async () => {
-    const result = await requestOrderEdit(order.id);
-    if (result.success) {
-      toast({
-        title: "تم إرسال طلب التعديل",
-        description: "لقد أرسلنا طلبك إلى الإدارة وسيتواصلون معك قريبًا.",
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "فشل إرسال الطلب",
-        description: result.error,
-      });
-    }
-  };
   
   if (order.isArchived) return null;
 
@@ -236,13 +222,7 @@ function UserOrderActions({ order }: { order: Order }) {
             </Link>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem
-            onClick={handleRequestEdit}
-            disabled={order.isEditRequested}
-          >
-            <MessageSquareQuote className="ml-2 h-4 w-4" />
-            {order.isEditRequested ? "تم طلب التعديل" : "طلب تعديل من الإدارة"}
-          </DropdownMenuItem>
+          <RequestEditDialog order={order} />
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -350,19 +330,17 @@ export function OrdersTable({
                             <AdminOrderActions order={order} />
                         </div>
                     ) : (
-                        <>
-                         <div className="flex justify-between items-center w-full">
-                            <div className="flex items-center">
-                                <OrderDetailsDialog order={order} />
-                                <UserOrderActions order={order} />
-                             </div>
-                             <Button asChild variant="outline" size="sm" className="w-full">
+                         <div className="flex justify-between items-center w-full gap-2">
+                           <div className="flex items-center">
+                              <OrderDetailsDialog order={order} />
+                              <UserOrderActions order={order} />
+                           </div>
+                            <Button asChild variant="outline" size="sm" className="w-full">
                                  <Link href={`/orders/${order.id}`}>
                                     عرض التفاصيل الكاملة
                                  </Link>
                              </Button>
                          </div>
-                        </>
                     )}
               </CardFooter>
             </Card>
@@ -379,7 +357,7 @@ export function OrdersTable({
             <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="hidden sm:table-cell">رقم الطلب</TableHead>
+                    <TableHead>رقم الطلب</TableHead>
                     <TableHead>اسم الطلب</TableHead>
                     {isAdmin && <TableHead className="hidden lg:table-cell">العميل</TableHead>}
                     <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
@@ -401,7 +379,7 @@ export function OrdersTable({
                         onClick={() => handleRowClick(order.id)}
                         className="cursor-pointer"
                       >
-                        <TableCell className="hidden sm:table-cell font-mono">{order.id}</TableCell>
+                        <TableCell className="font-mono">{order.id}</TableCell>
                         <TableCell>
                           <div className="font-medium flex items-center gap-2">
                              {order.isEditRequested && (

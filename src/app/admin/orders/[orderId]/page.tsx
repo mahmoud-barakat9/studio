@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign, Edit, ExternalLink } from "lucide-react";
+import { ArrowRight, FileText, Truck, AlertTriangle, Pencil, BadgeDollarSign, Edit, ExternalLink, MessageSquareQuote } from "lucide-react";
 import { AdminOrderDetails } from "@/components/orders/admin-order-details";
 import {
   Tooltip,
@@ -33,6 +33,7 @@ import React, { useEffect, useState } from "react";
 import type { Order, User } from "@/lib/definitions";
 import { EditPriceDialog } from "@/components/orders/edit-price-dialog";
 import { useParams } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 const DUMMY_ADMIN_ID = "4"; // Admin User ID
@@ -146,6 +147,16 @@ export default function AdminOrderDetailPage() {
             </div>
       </div>
 
+       {order.isEditRequested && order.editRequestNotes && (
+            <Alert variant="destructive">
+                <MessageSquareQuote className="h-4 w-4" />
+                <AlertTitle>طلب تعديل من العميل!</AlertTitle>
+                <AlertDescription>
+                    <p className="font-bold">الملاحظات: <span className="font-normal italic">"{order.editRequestNotes}"</span></p>
+                    <p className="mt-2 text-xs">يرجى مراجعة الطلب والتواصل مع العميل إذا لزم الأمر، ثم قم بتعديل الطلب.</p>
+                </AlertDescription>
+            </Alert>
+       )}
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-grow flex flex-col gap-8">

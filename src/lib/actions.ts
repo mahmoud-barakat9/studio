@@ -188,11 +188,26 @@ export async function rejectOrder(orderId: string) {
   return { success: true, whatsappUrl };
 }
 
-export async function requestOrderEdit(orderId: string) {
+const editRequestSchema = z.object({
+  notes: z.string().min(10, 'الرجاء كتابة ملاحظات التعديل (10 أحرف على الأقل).'),
+});
+
+export async function requestOrderEdit(orderId: string, formData: z.infer<typeof editRequestSchema>) {
+    const validatedFields = editRequestSchema.safeParse(formData);
+
+    if (!validatedFields.success) {
+      const errorMessages = validatedFields.error.issues.map(issue => issue.message).join(', ');
+      return { success: false, error: errorMessages };
+    }
+
   try {
-    await updateOrderDB(orderId, { isEditRequested: true });
+    await updateOrderDB(orderId, { 
+      isEditRequested: true,
+      editRequestNotes: validatedFields.data.notes,
+    });
     revalidatePath('/orders');
     revalidatePath('/admin/notifications');
+    revalidatePath(`/admin/orders/${orderId}`);
     return { success: true };
   } catch (error) {
     return { success: false, error: 'فشل إرسال طلب التعديل.' };
@@ -245,7 +260,7 @@ const userSchema = z.object({
   email: z.string().email('بريد إلكتروني غير صالح.'),
   phone: z.string().optional(),
   role: z.enum(['admin', 'user'], { required_error: 'الدور مطلوب.' }),
-  password: z.string().min(6, 'كلمة المرور مطلوبة ويجب أن تكون 6 أحرف على الأقل.'),
+  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.'),
 });
 
 export async function createUser(formData: z.infer<typeof userSchema>) {

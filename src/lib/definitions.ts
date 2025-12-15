@@ -39,6 +39,7 @@ export type Order = {
   rating?: number;
   review?: string;
   isEditRequested?: boolean;
+  editRequestNotes?: string;
 };
 
 export type User = {
