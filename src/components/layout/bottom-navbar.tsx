@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListOrdered, PlusCircle, User } from 'lucide-react';
+import { Home, ListOrdered, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 
@@ -10,7 +10,6 @@ const navLinks = [
   { href: '/dashboard', label: 'الرئيسية', icon: Home },
   { href: '/orders/new', label: 'طلب جديد', icon: PlusCircle },
   { href: '/orders', label: 'طلباتي', icon: ListOrdered },
-  { href: '#', label: 'ملفي', icon: User }, // Placeholder for profile
 ];
 
 export function BottomNavbar() {
