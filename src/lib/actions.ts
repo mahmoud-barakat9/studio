@@ -8,7 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB, addUser } from './firebase-actions';
+import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB, addUser, addNotification, markNotificationAsReadDB, markAllNotificationsAsReadDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
@@ -114,6 +114,9 @@ export async function createOrder(formData: any, asAdmin: boolean) {
 
 
 export async function updateOrder(orderId: string, formData: any, asAdmin: boolean) {
+  const originalOrder = await getOrderById(orderId);
+  if (!originalOrder) throw new Error("Order not found");
+
   const orderData = {
     ...formData,
     isEditRequested: false, // Reset the flag after editing
@@ -122,6 +125,15 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
   };
 
   await updateOrderDB(orderId, orderData);
+
+  // Create notification for user
+    await addNotification({
+        userId: originalOrder.userId,
+        orderId: orderId,
+        message: `تم تعديل طلبك "${originalOrder.orderName}" من قبل الإدارة.`,
+        type: 'order_edited',
+    });
+
 
   if (asAdmin) {
     revalidatePath(`/admin/orders/${orderId}`);
@@ -143,6 +155,15 @@ export async function approveOrder(orderId: string) {
     if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
 
     await updateOrderStatusDB(orderId, 'Approved');
+
+    // Create notification for user
+    await addNotification({
+        userId: order.userId,
+        orderId: order.id,
+        message: `تمت الموافقة على طلبك "${order.orderName}" وهو الآن قيد المراجعة النهائية.`,
+        type: 'order_approved',
+    });
+
     revalidatePath('/admin/orders');
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath('/orders');
@@ -178,6 +199,15 @@ export async function rejectOrder(orderId: string) {
   if (!order) return { success: false, error: 'لم يتم العثور على الطلب' };
 
   await updateOrderStatusDB(orderId, 'Rejected');
+
+    // Create notification for user
+    await addNotification({
+        userId: order.userId,
+        orderId: order.id,
+        message: `نأسف، تم رفض طلبك "${order.orderName}".`,
+        type: 'order_rejected',
+    });
+
   revalidatePath('/admin/orders');
   revalidatePath('/orders');
   
@@ -229,6 +259,13 @@ export async function scheduleOrder(orderId: string, days: number) {
             scheduledDeliveryDate: deliveryDate.toISOString().split('T')[0],
         });
 
+        await addNotification({
+            userId: order.userId,
+            orderId: order.id,
+            message: `طلبك "${order.orderName}" دخل مرحلة التجهيز! التاريخ المتوقع للتسليم هو ${deliveryDate.toISOString().split('T')[0]}.`,
+            type: 'order_status_update',
+        });
+
         revalidatePath(`/admin/orders/${orderId}`);
         revalidatePath('/admin/orders');
 
@@ -242,7 +279,31 @@ export async function scheduleOrder(orderId: string, days: number) {
 
 // The formData parameter is kept for compatibility with form actions, even if not used.
 export async function updateOrderStatus(orderId: string, status: Order['status'], formData?: FormData) {
+    const order = await getOrderById(orderId);
+    if (!order) return;
+    
     await updateOrderStatusDB(orderId, status);
+
+    const statusTranslations: Record<OrderStatus, string> = {
+        "Pending": "بانتظار الموافقة",
+        "Approved": "تمت الموافقة",
+        "FactoryOrdered": "تم الطلب من المعمل",
+        "Processing": "قيد التجهيز",
+        "FactoryShipped": "تم الشحن من المعمل",
+        "ReadyForDelivery": "جاهز للتسليم",
+        "Delivered": "تم التوصيل",
+        "Rejected": "مرفوض",
+    };
+
+    if (status !== 'Pending' && status !== 'Approved') { // Avoid redundant notifications
+        await addNotification({
+            userId: order.userId,
+            orderId: order.id,
+            message: `تم تحديث حالة طلبك "${order.orderName}" إلى: ${statusTranslations[status]}.`,
+            type: 'order_status_update',
+        });
+    }
+
     revalidatePath('/admin/orders');
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath('/orders');
@@ -389,9 +450,24 @@ export async function deleteMaterial(materialName: string) {
 
 export async function updateOrderPrice(orderId: string, newPrice: number | null) {
   try {
+    const originalOrder = await getOrderById(orderId);
+    if (!originalOrder) throw new Error("Order not found");
+
     const updatedOrder = await updateOrderDB(orderId, {
       overriddenPricePerSquareMeter: newPrice === null ? undefined : newPrice,
     });
+
+    const priceUpdateMessage = newPrice !== null 
+        ? `تم تحديث سعر المتر في طلبك "${originalOrder.orderName}" إلى $${newPrice.toFixed(2)}.`
+        : `تم استعادة السعر الافتراضي للمتر في طلبك "${originalOrder.orderName}".`;
+
+    await addNotification({
+        userId: originalOrder.userId,
+        orderId: orderId,
+        message: priceUpdateMessage,
+        type: 'order_price_updated',
+    });
+    
     revalidatePath(`/admin/orders/${orderId}`);
     return { success: true, updatedOrder };
   } catch (error) {
@@ -496,4 +572,24 @@ export async function submitOrderReview(orderId: string, formData: z.infer<typeo
   } catch (error) {
     return { success: false, error: 'فشل إرسال التقييم.' };
   }
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+    try {
+        await markNotificationAsReadDB(notificationId);
+        revalidatePath('/notifications');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to mark notification as read.' };
+    }
+}
+
+export async function markAllNotificationsAsRead(userId: string) {
+    try {
+        await markAllNotificationsAsReadDB(userId);
+        revalidatePath('/notifications');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to mark all notifications as read.' };
+    }
 }

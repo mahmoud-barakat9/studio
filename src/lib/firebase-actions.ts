@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { abjourTypesData as defaultAbjourTypesData } from '@/lib/abjour-data';
-import type { Order, User, Opening, AbjourTypeData, Purchase, Supplier } from '@/lib/definitions';
+import type { Order, User, Opening, AbjourTypeData, Purchase, Supplier, Notification } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
 
 const dataDir = path.join(process.cwd(), 'src', 'lib', 'data');
@@ -13,6 +13,7 @@ const usersFilePath = path.join(dataDir, 'users.json');
 const materialsFilePath = path.join(dataDir, 'materials.json');
 const purchasesFilePath = path.join(dataDir, 'purchases.json');
 const suppliersFilePath = path.join(dataDir, 'suppliers.json');
+const notificationsFilePath = path.join(dataDir, 'notifications.json');
 
 
 const readData = <T>(filePath: string): T[] => {
@@ -25,6 +26,9 @@ const readData = <T>(filePath: string): T[] => {
             }
              if (filePath.includes('suppliers.json')) {
                 defaultData = [{ id: '1', name: 'مورد عام' }];
+            }
+             if (filePath.includes('notifications.json')) {
+                defaultData = [];
             }
             fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
             return defaultData as T[];
@@ -496,4 +500,48 @@ export const addSupplier = async (supplierData: Omit<Supplier, 'id'>): Promise<S
     return Promise.resolve(newSupplier);
 };
 
+// --- Notifications ---
+export async function addNotification(notification: Omit<Notification, 'id' | 'date' | 'isRead'>): Promise<Notification> {
+    const notifications = readData<Notification>(notificationsFilePath);
+    const newNotification: Notification = {
+        id: `NOTIF-${Date.now()}`,
+        date: new Date().toISOString(),
+        isRead: false,
+        ...notification,
+    };
+    notifications.unshift(newNotification);
+    writeData<Notification>(notificationsFilePath, notifications);
+    revalidatePath('/notifications'); // Revalidate user's notification page
+    return newNotification;
+}
+
+export async function getNotificationsByUserId(userId: string): Promise<Notification[]> {
+    const notifications = readData<Notification>(notificationsFilePath);
+    return notifications.filter(n => n.userId === userId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+export async function markNotificationAsReadDB(notificationId: string): Promise<Notification | undefined> {
+    const notifications = readData<Notification>(notificationsFilePath);
+    const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+    if (notificationIndex > -1) {
+        notifications[notificationIndex].isRead = true;
+        writeData<Notification>(notificationsFilePath, notifications);
+        revalidatePath('/notifications');
+        return notifications[notificationIndex];
+    }
+    return undefined;
+}
+
+export async function markAllNotificationsAsReadDB(userId: string): Promise<{ success: boolean }> {
+    let notifications = readData<Notification>(notificationsFilePath);
+    notifications.forEach(n => {
+        if (n.userId === userId && !n.isRead) {
+            n.isRead = true;
+        }
+    });
+    writeData<Notification>(notificationsFilePath, notifications);
+    revalidatePath('/notifications');
+    return { success: true };
+}
     
+
