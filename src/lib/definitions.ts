@@ -73,3 +73,16 @@ export type Supplier = {
   id: string;
   name: string;
 };
+
+
+export type NotificationType = 'order_approved' | 'order_rejected' | 'order_status_update' | 'order_price_updated' | 'order_edited';
+
+export type Notification = {
+  id: string;
+  userId: string;
+  orderId: string;
+  message: string;
+  type: NotificationType;
+  date: string;
+  isRead: boolean;
+};

@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   User,
+  Bell,
 } from 'lucide-react';
 import { useState } from 'react';
 import { BrandLogo } from '@/components/icons';
@@ -33,6 +33,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import { ThemeSwitcher } from '../theme-switcher';
+import { NotificationBell } from '../notifications/notification-bell';
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
@@ -48,6 +49,7 @@ export function MainHeader() {
   const pathname = usePathname();
 
   const homeUrl = '/dashboard';
+  const DUMMY_USER_ID = "5";
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -78,6 +80,7 @@ export function MainHeader() {
           </nav>
           
            <Separator orientation="vertical" className="h-6 mx-2" />
+           <NotificationBell userId={DUMMY_USER_ID} />
            <Button variant="ghost" asChild>
                 <Link href="/welcome">
                     <Home />
@@ -113,7 +116,8 @@ export function MainHeader() {
         </div>
         
         {/* Mobile Sheet Trigger */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+            <NotificationBell userId={DUMMY_USER_ID} />
             <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                 <Button
