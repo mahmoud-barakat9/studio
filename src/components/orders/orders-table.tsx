@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle, BadgeDollarSign, BellRing } from "lucide-react";
+import { Eye, Check, X, Pencil, Trash2, Archive, ArchiveRestore, MoreHorizontal, FileText, MessageSquareQuote, AlertTriangle, BadgeDollarSign } from "lucide-react";
 import type { Order, User } from "@/lib/definitions";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { approveOrder, rejectOrder, deleteOrder, archiveOrder, restoreOrder, requestOrderEdit, sendToFactory } from "@/lib/actions";
@@ -285,14 +285,13 @@ export function OrdersTable({
               <CardHeader>
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg flex items-center gap-2">
-                        {order.isEditRequested && <BellRing className="h-4 w-4 text-primary" />}
                         {order.orderName}
                     </CardTitle>
                     <Badge variant={order.isArchived ? 'secondary' : statusStyle.variant}>
                         {order.isArchived ? "مؤرشف" : statusStyle.text}
                     </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">رقم الطلب: <span className="font-mono">{order.id}</span></div>
+                 <div className="text-sm text-muted-foreground pt-1">رقم الطلب: <span className="font-mono">{order.id}</span></div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {isAdmin && (
@@ -324,22 +323,28 @@ export function OrdersTable({
                     </div>
                   </div>
               </CardContent>
-              <CardFooter className="flex flex-col items-stretch gap-2" onClick={(e) => e.stopPropagation()}>
+              <CardFooter className="flex-col items-start gap-2" onClick={(e) => e.stopPropagation()}>
+                    {order.isEditRequested && (
+                       <div className="w-full text-sm text-destructive border border-destructive/50 bg-destructive/10 p-2 rounded-md mb-2">
+                            <p className="font-bold flex items-center gap-2"><MessageSquareQuote /> طلب تعديل:</p>
+                            <p className="italic">"{order.editRequestNotes}"</p>
+                        </div>
+                    )}
                     {isAdmin ? (
                         <div className="flex justify-end w-full">
                             <AdminOrderActions order={order} />
                         </div>
                     ) : (
                          <div className="flex justify-between items-center w-full gap-2">
-                           <div className="flex items-center">
+                            <div className="flex items-center">
                               <OrderDetailsDialog order={order} />
                               <UserOrderActions order={order} />
-                           </div>
+                            </div>
                             <Button asChild variant="outline" size="sm" className="w-full">
-                                 <Link href={`/orders/${order.id}`}>
+                                <Link href={`/orders/${order.id}`}>
                                     عرض التفاصيل الكاملة
-                                 </Link>
-                             </Button>
+                                </Link>
+                            </Button>
                          </div>
                     )}
               </CardFooter>
@@ -386,10 +391,11 @@ export function OrdersTable({
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger>
-                                            <BellRing className="h-4 w-4 text-primary" />
+                                            <MessageSquareQuote className="h-4 w-4 text-primary" />
                                         </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>تم طلب تعديل لهذا الطلب</p>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="font-bold">ملاحظات التعديل:</p>
+                                            <p className="italic">"{order.editRequestNotes}"</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

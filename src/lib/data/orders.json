@@ -9,7 +9,7 @@
     "mainColor": "بيج",
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 120,
-    "status": "Pending",
+    "status": "Approved",
     "date": "2025-12-15",
     "totalArea": 1.9338,
     "totalCost": 232.05599999999998,
@@ -30,7 +30,8 @@
     "hasDelivery": false,
     "deliveryCost": 0,
     "deliveryAddress": "",
-    "isEditRequested": false
+    "isEditRequested": true,
+    "editRequestNotes": "تعديل السعر"
   },
   {
     "id": "ORD004",
