@@ -10,7 +10,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuFooter
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Badge } from "../ui/badge";
@@ -50,11 +49,11 @@ export function NotificationBell({ userId }: { userId: string }) {
           )}
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuFooter>
+        <div className="p-1">
             <Button variant="ghost" className="w-full justify-center" asChild>
                 <Link href="/notifications">عرض كل الإشعارات</Link>
             </Button>
-        </DropdownMenuFooter>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
