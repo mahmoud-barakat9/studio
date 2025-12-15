@@ -1,7 +1,7 @@
 [
   {
     "id": "ORD870",
-    "orderName": "طلب 15/12/2025, 16:54:03",
+    "orderName": "بيت شهباء",
     "userId": "5",
     "customerName": "User",
     "customerPhone": "555-5555",
@@ -9,7 +9,6 @@
     "mainColor": "بيج",
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 120,
-    "status": "Approved",
     "date": "2025-12-15",
     "totalArea": 1.9338,
     "totalCost": 212.718,
@@ -30,7 +29,7 @@
     "hasDelivery": false,
     "deliveryCost": 0,
     "deliveryAddress": "",
-    "isEditRequested": true,
+    "isEditRequested": false,
     "editRequestNotes": "تعديل السعر",
     "overriddenPricePerSquareMeter": 110
   },

@@ -138,7 +138,7 @@ export async function updateOrder(orderId: string, formData: any, asAdmin: boole
   if (asAdmin) {
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath('/admin/orders');
-    redirect('/admin/orders');
+    redirect(`/admin/orders/${orderId}`);
   } else {
     // non-admin updates
     revalidatePath(`/orders/${orderId}`);
