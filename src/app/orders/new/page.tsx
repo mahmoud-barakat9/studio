@@ -19,7 +19,7 @@ export default async function NewOrderPage() {
       <div className="flex flex-col min-h-screen">
         <MainHeader />
         <main className="flex-1 bg-muted/40 pb-24 md:pb-8">
-          <div className="container mx-auto py-8">
+          <div className="container mx-auto px-4 py-8">
               <div className="flex items-center justify-between mb-8">
                   <div>
                       <h1 className="text-2xl font-bold">إنشاء طلب جديد</h1>
