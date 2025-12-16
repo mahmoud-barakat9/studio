@@ -22,17 +22,19 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, Package } from 'lucide-react';
+import { Loader2, Package, X } from 'lucide-react';
 import { createMaterial, updateMaterial } from '@/lib/actions';
-import React, { useTransition } from 'react';
+import React, { useTransition, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { AbjourTypeData } from '@/lib/definitions';
+import { Badge } from '../ui/badge';
+import { useRouter } from 'next/navigation';
 
 const materialSchema = z.object({
   name: z.string().min(2, 'الاسم مطلوب ويجب أن يكون حرفين على الأقل.'),
   bladeWidth: z.coerce.number().min(0.1, 'عرض الشفرة مطلوب.'),
   pricePerSquareMeter: z.coerce.number().min(0.1, 'السعر مطلوب.'),
-  colors: z.string().min(1, 'يجب إضافة لون واحد على الأقل.'),
+  colors: z.array(z.string()).min(1, 'يجب إضافة لون واحد على الأقل.'),
   stock: z.coerce.number().optional(),
 });
 
@@ -43,31 +45,36 @@ interface MaterialFormProps {
 }
 
 export function MaterialForm({ material }: MaterialFormProps) {
+  const router = useRouter();
   const form = useForm<MaterialFormValues>({
     resolver: zodResolver(materialSchema),
     defaultValues: {
       name: material?.name || '',
       bladeWidth: material?.bladeWidth || undefined,
       pricePerSquareMeter: material?.pricePerSquareMeter || undefined,
-      colors: material?.colors.join(',') || '',
+      colors: material?.colors || [],
       stock: material?.stock || 0,
     },
   });
 
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [colorInput, setColorInput] = useState('');
 
   const isEditing = !!material;
 
   const onSubmit = (data: MaterialFormValues) => {
      startTransition(async () => {
-        const action = isEditing ? updateMaterial : createMaterial;
+        const action = isEditing ? updateMaterial.bind(null, material.name) : createMaterial;
         const result = await action(data);
         if (result?.success) {
             toast({
                 title: isEditing ? 'تم تحديث المادة بنجاح!' : 'تم إنشاء المادة بنجاح!',
                 description: `تم حفظ التغييرات على ${data.name}.`,
             });
+            if (!isEditing) {
+              router.push('/admin/materials');
+            }
         } else if (result?.error) {
              toast({
                 variant: 'destructive',
@@ -77,6 +84,22 @@ export function MaterialForm({ material }: MaterialFormProps) {
         }
      });
   };
+  
+    const handleAddColor = () => {
+        if (colorInput.trim() !== '') {
+            const currentColors = form.getValues('colors');
+            if (!currentColors.includes(colorInput.trim())) {
+                form.setValue('colors', [...currentColors, colorInput.trim()]);
+                setColorInput('');
+            }
+        }
+    };
+
+    const handleRemoveColor = (colorToRemove: string) => {
+        const currentColors = form.getValues('colors');
+        form.setValue('colors', currentColors.filter(color => color !== colorToRemove));
+    };
+
 
   return (
     <Form {...form}>
@@ -141,21 +164,50 @@ export function MaterialForm({ material }: MaterialFormProps) {
               )}
             />
             <FormField
-              control={form.control}
-              name="colors"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>الألوان المتاحة</FormLabel>
-                   <FormControl>
-                    <Input {...field} placeholder="أبيض,أسود,بيج" />
-                  </FormControl>
-                  <FormDescription>
-                    أدخل الألوان مفصولة بفاصلة (comma).
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+                control={form.control}
+                name="colors"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>الألوان المتاحة</FormLabel>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                value={colorInput}
+                                onChange={(e) => setColorInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddColor();
+                                    }
+                                }}
+                                placeholder="أدخل لونًا واضغط Enter"
+                            />
+                            <Button type="button" variant="outline" onClick={handleAddColor}>
+                                إضافة
+                            </Button>
+                        </div>
+                        <FormDescription>
+                            أضف الألوان المتاحة لهذه المادة واحدًا تلو الآخر.
+                        </FormDescription>
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            {field.value.map((color) => (
+                                <Badge key={color} variant="secondary" className="flex items-center gap-1.5">
+                                    {color}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveColor(color)}
+                                        className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                                    >
+                                        <X className="h-3 w-3" />
+                                        <span className="sr-only">Remove {color}</span>
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
+
             {!isEditing && (
                  <FormField
                     control={form.control}
@@ -189,5 +241,3 @@ export function MaterialForm({ material }: MaterialFormProps) {
     </Form>
   );
 }
-
-    

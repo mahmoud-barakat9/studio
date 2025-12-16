@@ -284,7 +284,7 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     
     await updateOrderStatusDB(orderId, status);
 
-    const statusTranslations: Record<OrderStatus, string> = {
+    const statusTranslations: Record<Order['status'], string> = {
         "Pending": "بانتظار الموافقة",
         "Approved": "تمت الموافقة",
         "FactoryOrdered": "تم الطلب من المعمل",
@@ -385,7 +385,7 @@ const materialSchema = z.object({
   name: z.string().min(2, 'الاسم مطلوب ويجب أن يكون حرفين على الأقل.'),
   bladeWidth: z.coerce.number().min(0.1, 'عرض الشفرة مطلوب.'),
   pricePerSquareMeter: z.coerce.number().min(0.1, 'السعر مطلوب.'),
-  colors: z.string().min(1, 'يجب إضافة لون واحد على الأقل.'),
+  colors: z.array(z.string()).min(1, 'يجب إضافة لون واحد على الأقل.'),
   stock: z.coerce.number().optional(),
 });
 
@@ -397,7 +397,6 @@ export async function createMaterial(formData: z.infer<typeof materialSchema>) {
     
     const materialData: AbjourTypeData = {
         ...validatedFields.data,
-        colors: validatedFields.data.colors.split(',').map(c => c.trim()).filter(Boolean),
         stock: validatedFields.data.stock || 0,
     };
 
@@ -405,32 +404,23 @@ export async function createMaterial(formData: z.infer<typeof materialSchema>) {
         await addMaterial(materialData);
         revalidatePath('/admin/materials');
         revalidatePath('/admin/inventory');
-        redirect('/admin/materials');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };
     }
 }
 
-export async function updateMaterial(formData: z.infer<typeof materialSchema>) {
+export async function updateMaterial(originalMaterialName: string, formData: z.infer<typeof materialSchema>) {
      const validatedFields = materialSchema.safeParse(formData);
     if (!validatedFields.success) {
         return { error: "البيانات المدخلة غير صالحة." };
     }
-
-    const materialData = {
-        name: formData.name,
-        bladeWidth: formData.bladeWidth,
-        pricePerSquareMeter: formData.pricePerSquareMeter,
-        colors: formData.colors.split(',').map(c => c.trim()).filter(Boolean),
-    };
     
     try {
-        await updateMaterialDB(materialData.name, materialData);
+        await updateMaterialDB(originalMaterialName, validatedFields.data);
         revalidatePath('/admin/materials');
-        revalidatePath(`/admin/materials/${encodeURIComponent(materialData.name)}/edit`);
+        revalidatePath(`/admin/materials/${encodeURIComponent(originalMaterialName)}/edit`);
         revalidatePath('/admin/inventory');
-        redirect('/admin/materials');
         return { success: true };
     } catch (error: any) {
         return { error: error.message };
