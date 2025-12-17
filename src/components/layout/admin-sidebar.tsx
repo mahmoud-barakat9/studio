@@ -38,7 +38,7 @@ import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
 import { ThemeSwitcher } from "../theme-switcher";
-import { LanguageSwitcher } from "../language-switcher";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },

@@ -34,7 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import { ThemeSwitcher } from '../theme-switcher';
 import { NotificationBell } from '../notifications/notification-bell';
-import { LanguageSwitcher } from '../language-switcher';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
