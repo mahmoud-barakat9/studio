@@ -11,7 +11,7 @@ import { useEffect, useState, ReactNode } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
 import { OnlineStatusIndicator } from '@/components/online-status-indicator';
 import { ThemeProvider } from 'next-themes';
-import { NextIntlClientProvider } from 'next-intl';
+import { NextIntlClientProvider, useMessages } from 'next-intl';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -26,16 +26,15 @@ interface RootLayoutProps {
   params: {
     locale: string;
   };
-  messages: any;
 }
 
 export default function RootLayout({
   children,
   params: { locale },
-  messages,
 }: Readonly<RootLayoutProps>) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
+  const messages = useMessages();
 
   useEffect(() => {
     const shouldShowSplash = !sessionStorage.getItem('splashShown');
