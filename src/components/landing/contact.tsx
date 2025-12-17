@@ -59,7 +59,7 @@ export function Contact() {
                         <CardDescription>املأ النموذج أدناه وسنعاود الاتصال بك في أقرب وقت ممكن.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form className="space-y-4">
+                        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">الاسم الكامل</Label>
