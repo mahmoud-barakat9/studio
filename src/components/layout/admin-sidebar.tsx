@@ -95,11 +95,14 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                 >
                   <Link href={link.href} className="relative">
                     <link.icon />
-                    <span className="group-data-[state=expanded]:opacity-100 group-data-[state=collapsed]:opacity-0 transition-opacity duration-200">
+                    <span className="group-data-[state=expanded]:opacity-100 group-data-[state=collapsed]:opacity-0 transition-opacity duration-200 flex items-center gap-2">
                         {link.label}
+                        {link.badgeKey && badgeCount > 0 && state === 'expanded' && (
+                          <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
+                        )}
                     </span>
-                    {link.badgeKey && badgeCount > 0 && (
-                       <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
+                     {link.badgeKey && badgeCount > 0 && state === 'collapsed' && (
+                       <SidebarMenuBadge className="absolute top-1.5 right-1.5 h-2 w-2 p-0 justify-center" />
                     )}
                   </Link>
                 </SidebarMenuButton>

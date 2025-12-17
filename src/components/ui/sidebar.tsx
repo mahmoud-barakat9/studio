@@ -642,12 +642,9 @@ const SidebarMenuBadge = React.forwardRef<
     ref={ref}
     data-sidebar="menu-badge"
     className={cn(
-      "absolute flex items-center justify-center rounded-full text-xs font-semibold tabular-nums",
+      "flex items-center justify-center rounded-full text-xs font-semibold tabular-nums",
       "h-5 min-w-5 px-1.5",
       "bg-destructive text-destructive-foreground",
-      // Positioning
-      "top-1.5 right-1.5",
-      "group-data-[state=collapsed]:top-1 group-data-[state=collapsed]:right-1 group-data-[state=collapsed]:h-2 group-data-[state=collapsed]:w-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:text-transparent",
       className
     )}
     {...props}
