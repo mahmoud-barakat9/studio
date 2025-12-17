@@ -221,10 +221,10 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   useEffect(() => {
     const currentColor = form.getValues('mainColor');
-    if (selectedAbjourTypeData && !selectedAbjourTypeData.colors.includes(currentColor)) {
+    if (selectedAbjourTypeData && Array.isArray(availableColors) && !availableColors.includes(currentColor)) {
         form.setValue('mainColor', '');
     }
-  }, [watchMainAbjourType, selectedAbjourTypeData, form]);
+  }, [watchMainAbjourType, selectedAbjourTypeData, availableColors, form]);
 
   const handleSuggestName = () => {
     const mainAbjourType = form.getValues('mainAbjourType');
