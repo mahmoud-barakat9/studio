@@ -263,9 +263,9 @@ export default async function AdminDashboardPage() {
         <KpiCard title="طلبات قيد التنفيذ" value={`${kpiData.inProductionCount}`} comparisonText="" isPositive={null} Icon={Package} />
         <KpiCard title="الطلبات المتأخرة" value={`${kpiData.lateOrdersCount}`} comparisonText="تحتاج إلى انتباه فوري" isPositive={false} Icon={AlertTriangle} className={kpiData.lateOrdersCount > 0 ? "border-destructive text-destructive shadow-lg hover:shadow-xl transition-shadow" : ""} />
       </div>
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-8">
             <DashboardCharts monthlyTrendsData={monthlyTrendsData} topMaterialsData={topMaterialsData} />
-             <Card className="shadow-lg hover:shadow-xl transition-shadow">
+             <Card className="shadow-lg hover:shadow-xl transition-shadow xl:col-span-1">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><BrainCircuit /> توقعات وتحليلات ذكية</CardTitle>
                     <CardDescription>تقديرات للشهر القادم بناءً على بيانات آخر 3 أشهر.</CardDescription>
