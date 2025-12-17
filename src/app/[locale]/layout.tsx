@@ -10,8 +10,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, ReactNode } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
 import { OnlineStatusIndicator } from '@/components/online-status-indicator';
-import { ThemeProvider } from 'next-themes';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
+import { Providers } from './providers';
+import { useMessages } from 'next-intl';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -74,20 +74,13 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={cn('antialiased', cairo.variable)}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-            >
-                <OnlineStatusIndicator />
-                <PageTransitionLoader />
-                <SplashScreen isVisible={isLoading} />
-                {!isLoading && children}
-                <Toaster />
-            </ThemeProvider>
-        </NextIntlClientProvider>
+        <Providers locale={locale} messages={messages}>
+          <OnlineStatusIndicator />
+          <PageTransitionLoader />
+          <SplashScreen isVisible={isLoading} />
+          {!isLoading && children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
