@@ -24,14 +24,10 @@ const metadata: Metadata = {
 
 interface RootLayoutProps {
   children: ReactNode;
-  params: {
-    locale: string;
-  };
 }
 
 export default function RootLayout({
   children,
-  params: { locale },
 }: Readonly<RootLayoutProps>) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +46,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
        <head>
         <title>{String(metadata.title)}</title>
         <meta name="description" content={String(metadata.description)} />

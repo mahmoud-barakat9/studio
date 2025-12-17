@@ -35,7 +35,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import { ThemeSwitcher } from '../theme-switcher';
 import { NotificationBell } from '../notifications/notification-bell';
-import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
@@ -111,9 +110,6 @@ export function MainHeader() {
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <ThemeSwitcher />
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <LanguageSwitcher />
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                       <LogOut className="ml-2 h-4 w-4" />
@@ -180,7 +176,6 @@ export function MainHeader() {
                                 <div className="px-2 py-2 space-y-2">
                                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">إعدادات</h3>
                                     <ThemeSwitcher />
-                                    <LanguageSwitcher />
                                 </div>
                              <Separator />
                                 <nav className="flex flex-col gap-2">

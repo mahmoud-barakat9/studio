@@ -39,7 +39,6 @@ import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
 import { ThemeSwitcher } from "../theme-switcher";
-import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -144,9 +143,6 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                  <DropdownMenuSeparator />
                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                     <ThemeSwitcher />
-                </DropdownMenuItem>
-                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <LanguageSwitcher />
                 </DropdownMenuItem>
                  <DropdownMenuSeparator />
                  <DropdownMenuItem asChild>
