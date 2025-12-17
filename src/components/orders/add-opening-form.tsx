@@ -104,6 +104,7 @@ export function AddOpeningForm({
             method: 'direct',
             hasEndCap: false,
             hasAccessories: false,
+            notes: '',
         },
     });
 
@@ -132,7 +133,7 @@ export function AddOpeningForm({
                 }
                 defaultValues.hasEndCap = openingToEdit.hasEndCap;
                 defaultValues.hasAccessories = openingToEdit.hasAccessories;
-                defaultValues.notes = openingToEdit.notes;
+                defaultValues.notes = openingToEdit.notes || '';
             }
             form.reset(defaultValues);
         }
@@ -438,7 +439,7 @@ export function AddOpeningForm({
                                             <FormItem>
                                                 <FormLabel>ملاحظات (اختياري)</FormLabel>
                                                 <FormControl>
-                                                    <Textarea placeholder="أضف أي ملاحظات خاصة لهذه الفتحة..." {...field} value={field.value ?? ''} />
+                                                    <Textarea placeholder="أضف أي ملاحظات خاصة لهذه الفتحة..." {...field} />
                                                 </FormControl>
                                             </FormItem>
                                         )}
