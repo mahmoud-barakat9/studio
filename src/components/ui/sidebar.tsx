@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -645,10 +646,8 @@ const SidebarMenuBadge = React.forwardRef<
       "h-5 min-w-5 px-1.5",
       "bg-destructive text-destructive-foreground",
       // Positioning
-      "top-0 -translate-y-1/2",
-      "group-data-[side=left]:-right-2 group-data-[side=right]:-left-2",
-      // Hide when sidebar is collapsed
-      "group-data-[collapsible=icon]:hidden",
+      "top-1.5 right-1.5",
+      "group-data-[state=collapsed]:top-1 group-data-[state=collapsed]:right-1 group-data-[state=collapsed]:h-2 group-data-[state=collapsed]:w-2 group-data-[state=collapsed]:p-0 group-data-[state=collapsed]:text-transparent",
       className
     )}
     {...props}

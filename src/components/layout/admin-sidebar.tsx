@@ -95,12 +95,12 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                 >
                   <Link href={link.href} className="relative">
                     <link.icon />
-                    {link.badgeKey && badgeCount > 0 && (
-                       <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
-                    )}
                     <span className="group-data-[state=expanded]:opacity-100 group-data-[state=collapsed]:opacity-0 transition-opacity duration-200">
                         {link.label}
                     </span>
+                    {link.badgeKey && badgeCount > 0 && (
+                       <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
