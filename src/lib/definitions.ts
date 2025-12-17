@@ -12,6 +12,12 @@ export type Opening = {
 
 export type OrderStatus = "Pending" | "Approved" | "FactoryOrdered" | "Processing" | "FactoryShipped" | "ReadyForDelivery" | "Delivered" | "Rejected";
 
+export type Accessory = {
+  name: string;
+  quantity: number;
+  unit: 'unit' | 'meter' | 'kg';
+  type: 'required' | 'optional';
+};
 
 export type Order = {
   id: string;
@@ -31,6 +37,7 @@ export type Order = {
   totalArea: number;
   totalCost: number;
   openings: Opening[];
+  accessories?: Accessory[];
   isArchived: boolean;
   hasDelivery: boolean;
   deliveryCost: number;

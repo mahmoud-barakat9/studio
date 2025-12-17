@@ -8,6 +8,7 @@ import {
   calculateAbjourDimensions as calculateAbjourDimensionsAI,
 } from '@/ai/flows/calculate-abjour-dimensions';
 import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
+import { proposeAccessories as proposeAccessoriesAI } from '@/ai/flows/propose-accessories';
 import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB, addUser, addNotification, markNotificationAsReadDB, markAllNotificationsAsReadDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
@@ -45,6 +46,26 @@ export async function generateOrderName(
     return { data: null, error: 'Failed to generate name.' };
   }
 }
+
+export async function proposeAccessories(
+  prevState: any,
+  formData: {
+    mainAbjourType: string;
+    openings: Order['openings'];
+    hasDelivery: boolean;
+  }
+) {
+    if (!formData.mainAbjourType || !formData.openings || formData.openings.length === 0) {
+        return { data: null, error: 'Please select abjour type and add at least one opening.' };
+    }
+  try {
+    const result = await proposeAccessoriesAI(formData);
+    return { data: result, error: null };
+  } catch (error) {
+    return { data: null, error: 'Failed to propose accessories.' };
+  }
+}
+
 
 export async function createOrder(formData: any, asAdmin: boolean) {
   let userId;

@@ -73,6 +73,32 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                     </div>
                 </section>
 
+                {order.accessories && order.accessories.length > 0 && (
+                    <section className="mb-8">
+                        <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">الإكسسوارات</h3>
+                        <div className="overflow-x-auto rounded-lg border">
+                            <Table className="w-full text-sm text-center">
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow>
+                                        <TableHead className="p-3 text-right">اسم الإكسسوار</TableHead>
+                                        <TableHead className="p-3">الكمية</TableHead>
+                                        <TableHead className="p-3">الوحدة</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {order.accessories.map((acc, index) => (
+                                        <TableRow key={index} className="even:bg-card">
+                                            <TableCell className="p-3 text-right font-medium">{acc.name}</TableCell>
+                                            <TableCell className="p-3 font-mono">{acc.quantity}</TableCell>
+                                            <TableCell className="p-3">{acc.unit}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </section>
+                )}
+
                 {order.hasDelivery && (
                     <section className="mb-8">
                         <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">معلومات التوصيل</h3>
