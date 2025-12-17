@@ -1,0 +1,29 @@
+{
+    "common": {
+        "change-language": "Change language"
+    },
+    "WelcomeHeader": {
+        "home": "Home",
+        "features": "Features",
+        "projects": "Our Work",
+        "testimonials": "Testimonials",
+        "contact": "Contact Us"
+    },
+    "AdminSidebar": {
+        "dashboard": "Dashboard",
+        "orders": "Orders",
+        "notifications": "Notifications",
+        "reviews": "Reviews",
+        "users": "Users",
+        "materials": "Materials",
+        "inventory": "Inventory",
+        "suppliers": "Suppliers",
+        "reports": "Reports",
+        "my-account": "My Account",
+        "profile": "Profile",
+        "settings": "Settings",
+        "switch-to-user": "Switch to User",
+        "back-to-home": "Back to Home",
+        "logout": "Logout"
+    }
+}

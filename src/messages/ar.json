@@ -1,0 +1,29 @@
+{
+    "common": {
+        "change-language": "تغيير اللغة"
+    },
+    "WelcomeHeader": {
+        "home": "الرئيسية",
+        "features": "المميزات",
+        "projects": "أعمالنا",
+        "testimonials": "آراء العملاء",
+        "contact": "تواصل معنا"
+    },
+    "AdminSidebar": {
+        "dashboard": "لوحة التحكم",
+        "orders": "الطلبات",
+        "notifications": "الإشعارات",
+        "reviews": "المراجعات",
+        "users": "المستخدمون",
+        "materials": "المواد",
+        "inventory": "المخزون",
+        "suppliers": "الموردون",
+        "reports": "التقارير",
+        "my-account": "حسابي",
+        "profile": "الملف الشخصي",
+        "settings": "الإعدادات",
+        "switch-to-user": "تبديل للمستخدم",
+        "back-to-home": "العودة للرئيسية",
+        "logout": "تسجيل الخروج"
+    }
+}
