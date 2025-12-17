@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import type { Metadata } from 'next';
 import { Cairo } from 'next/font/google';
@@ -8,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { SplashScreen } from '@/components/splash-screen';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
 import { OnlineStatusIndicator } from '@/components/online-status-indicator';
 import { ThemeProvider } from 'next-themes';
@@ -23,11 +22,17 @@ const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
+interface RootLayoutProps {
+  children: ReactNode;
+  params: {
+    locale: string;
+  };
+}
+
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  params: { locale },
+}: Readonly<RootLayoutProps>) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,7 +50,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
        <head>
         <title>{String(metadata.title)}</title>
         <meta name="description" content={String(metadata.description)} />
