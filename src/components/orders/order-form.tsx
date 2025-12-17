@@ -38,15 +38,16 @@ import {
     TooltipTrigger,
   } from "@/components/ui/tooltip";
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, Truck, BadgeDollarSign } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck, BadgeDollarSign, Trash2 } from 'lucide-react';
 import {
   generateOrderName,
   createOrder as createOrderAction,
+  proposeAccessories,
 } from '@/lib/actions';
 import React, { useEffect, useTransition, useMemo, useState, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import type { User, Opening, Order } from '@/lib/definitions';
+import type { User, Opening, Order, Accessory } from '@/lib/definitions';
 import { getMaterials } from '@/lib/firebase-actions';
 import { AddOpeningForm } from './add-opening-form';
 import { OpeningsTable } from './openings-table';
@@ -56,6 +57,13 @@ import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import { MapSelector } from './map-selector';
 
+
+const accessorySchema = z.object({
+  name: z.string(),
+  quantity: z.coerce.number(),
+  unit: z.enum(['unit', 'meter', 'kg']),
+  type: z.enum(['required', 'optional']),
+});
 
 const openingSchema = z.object({
   serial: z.string(),
@@ -74,6 +82,7 @@ const baseOrderSchema = z.object({
   mainAbjourType: z.string({ required_error: "نوع الأباجور الرئيسي مطلوب."}).min(1, "نوع الأباجور الرئيسي مطلوب."),
   mainColor: z.string({ required_error: "اللون الرئيسي مطلوب."}).min(1, "اللون الرئيسي مطلوب."),
   openings: z.array(openingSchema).min(1, 'يجب إضافة فتحة واحدة على الأقل.'),
+  accessories: z.array(accessorySchema).optional(),
   hasDelivery: z.boolean().default(false),
   deliveryAddress: z.string().optional(),
   overriddenPricePerSquareMeter: z.coerce.number().optional(),
@@ -132,6 +141,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
       mainAbjourType: '',
       mainColor: '',
       openings: [],
+      accessories: [],
       hasDelivery: false,
       deliveryAddress: '',
       userId: currentUser?.id || '',
@@ -147,7 +157,9 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const { toast } = useToast();
 
   const [nameState, generateNameAction] = useActionState(generateOrderName, null);
+  const [accessoriesState, proposeAccessoriesAction] = useActionState(proposeAccessories, { data: null, error: null });
   const [isNamePending, startNameTransition] = useTransition();
+  const [isAccessoriesPending, startAccessoriesTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
   
@@ -161,6 +173,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
 
   const watchedOpenings = useWatch({ control: form.control, name: 'openings'});
+  const watchedAccessories = useWatch({ control: form.control, name: 'accessories' }) || [];
   const watchMainAbjourType = useWatch({ control: form.control, name: 'mainAbjourType'});
   const watchMainColor = useWatch({ control: form.control, name: 'mainColor' });
   const watchUserId = useWatch({ control: form.control, name: 'userId'});
@@ -220,6 +233,23 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   }, [nameState, form, toast]);
 
   useEffect(() => {
+    if (accessoriesState?.data?.accessories) {
+      form.setValue('accessories', accessoriesState.data.accessories);
+       toast({
+        title: 'تم اقتراح الإكسسوارات!',
+        description: 'يمكنك تعديل القائمة المقترحة.',
+      });
+    }
+    if (accessoriesState?.error) {
+        toast({
+            variant: "destructive",
+            title: "خطأ في اقتراح الإكسسوارات",
+            description: accessoriesState.error,
+        });
+    }
+  }, [accessoriesState, form, toast]);
+
+  useEffect(() => {
     const currentColor = form.getValues('mainColor');
     if (selectedAbjourTypeData && Array.isArray(availableColors) && !availableColors.includes(currentColor)) {
         form.setValue('mainColor', '');
@@ -249,6 +279,16 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     });
   };
 
+  const handleProposeAccessories = () => {
+    startAccessoriesTransition(() => {
+        proposeAccessoriesAction({
+            mainAbjourType: watchMainAbjourType,
+            openings: watchedOpenings,
+            hasDelivery: watchHasDelivery,
+        });
+    });
+  }
+
   const handleAddOpening = (openingData: Omit<Opening, 'serial'>) => {
     const newOpening = {
       ...openingData,
@@ -266,6 +306,17 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const handleDeleteOpening = (index: number) => {
     const newOpenings = watchedOpenings.filter((_, i) => i !== index);
     form.setValue('openings', newOpenings);
+  };
+
+  const handleUpdateAccessoryQuantity = (index: number, quantity: number) => {
+    const updatedAccessories = [...watchedAccessories];
+    updatedAccessories[index].quantity = quantity;
+    form.setValue('accessories', updatedAccessories);
+  };
+
+  const handleDeleteAccessory = (index: number) => {
+      const updatedAccessories = watchedAccessories.filter((_, i) => i !== index);
+      form.setValue('accessories', updatedAccessories);
   };
 
 
@@ -585,6 +636,77 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
           </div>
           
           <div className="lg:col-span-2 lg:sticky top-4 space-y-8">
+             <Card>
+                <CardHeader>
+                    <CardTitle>الإكسسوارات (اختياري)</CardTitle>
+                    <CardDescription>اقترح أو أضف الإكسسوارات اللازمة لهذا الطلب.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {watchedAccessories.length === 0 ? (
+                        <div className="text-center py-4">
+                            <p className="text-sm text-muted-foreground mb-4">لم تتم إضافة أي إكسسوارات.</p>
+                             <Button
+                                type="button"
+                                onClick={handleProposeAccessories}
+                                disabled={isAccessoriesPending || watchedOpenings.length === 0}
+                                variant="secondary"
+                            >
+                                {isAccessoriesPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                                <span className="mr-2">اقترح إكسسوارات بالذكاء الاصطناعي</span>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                             <div className="overflow-x-auto rounded-lg border">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-muted/50">
+                                        <tr>
+                                            <th className="p-2 text-right">الاسم</th>
+                                            <th className="p-2 text-center w-24">الكمية</th>
+                                            <th className="p-2 text-center">الوحدة</th>
+                                            <th className="p-2 text-center w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {watchedAccessories.map((acc, index) => (
+                                            <tr key={index} className="border-b">
+                                                <td className="p-2 font-medium">
+                                                    {acc.name}
+                                                    <Badge variant={acc.type === 'required' ? 'destructive' : 'outline'} className="mr-2 scale-75">{acc.type === 'required' ? 'مطلوب' : 'اختياري'}</Badge>
+                                                </td>
+                                                <td className="p-2">
+                                                    <Input 
+                                                        type="number" 
+                                                        value={acc.quantity}
+                                                        onChange={(e) => handleUpdateAccessoryQuantity(index, parseFloat(e.target.value))}
+                                                        className="h-8 text-center"
+                                                    />
+                                                </td>
+                                                <td className="p-2 text-center">{acc.unit}</td>
+                                                <td className="p-2 text-center">
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteAccessory(index)}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={handleProposeAccessories}
+                                disabled={isAccessoriesPending || watchedOpenings.length === 0}
+                                variant="outline"
+                                size="sm"
+                            >
+                                {isAccessoriesPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                                <span className="mr-2">إعادة اقتراح الإكسسوارات</span>
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle>ملخص الطلب</CardTitle>
@@ -614,7 +736,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                               ) : (
                                 <Wand2 className="h-4 w-4" />
                               )}
-                              <span className="ml-2">اقتراح</span>
+                              <span className="mr-2">اقتراح</span>
                             </Button>
                           </div>
                         </FormControl>
@@ -723,7 +845,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   disabled={isSubmitPending}
                 >
                   {isSubmitPending && (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   إرسال الطلب
                 </Button>
@@ -745,7 +867,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                         className="min-w-[150px]"
                         disabled={isSubmitPending}
                     >
-                        {isSubmitPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                        {isSubmitPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         إرسال الطلب
                     </Button>
                 </div>
