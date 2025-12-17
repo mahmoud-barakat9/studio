@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -38,7 +39,7 @@ import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
 import { ThemeSwitcher } from "../theme-switcher";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -87,7 +88,7 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                 <SidebarMenuButton
                   asChild
                   size="lg"
-                  isActive={pathname.startsWith(link.href)}
+                  isActive={pathname.endsWith(link.href)}
                   tooltip={{
                       children: link.label,
                       side: "left"

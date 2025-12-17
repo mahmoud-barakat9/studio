@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,7 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import { ThemeSwitcher } from '../theme-switcher';
 import { NotificationBell } from '../notifications/notification-bell';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
@@ -51,6 +52,9 @@ export function MainHeader() {
 
   const homeUrl = '/dashboard';
   const DUMMY_USER_ID = "5";
+
+  // This removes the locale from the pathname for comparison
+  const basePath = pathname.split('/').slice(2).join('/');
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,7 +74,7 @@ export function MainHeader() {
             {userLinks.map(link => (
               <Button key={link.href} variant="ghost" asChild className={cn(
                 'text-muted-foreground',
-                pathname === link.href && 'text-foreground bg-accent'
+                pathname.endsWith(link.href) && 'text-foreground bg-accent'
               )}>
                 <Link href={link.href}>
                   {link.icon && <link.icon />}
@@ -164,7 +168,7 @@ export function MainHeader() {
                                         onClick={() => setSheetOpen(false)}
                                         className={cn(
                                         'text-lg font-medium transition-colors hover:text-primary w-full text-right py-3 px-2 rounded-md flex items-center gap-4',
-                                        pathname.startsWith(link.href) ? 'bg-primary/10 text-primary' : 'text-foreground'
+                                        pathname.endsWith(link.href) ? 'bg-primary/10 text-primary' : 'text-foreground'
                                         )}
                                     >
                                         {link.icon && <link.icon className="h-5 w-5" />}
