@@ -48,7 +48,7 @@ const CHART_COLORS = [
 export function DashboardCharts({ monthlyTrendsData, topMaterialsData }: { monthlyTrendsData: any[], topMaterialsData: any[] }) {
     return (
         <>
-            <Card className="xl:col-span-2 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="xl:col-span-4 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
                     <CardTitle>اتجاهات الطلبات الشهرية</CardTitle>
                     <CardDescription>نظرة عامة على عدد الطلبات وإجمالي المتر المربع لآخر 12 شهرًا.</CardDescription>
