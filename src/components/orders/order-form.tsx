@@ -40,7 +40,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Wand2, Loader2, Info, Truck, BadgeDollarSign, Trash2 } from 'lucide-react';
 import {
-  generateOrderName,
   createOrder as createOrderAction,
   proposeAccessories,
 } from '@/lib/actions';
@@ -156,9 +155,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const { toast } = useToast();
 
-  const [nameState, generateNameAction] = useActionState(generateOrderName, null);
   const [accessoriesState, proposeAccessoriesAction] = useActionState(proposeAccessories, { data: null, error: null });
-  const [isNamePending, startNameTransition] = useTransition();
   const [isAccessoriesPending, startAccessoriesTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
   const [abjourTypesData, setAbjourTypesData] = useState<Awaited<ReturnType<typeof getMaterials>>>([]);
@@ -219,18 +216,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
 
   const totalCost = productsCost + deliveryCost;
 
-  useEffect(() => {
-    if (nameState?.data?.orderName) {
-      form.setValue('orderName', nameState.data.orderName);
-      toast({
-        title: 'تم إنشاء اسم مقترح!',
-        description: 'تم ملء اسم الطلب لك.',
-      });
-    }
-    if (nameState?.error) {
-      toast({ variant: 'destructive', title: 'خطأ', description: nameState.error });
-    }
-  }, [nameState, form, toast]);
 
   useEffect(() => {
     if (accessoriesState?.data?.accessories) {
@@ -256,28 +241,6 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     }
   }, [watchMainAbjourType, selectedAbjourTypeData, availableColors, form]);
 
-  const handleSuggestName = () => {
-    const mainAbjourType = form.getValues('mainAbjourType');
-    const mainColor = form.getValues('mainColor');
-    const firstOpening = form.getValues('openings.0');
-
-    if (!mainAbjourType || !mainColor || !firstOpening) {
-      toast({
-        variant: 'destructive',
-        title: 'خطأ',
-        description: 'الرجاء اختيار نوع الأباجور واللون وإضافة فتحة واحدة على الأقل لإنشاء اسم.',
-      });
-      return;
-    }
-    startNameTransition(() => {
-      generateNameAction({
-          abjourType: mainAbjourType,
-          color: mainColor,
-          codeLength: firstOpening.codeLength,
-          numberOfCodes: firstOpening.numberOfCodes,
-      });
-    });
-  };
 
   const handleProposeAccessories = () => {
     startAccessoriesTransition(() => {
@@ -725,19 +688,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                               {...field}
                               placeholder="مثال: 'غرفة معيشة الفيلا'"
                             />
-                            <Button
-                              type="button"
-                              onClick={handleSuggestName}
-                              disabled={isNamePending}
-                              className="w-full sm:w-auto flex-shrink-0"
-                            >
-                              {isNamePending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Wand2 className="h-4 w-4" />
-                              )}
-                              <span className="mr-2">اقتراح</span>
-                            </Button>
+                           
                           </div>
                         </FormControl>
                         <FormMessage />

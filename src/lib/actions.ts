@@ -5,47 +5,14 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import {
-  calculateAbjourDimensions as calculateAbjourDimensionsAI,
-} from '@/ai/flows/calculate-abjour-dimensions';
-import { generateOrderName as generateOrderNameAI } from '@/ai/flows/generate-order-name';
-import { proposeAccessories as proposeAccessoriesAI } from '@/ai/flows/propose-accessories';
+  proposeAccessories as proposeAccessoriesAI,
+} from '@/ai/flows/propose-accessories';
 import { addOrder, updateUser as updateUserDB, deleteUser as deleteUserDB, updateOrderArchivedStatus, addMaterial, updateMaterial as updateMaterialDB, deleteMaterial as deleteMaterialDB, getAllUsers, updateOrder as updateOrderDB, getOrderById, deleteOrder as deleteOrderDB, updateOrderStatus as updateOrderStatusDB, addUserAndGetId, getUserById, initializeTestUsers, addPurchase as addPurchaseDB, addSupplier as addSupplierDB, getPurchaseById, updatePurchase as updatePurchaseDB, deletePurchase as deletePurchaseDB, addUser, addNotification, markNotificationAsReadDB, markAllNotificationsAsReadDB } from './firebase-actions';
 import { revalidatePath } from 'next/cache';
 import type { AbjourTypeData, User, Order } from './definitions';
 
 const ADMIN_WHATSAPP_NUMBER = "963123456789"; // Replace with the actual admin WhatsApp number
 
-export async function calculateAbjourDimensions(
-  prevState: any,
-  formData: { width: number; abjourType: string }
-) {
-  try {
-    const result = await calculateAbjourDimensionsAI({
-      width: formData.width,
-      abjourType: formData.abjourType,
-    });
-    return { data: result, error: null };
-  } catch (error) {
-    return { data: null, error: 'Failed to calculate dimensions.' };
-  }
-}
-
-export async function generateOrderName(
-  prevState: any,
-  formData: {
-    abjourType: string;
-    color: string;
-    codeLength: number;
-    numberOfCodes: number;
-  }
-) {
-  try {
-    const result = await generateOrderNameAI(formData);
-    return { data: result, error: null };
-  } catch (error) {
-    return { data: null, error: 'Failed to generate name.' };
-  }
-}
 
 export async function proposeAccessories(
   prevState: any,
