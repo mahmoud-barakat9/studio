@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,28 +10,20 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import type { Opening } from '@/lib/definitions';
-
-const OpeningSchema = z.object({
-  serial: z.string(),
-  abjourType: z.string(),
-  width: z.number().optional(),
-  height: z.number().optional(),
-  codeLength: z.number(),
-  numberOfCodes: z.number(),
-  hasEndCap: z.boolean(),
-  hasAccessories: z.boolean(),
-  notes: z.string().optional(),
-});
 
 
 const ProposeAccessoriesInputSchema = z.object({
   mainAbjourType: z.string().describe('The main type of abjour material being used.'),
-  openings: z.array(OpeningSchema).describe('A list of all openings in the order.'),
+  openings: z.any().describe('A list of all openings in the order.'), // Use z.any() to avoid schema conflict
   hasDelivery: z.boolean().describe('Whether the order includes delivery service.'),
 });
-export type ProposeAccessoriesInput = z.infer<typeof ProposeAccessoriesInputSchema>;
+export type ProposeAccessoriesInput = {
+    mainAbjourType: string;
+    openings: Opening[];
+    hasDelivery: boolean;
+};
 
 const AccessorySchema = z.object({
     name: z.string().describe('The name of the accessory.'),
@@ -93,3 +86,5 @@ const proposeAccessoriesFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
