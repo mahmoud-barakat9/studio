@@ -20,6 +20,7 @@ export async function proposeAccessories(
     mainAbjourType: string;
     openings: Order['openings'];
     hasDelivery: boolean;
+    hasInstallation: boolean;
   }
 ) {
     if (!formData.mainAbjourType || !formData.openings || formData.openings.length === 0) {

@@ -38,7 +38,7 @@ import {
     TooltipTrigger,
   } from "@/components/ui/tooltip";
 import { Separator } from '@/components/ui/separator';
-import { Wand2, Loader2, Info, Truck, BadgeDollarSign, Trash2 } from 'lucide-react';
+import { Wand2, Loader2, Info, Truck, BadgeDollarSign, Trash2, Wrench } from 'lucide-react';
 import {
   createOrder as createOrderAction,
   proposeAccessories,
@@ -84,6 +84,7 @@ const baseOrderSchema = z.object({
   accessories: z.array(accessorySchema).optional(),
   hasDelivery: z.boolean().default(false),
   deliveryAddress: z.string().optional(),
+  hasInstallation: z.boolean().default(false),
   overriddenPricePerSquareMeter: z.coerce.number().optional(),
 });
 
@@ -143,6 +144,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
       accessories: [],
       hasDelivery: false,
       deliveryAddress: '',
+      hasInstallation: false,
       userId: currentUser?.id || '',
       customerName: currentUser?.name || '',
       customerPhone: currentUser?.phone || '',
@@ -175,6 +177,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
   const watchMainColor = useWatch({ control: form.control, name: 'mainColor' });
   const watchUserId = useWatch({ control: form.control, name: 'userId'});
   const watchHasDelivery = useWatch({ control: form.control, name: 'hasDelivery' });
+  const watchHasInstallation = useWatch({ control: form.control, name: 'hasInstallation' });
   const watchOverriddenPrice = useWatch({ control: form.control, name: 'overriddenPricePerSquareMeter' });
 
 
@@ -214,7 +217,12 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
     return watchHasDelivery ? (5 + (totalArea * 0.5)) : 0;
   }, [watchHasDelivery, totalArea]);
 
-  const totalCost = productsCost + deliveryCost;
+  const installationCost = useMemo(() => {
+    return watchHasInstallation ? (totalArea * 5) : 0;
+  }, [watchHasInstallation, totalArea]);
+
+
+  const totalCost = productsCost + deliveryCost + installationCost;
 
 
   useEffect(() => {
@@ -248,6 +256,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
             mainAbjourType: watchMainAbjourType,
             openings: watchedOpenings,
             hasDelivery: watchHasDelivery,
+            hasInstallation: watchHasInstallation,
         });
     });
   }
@@ -290,6 +299,7 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
           orderName: data.orderName || `طلب ${new Date().toLocaleString()}`,
           bladeWidth: selectedAbjourTypeData?.bladeWidth,
           pricePerSquareMeter: selectedAbjourTypeData?.pricePerSquareMeter,
+          installationCost: installationCost,
           overriddenPricePerSquareMeter: data.overriddenPricePerSquareMeter,
         }, isAdmin);
 
@@ -750,6 +760,33 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                     </CardContent>
                     )}
                 </Card>
+                 <Card className="shadow-none mt-4">
+                    <CardHeader className="p-4">
+                        <FormField
+                        control={form.control}
+                        name="hasInstallation"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                    <Wrench className="h-5 w-5"/>
+                                    إضافة خدمة تركيب
+                                    </FormLabel>
+                                    <FormDescription>
+                                    تفعيل هذا الخيار سيضيف تكلفة التركيب.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </CardHeader>
+                </Card>
                  <Separator className="my-4" />
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -781,6 +818,10 @@ export function OrderForm({ isAdmin = false, users: allUsers = [], currentUser, 
                   <div className={`flex justify-between transition-opacity ${watchHasDelivery ? 'opacity-100' : 'opacity-50'}`}>
                     <span className="text-muted-foreground">تكلفة التوصيل</span>
                     <span className="font-medium">${deliveryCost.toFixed(2)}</span>
+                  </div>
+                   <div className={`flex justify-between transition-opacity ${watchHasInstallation ? 'opacity-100' : 'opacity-50'}`}>
+                    <span className="text-muted-foreground">تكلفة التركيب</span>
+                    <span className="font-medium">${installationCost.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-semibold text-base">

@@ -42,6 +42,8 @@ export type Order = {
   hasDelivery: boolean;
   deliveryCost: number;
   deliveryAddress: string;
+  hasInstallation: boolean;
+  installationCost: number;
   delayed?: boolean;
   rating?: number;
   review?: string;

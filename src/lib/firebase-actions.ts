@@ -137,6 +137,8 @@ export const addOrder = async (orderData: Omit<Order, 'id' | 'isArchived'> & { i
         hasDelivery: orderData.hasDelivery,
         deliveryCost: deliveryCost,
         deliveryAddress: orderData.deliveryAddress,
+        hasInstallation: orderData.hasInstallation,
+        installationCost: orderData.installationCost,
         isEditRequested: false,
     };
     
@@ -210,6 +212,13 @@ export const updateOrder = async (orderId: string, orderData: Partial<Order>): P
         deliveryCost = 0;
     }
     
+    let installationCost = originalOrder.installationCost;
+    if (orderData.hasInstallation) {
+        installationCost = totalArea * 5;
+    } else if (orderData.hasInstallation === false) {
+        installationCost = 0;
+    }
+
     const finalPricePerMeter = orderData.overriddenPricePerSquareMeter !== undefined ? orderData.overriddenPricePerSquareMeter : orderData.pricePerSquareMeter !== undefined ? orderData.pricePerSquareMeter : originalOrder.pricePerSquareMeter;
     const productsCost = totalArea * finalPricePerMeter;
 
@@ -219,6 +228,7 @@ export const updateOrder = async (orderId: string, orderData: Partial<Order>): P
         totalArea,
         totalCost: productsCost,
         deliveryCost: deliveryCost,
+        installationCost: installationCost,
     };
     
     orders[orderIndex] = updatedData;
@@ -544,4 +554,3 @@ export async function markAllNotificationsAsReadDB(userId: string): Promise<{ su
     return { success: true };
 }
     
-
