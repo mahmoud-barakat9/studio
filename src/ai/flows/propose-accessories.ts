@@ -69,15 +69,16 @@ Openings Data:
 {{/each}}
 
 Accessory Calculation Logic:
-1.  **Main Axis (Tube):** One for each opening. The length should be the codeLength of the opening.
-2.  **Motor:** One for each opening. This is usually optional unless specified.
+1.  **Main Axis (Tube):** One for each opening. The length should be the codeLength of the opening. Sum the total length required for all openings and provide one final number.
+2.  **Motor:** One for each opening. Mark as optional. The power depends on the opening size (width * height). For areas < 5 sqm, suggest "Standard Motor". For areas > 5 sqm, suggest "Heavy-Duty Motor".
 3.  **Channels (Majari):** Only if 'hasAccessories' is true. Two for each such opening. The length of each channel is opening height + 5cm. Sum the total length required.
-4.  **End Caps (Tabbat):** Only if 'hasEndCap' is true. One set (pair) for each such opening.
+4.  **End Caps (Tabbat):** Only if 'hasEndCap' is true. One set (pair) for each such opening. Count the total number of sets.
 5.  **Screws/Bolts:** Calculate a reasonable number based on the total number and size of openings. Typically 8-12 screws per opening. Mark as required.
 6.  **Security Locks:** Usually one per opening, mark as optional.
-7.  **Remote Control:** If motors are included, suggest one remote as optional.
+7.  **Remote Control:** If motors are included, suggest one remote per 3 motors as optional.
+8.  **Hangers (Hamalat):** Required for every opening. Suggest 2 units per opening.
 
-Based on this logic, generate a JSON object with a list of accessories, their quantities, units, and whether they are 'required' or 'optional'. Combine quantities for the same accessory (e.g., total meters of channels). Do not include any explanations in the output.
+Based on this logic, generate a JSON object with a list of accessories. Combine quantities for the same accessory (e.g., total meters of channels, total units of screws). Do not include any explanations in the output. Ensure the response adheres strictly to the ProposeAccessoriesOutputSchema.
 `,
 });
 

@@ -1,4 +1,3 @@
-
 [
   {
     "id": "1",
@@ -33,6 +32,13 @@
     "name": "User",
     "email": "user@abjour.com",
     "phone": "555-5555",
+    "role": "user"
+  },
+  {
+    "id": "6",
+    "name": "mahmoud",
+    "email": "mahmoudba98a@gmail.com",
+    "phone": "0945000584",
     "role": "user"
   }
 ]
