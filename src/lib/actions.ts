@@ -1,5 +1,3 @@
-
-
 'use server';
 
 import { z } from 'zod';
@@ -29,8 +27,9 @@ export async function proposeAccessories(
   try {
     const result = await proposeAccessoriesAI(formData);
     return { data: result, error: null };
-  } catch (error) {
-    return { data: null, error: 'Failed to propose accessories.' };
+  } catch (error: any) {
+    console.error("AI Error in proposeAccessories:", error);
+    return { data: null, error: error.message || 'Failed to propose accessories.' };
   }
 }
 
