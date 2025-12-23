@@ -30,7 +30,7 @@ export default function LoginPage() {
 
     return (
         <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 relative">
-            <div className="absolute top-4 right-4 z-10">
+             <div className="absolute top-4 right-4 z-10">
                 <Button asChild variant="outline">
                     <Link href="/welcome">
                         <Home className="ml-2 h-4 w-4" />
@@ -39,49 +39,50 @@ export default function LoginPage() {
                 </Button>
             </div>
             <div className="flex items-center justify-center py-12 px-4">
-                <div className="mx-auto grid w-[350px] gap-6">
-                     <div className="grid gap-2 text-center">
+                <Card className="mx-auto w-full max-w-sm">
+                    <CardHeader className="text-center">
                         <div className="flex justify-center items-center gap-2 mb-4">
                             <BrandLogo />
-                            <h1 className="text-3xl font-bold">طلب أباجور</h1>
+                            <CardTitle className="text-3xl">طلب أباجور</CardTitle>
                         </div>
-                        <p className="text-balance text-muted-foreground">
+                        <CardDescription>
                             أدخل بريدك الإلكتروني أدناه للدخول إلى حسابك
-                        </p>
-                    </div>
-
-                    <form action={formAction} className="grid gap-4">
-                        {errorMessage && (
-                             <Alert variant="destructive">
-                                <AlertDescription>{errorMessage}</AlertDescription>
-                            </Alert>
-                        )}
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">البريد الإلكتروني</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                name="email"
-                                placeholder="m@example.com"
-                                required
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">كلمة المرور</Label>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form action={formAction} className="grid gap-4">
+                            {errorMessage && (
+                                <Alert variant="destructive">
+                                    <AlertDescription>{errorMessage}</AlertDescription>
+                                </Alert>
+                            )}
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">البريد الإلكتروني</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    placeholder="m@example.com"
+                                    required
+                                />
                             </div>
-                            <Input id="password" type="text" name="password" required defaultValue="123456" />
-                             <p className="text-xs text-muted-foreground text-center pt-1">(ملاحظة: كلمة المرور يتم تجاهلها في هذا العرض التوضيحي)</p>
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">كلمة المرور</Label>
+                                <Input id="password" type="text" name="password" required defaultValue="123456" />
+                                <p className="text-xs text-muted-foreground text-center pt-1">(ملاحظة: كلمة المرور يتم تجاهلها في هذا العرض التوضيحي)</p>
+                            </div>
+                            <SubmitButton />
+                        </form>
+                    </CardContent>
+                     <CardFooter className="flex-col items-center gap-4">
+                        <div className="text-center text-sm">
+                            ليس لديك حساب؟{" "}
+                            <Link href="/welcome#contact" className="underline">
+                                تواصل معنا
+                            </Link>
                         </div>
-                        <SubmitButton />
-                    </form>
-                    <div className="mt-4 text-center text-sm">
-                        ليس لديك حساب؟{" "}
-                        <Link href="/welcome#contact" className="underline">
-                            تواصل معنا
-                        </Link>
-                    </div>
-                </div>
+                    </CardFooter>
+                </Card>
             </div>
             <div className="hidden bg-muted lg:block relative">
                  {loginImage && (
@@ -93,6 +94,7 @@ export default function LoginPage() {
                         data-ai-hint={loginImage.imageHint}
                     />
                  )}
+                 <div className="absolute inset-0 bg-black/30" />
             </div>
         </div>
     )
