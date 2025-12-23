@@ -1,7 +1,8 @@
 'use client';
 
 import Link from "next/link";
-import { useActionState, useFormStatus } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { signup } from '@/lib/auth-actions';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
