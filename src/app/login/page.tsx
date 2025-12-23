@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight, Home } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BrandLogo } from "@/components/icons";
@@ -25,11 +25,19 @@ function SubmitButton() {
 }
 
 export default function LoginPage() {
-    const [state, formAction] = useFormState(login, undefined);
+    const [errorMessage, formAction] = useFormState(login, undefined);
     const loginImage = PlaceHolderImages.find(img => img.id === 'login-background');
 
     return (
-        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 relative">
+            <div className="absolute top-4 right-4 z-10">
+                <Button asChild variant="outline">
+                    <Link href="/welcome">
+                        <Home className="ml-2 h-4 w-4" />
+                        العودة للرئيسية
+                    </Link>
+                </Button>
+            </div>
             <div className="flex items-center justify-center py-12 px-4">
                 <div className="mx-auto grid w-[350px] gap-6">
                      <div className="grid gap-2 text-center">
@@ -43,9 +51,9 @@ export default function LoginPage() {
                     </div>
 
                     <form action={formAction} className="grid gap-4">
-                        {state?.error && (
+                        {errorMessage && (
                              <Alert variant="destructive">
-                                <AlertDescription>{state.error}</AlertDescription>
+                                <AlertDescription>{errorMessage}</AlertDescription>
                             </Alert>
                         )}
                         <div className="grid gap-2">
@@ -62,7 +70,7 @@ export default function LoginPage() {
                             <div className="flex items-center">
                                 <Label htmlFor="password">كلمة المرور</Label>
                             </div>
-                            <Input id="password" type="password" name="password" required defaultValue="123456" />
+                            <Input id="password" type="text" name="password" required defaultValue="123456" />
                              <p className="text-xs text-muted-foreground text-center pt-1">(ملاحظة: كلمة المرور يتم تجاهلها في هذا العرض التوضيحي)</p>
                         </div>
                         <SubmitButton />
