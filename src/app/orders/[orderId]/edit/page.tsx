@@ -1,4 +1,6 @@
 
+'use client';
+
 import { getOrderById } from "@/lib/firebase-actions";
 import { EditOrderForm } from "@/components/orders/edit-order-form";
 import Link from "next/link";
@@ -8,18 +10,47 @@ import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
+import { useAuth } from "@/providers/auth-provider";
+import { useEffect, useState } from "react";
+import type { Order } from "@/lib/definitions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
-const DUMMY_USER_ID = "5";
-
-export default async function EditOrderPage({
+export default function EditOrderPage({
   params,
 }: {
   params: { orderId: string };
 }) {
-  const order = await getOrderById(params.orderId);
+  const { user: currentUser } = useAuth();
+  const [order, setOrder] = useState<Order | null | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
-  const isOwner = order?.userId === DUMMY_USER_ID;
+  useEffect(() => {
+    async function fetchOrder() {
+        if (!params.orderId) return;
+        setLoading(true);
+        const orderData = await getOrderById(params.orderId);
+        setOrder(orderData);
+        setLoading(false);
+    }
+    fetchOrder();
+  }, [params.orderId]);
+
+  if (loading) {
+      return (
+           <div className="flex flex-col min-h-screen">
+            <MainHeader />
+            <main className="flex-1 bg-muted/40 p-4 md:p-8">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-96 w-full mt-8" />
+            </main>
+            <MainFooter />
+            <BottomNavbar />
+           </div>
+      )
+  }
+
+  const isOwner = order?.userId === currentUser?.id;
   const isEditable = order?.status === "Pending";
 
   if (!order || !isOwner) {

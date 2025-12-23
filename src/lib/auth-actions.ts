@@ -1,3 +1,4 @@
+
 'use server';
 
 import { setCookie, deleteCookie } from 'cookies-next/headers';
@@ -7,7 +8,7 @@ import { getUsers } from './firebase-actions';
 // This is a simplified, non-secure way to handle login for this prototype.
 // In a real application, you would use Firebase Auth SDK for sign-in and password verification.
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
     const email = formData.get('email') as string;
     // const password = formData.get('password') as string; // Password ignored for this prototype
 

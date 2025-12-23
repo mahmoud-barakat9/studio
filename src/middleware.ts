@@ -1,8 +1,6 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-const DUMMY_USER_ID = "5";
-const DUMMY_ADMIN_ID = "4";
 
 const PROTECTED_ROUTES = {
   USER: ['/dashboard', '/orders', '/notifications', '/profile'],
@@ -26,7 +24,7 @@ export function middleware(request: NextRequest) {
   const isUserRoute = PROTECTED_ROUTES.USER.some(route => pathname.startsWith(route));
   const isAdminRoute = pathname.startsWith(PROTECTED_ROUTES.ADMIN[0]);
   
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.startsWith('/static') || pathname.endsWith('.json') || pathname.endsWith('.ico') || pathname.endsWith('.png') || pathname.endsWith('.svg')) {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.startsWith('/static') || pathname.endsWith('.json') || pathname.endsWith('.ico') || pathname.endsWith('.png') || pathname.endsWith('.svg') || pathname.startsWith('/icons')) {
     return NextResponse.next();
   }
 

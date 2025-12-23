@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const loading = authLoading || ordersLoading;
 
   const { recentOrders, kpiData } = useMemo(() => {
-    if (loading) {
+    if (loading || !currentUser) {
         return { recentOrders: [], kpiData: {} };
     }
     
@@ -87,9 +87,9 @@ export default function DashboardPage() {
 
     return { recentOrders, kpiData };
     
-  }, [userOrders, loading]);
+  }, [userOrders, loading, currentUser]);
 
-  if (loading && !currentUser) {
+  if (loading) {
       return (
            <div className="flex flex-col min-h-screen">
             <MainHeader />

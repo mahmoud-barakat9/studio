@@ -1,3 +1,4 @@
+
 'use client';
 import { MainFooter } from "@/components/layout/main-footer";
 import { MainHeader } from "@/components/layout/main-header";
@@ -13,18 +14,19 @@ import { NotificationItem } from "@/components/notifications/notification-item";
 import { markAllNotificationsAsRead } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useTransition } from "react";
+import { useAuth } from "@/providers/auth-provider";
 
-
-const DUMMY_USER_ID = "5"; 
 
 export default function NotificationsPage() {
-    const { notifications, loading, mutate } = useNotifications(DUMMY_USER_ID);
+    const { user } = useAuth();
+    const { notifications, loading, mutate } = useNotifications(user?.id);
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
 
     const handleMarkAllAsRead = async () => {
+        if (!user) return;
         startTransition(async () => {
-            const result = await markAllNotificationsAsRead(DUMMY_USER_ID);
+            const result = await markAllNotificationsAsRead(user.id);
             if (result.success) {
                 mutate(); // Re-fetch notifications
                 toast({

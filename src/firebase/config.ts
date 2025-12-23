@@ -8,7 +8,7 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
   authDomain: "talab-abajour.firebaseapp.com",
   projectId: "talab-abajour",
   storageBucket: "talab-abajour.appspot.com",
@@ -22,5 +22,3 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 export { app, auth, db };
-
-    

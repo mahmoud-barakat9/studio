@@ -1,19 +1,34 @@
 
+'use client';
 import { OrderForm } from "@/components/orders/order-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { MainHeader } from "@/components/layout/main-header";
 import { MainFooter } from "@/components/layout/main-footer";
-import { getUserById } from "@/lib/firebase-actions";
 import type { User } from "@/lib/definitions";
 import { ClientDateTime } from "@/components/client-date-time";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
+import { useAuth } from "@/providers/auth-provider";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const DUMMY_USER_ID = "5"; 
 
-export default async function NewOrderPage() {
-  const currentUser = await getUserById(DUMMY_USER_ID);
+export default function NewOrderPage() {
+  const { user: currentUser, loading } = useAuth();
+
+   if (loading) {
+      return (
+           <div className="flex flex-col min-h-screen">
+            <MainHeader />
+            <main className="flex-1 bg-muted/40 p-4 md:p-8">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-96 w-full mt-8" />
+            </main>
+            <MainFooter />
+            <BottomNavbar />
+           </div>
+      )
+  }
 
   return (
       <div className="flex flex-col min-h-screen">

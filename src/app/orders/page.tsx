@@ -18,8 +18,8 @@ import { useOrdersAndUsers } from "@/hooks/use-orders-and-users";
 import { Pagination } from "@/components/pagination";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/providers/auth-provider";
 
-const DUMMY_USER_ID = "5"; 
 const ITEMS_PER_PAGE = 5;
 
 const allStatuses: Array<Order['status']> = [
@@ -45,7 +45,8 @@ const statusTranslations: Record<string, string> = {
 };
 
 export default function OrdersPage() {
-  const { orders: userOrders, loading } = useOrdersAndUsers(DUMMY_USER_ID);
+  const { user: currentUser } = useAuth();
+  const { orders: userOrders, loading } = useOrdersAndUsers(currentUser?.id);
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
 
   if (loading) {
