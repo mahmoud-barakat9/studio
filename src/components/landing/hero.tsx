@@ -13,7 +13,10 @@ export function Hero() {
   const { user, loading } = useAuth();
   const heroImage = PlaceHolderImages.find(img => img.id === 'login-background');
   
-  const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+  const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/orders/new';
+  const buttonText = user?.role === 'admin' ? 'اذهب إلى لوحة التحكم' : 'أنشئ طلبك الآن';
+  const ButtonIcon = user?.role === 'admin' ? LayoutDashboard : PlusCircle;
+
 
   return (
     <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center text-white text-center bg-gray-900 -mx-4 md:mx-0">
@@ -42,8 +45,8 @@ export function Hero() {
           ) : user ? (
              <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href={dashboardUrl}>
-                  <LayoutDashboard className="ml-2 h-5 w-5" />
-                  اذهب إلى لوحة التحكم
+                  <ButtonIcon className="ml-2 h-5 w-5" />
+                  {buttonText}
                 </Link>
             </Button>
           ) : (
