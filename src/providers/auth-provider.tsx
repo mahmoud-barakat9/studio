@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     loadUser();
   }, [pathname]);
+  
+  if (loading) {
+    return <SplashScreen isVisible={true} />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
