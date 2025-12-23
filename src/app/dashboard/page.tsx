@@ -13,8 +13,8 @@ import { useMemo } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { BottomNavbar } from "@/components/layout/bottom-navbar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/auth-provider";
 
-const DUMMY_USER_ID = "5"; 
 
 interface KpiCardProps {
   title: string;
@@ -52,9 +52,10 @@ function KpiCardSkeleton() {
 }
 
 export default function DashboardPage() {
-  const { orders, users, loading } = useOrdersAndUsers(DUMMY_USER_ID);
-  const currentUser = users.find(u => u.id === DUMMY_USER_ID);
+  const { user: currentUser, loading: authLoading } = useAuth();
+  const { orders, users, loading: ordersLoading } = useOrdersAndUsers(currentUser?.id);
   const userOrders = orders;
+  const loading = authLoading || ordersLoading;
 
   const { recentOrders, kpiData } = useMemo(() => {
     if (loading) {

@@ -35,6 +35,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Separator } from '../ui/separator';
 import { ThemeSwitcher } from '../theme-switcher';
 import { NotificationBell } from '../notifications/notification-bell';
+import { logout } from '@/lib/auth-actions';
+import { useAuth } from '@/providers/auth-provider';
+
 
 const userLinks = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
@@ -48,9 +51,10 @@ const secondaryLinks = [
 export function MainHeader() {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useAuth();
+
 
   const homeUrl = '/dashboard';
-  const DUMMY_USER_ID = "5";
 
   // This removes the locale from the pathname for comparison
   const basePath = pathname.split('/').slice(2).join('/');
@@ -84,7 +88,7 @@ export function MainHeader() {
           </nav>
           
            <Separator orientation="vertical" className="h-6 mx-2" />
-           <NotificationBell userId={DUMMY_USER_ID} />
+           {user && <NotificationBell userId={user.id} />}
            <Button variant="ghost" asChild>
                 <Link href="/welcome">
                     <Home />
@@ -95,33 +99,39 @@ export function MainHeader() {
               <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="icon" className="rounded-full">
                   <Avatar>
-                      <AvatarImage src={'https://i.pravatar.cc/150?u=user@abjour.com'} />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={`https://i.pravatar.cc/150?u=${user?.email}`} />
+                      <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
                   <span className="sr-only">فتح قائمة المستخدم</span>
                   </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>مستخدم تجريبي</DropdownMenuLabel>
+                  <DropdownMenuLabel>{user?.name || 'مستخدم'}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                   <DropdownMenuItem asChild><Link href="#"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
-                   <DropdownMenuItem asChild><Link href="/admin/dashboard"><Shield className="ml-2 h-4 w-4" />تبديل للمسؤول</Link></DropdownMenuItem>
+                   <DropdownMenuItem asChild><Link href="/profile"><User className="ml-2 h-4 w-4" />الملف الشخصي</Link></DropdownMenuItem>
+                   {user?.role === 'admin' && (
+                     <DropdownMenuItem asChild><Link href="/admin/dashboard"><Shield className="ml-2 h-4 w-4" />لوحة تحكم المسؤول</Link></DropdownMenuItem>
+                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <ThemeSwitcher />
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                      <LogOut className="ml-2 h-4 w-4" />
-                      تسجيل الخروج
-                  </DropdownMenuItem>
+                  <form action={logout}>
+                    <DropdownMenuItem asChild>
+                      <button type="submit" className='w-full'>
+                        <LogOut className="ml-2 h-4 w-4" />
+                        تسجيل الخروج
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
               </DropdownMenuContent>
           </DropdownMenu>
         </div>
         
         {/* Mobile Sheet Trigger */}
         <div className="md:hidden flex items-center gap-2">
-            <NotificationBell userId={DUMMY_USER_ID} />
+            {user && <NotificationBell userId={user.id} />}
             <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                 <Button
@@ -147,12 +157,12 @@ export function MainHeader() {
                         <div className="px-4 space-y-4">
                             <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
                                 <Avatar className="h-12 w-12">
-                                    <AvatarImage src={'https://i.pravatar.cc/150?u=user@abjour.com'} />
-                                    <AvatarFallback>U</AvatarFallback>
+                                     <AvatarImage src={`https://i.pravatar.cc/150?u=${user?.email}`} />
+                                    <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">مستخدم تجريبي</p>
-                                    <p className="text-sm text-muted-foreground">user@abjour.com</p>
+                                    <p className="font-semibold">{user?.name || 'مستخدم'}</p>
+                                    <p className="text-sm text-muted-foreground">{user?.email}</p>
                                 </div>
                             </div>
                             <Separator />
@@ -180,17 +190,16 @@ export function MainHeader() {
                              <Separator />
                                 <nav className="flex flex-col gap-2">
                                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 px-2">روابط أخرى</h3>
-                                    {secondaryLinks.map((link) => (
+                                     {user?.role === 'admin' && (
                                         <Link
-                                            key={link.href}
-                                            href={link.href}
+                                            href="/admin/dashboard"
                                             onClick={() => setSheetOpen(false)}
                                             className="text-muted-foreground hover:text-foreground w-full text-right py-3 px-2 rounded-md flex items-center gap-4 text-md font-medium"
                                         >
-                                            {link.icon && <link.icon className="h-5 w-5" />}
-                                            {link.label}
+                                           <Shield className="h-5 w-5" />
+                                            لوحة تحكم المسؤول
                                         </Link>
-                                    ))}
+                                    )}
                                      <Link
                                         href="/welcome"
                                         onClick={() => setSheetOpen(false)}
@@ -203,10 +212,12 @@ export function MainHeader() {
                         </div>
 
                         <div className="mt-auto p-4 border-t">
-                            <Button variant="outline" className="w-full">
-                                <LogOut className="ml-2 h-4 w-4" />
-                                تسجيل الخروج
-                            </Button>
+                             <form action={logout}>
+                                <Button type="submit" variant="outline" className="w-full">
+                                    <LogOut className="ml-2 h-4 w-4" />
+                                    تسجيل الخروج
+                                </Button>
+                            </form>
                         </div>
                     </div>
                 </SheetContent>

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { User, Shield } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function Hero() {
@@ -28,17 +28,11 @@ export function Hero() {
         <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 drop-shadow">
           نظام متكامل وسهل لإدارة طلبات الأباجور، من التصميم إلى التسليم.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4">
           <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/dashboard">
-              <User className="ml-2 h-5 w-5" />
-              دخول لوحة تحكم المستخدم
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-            <Link href="/admin/dashboard">
-               <Shield className="ml-2 h-5 w-5" />
-              دخول لوحة تحكم المسؤول
+            <Link href="/login">
+              <LogIn className="ml-2 h-5 w-5" />
+              ابدأ الآن - تسجيل الدخول
             </Link>
           </Button>
         </div>

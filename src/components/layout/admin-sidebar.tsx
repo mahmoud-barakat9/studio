@@ -39,6 +39,8 @@ import { BrandLogo } from "../icons";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
 import { ThemeSwitcher } from "../theme-switcher";
+import { logout } from "@/lib/auth-actions";
+import { useAuth } from "@/providers/auth-provider";
 
 const links = [
   { href: "/admin/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
@@ -61,6 +63,8 @@ interface AdminSidebarProps {
 export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, editRequestsCount = 0 }: AdminSidebarProps) {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const { user } = useAuth();
+
 
   const badgeCounts = {
     notifications: pendingOrdersCount + editRequestsCount + newReviewsCount,
@@ -87,7 +91,7 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                 <SidebarMenuButton
                   asChild
                   size="lg"
-                  isActive={pathname.endsWith(link.href)}
+                  isActive={pathname.startsWith(link.href) && (link.href.length > 6 ? pathname.length > link.href.length : pathname.length === link.href.length)}
                   tooltip={{
                       children: link.label,
                       side: "left"
@@ -118,13 +122,13 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
             <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-sidebar-accent">
                     <Avatar className="h-12 w-12">
-                        <AvatarImage src="https://i.pravatar.cc/150?u=admin@abjour.com" />
-                        <AvatarFallback>A</AvatarFallback>
+                        <AvatarImage src={`https://i.pravatar.cc/150?u=${user?.email}`} />
+                        <AvatarFallback>{user?.name?.charAt(0) || 'A'}</AvatarFallback>
                     </Avatar>
                     {state === 'expanded' && (
                         <div className="flex flex-col items-start text-right">
-                            <span className="font-semibold text-sm">مسؤول</span>
-                            <span className="text-xs text-sidebar-foreground/70">admin@abjour.com</span>
+                            <span className="font-semibold text-sm">{user?.name || 'مسؤول'}</span>
+                            <span className="text-xs text-sidebar-foreground/70">{user?.email}</span>
                         </div>
                     )}
                 </div>
@@ -150,9 +154,14 @@ export function AdminSidebar({ pendingOrdersCount = 0, newReviewsCount = 0, edit
                     <ThemeSwitcher />
                 </DropdownMenuItem>
                  <DropdownMenuSeparator />
-                 <DropdownMenuItem asChild>
-                    <Link href="/welcome"><LogOut className="ml-2 h-4 w-4" /> تسجيل الخروج</Link>
-                </DropdownMenuItem>
+                  <form action={logout}>
+                    <DropdownMenuItem asChild>
+                      <button type="submit" className='w-full'>
+                        <LogOut className="ml-2 h-4 w-4" />
+                        تسجيل الخروج
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
             </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>

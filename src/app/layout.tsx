@@ -11,6 +11,7 @@ import { useEffect, useState, ReactNode } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
 import { OnlineStatusIndicator } from '@/components/online-status-indicator';
 import { ThemeProvider } from 'next-themes';
+import { AuthProvider } from '@/providers/auth-provider';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
@@ -30,10 +31,11 @@ export default function RootLayout({
   children,
 }: Readonly<RootLayoutProps>) {
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(pathname === '/');
 
   useEffect(() => {
-    // Determine if the splash screen should be shown
+    if (pathname === '/') return;
+
     const shouldShowSplash = !sessionStorage.getItem('splashShown');
     
     if (shouldShowSplash) {
@@ -43,7 +45,7 @@ export default function RootLayout({
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [pathname]);
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
@@ -71,18 +73,20 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={cn('antialiased', cairo.variable)}>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <OnlineStatusIndicator />
-            <PageTransitionLoader />
-            <SplashScreen isVisible={isLoading} />
-            {!isLoading && children}
-            <Toaster />
-        </ThemeProvider>
+        <AuthProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+            >
+                <OnlineStatusIndicator />
+                <PageTransitionLoader />
+                <SplashScreen isVisible={isLoading} />
+                {!isLoading && children}
+                <Toaster />
+            </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
