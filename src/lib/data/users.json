@@ -40,5 +40,12 @@
     "email": "mahmoudba98a@gmail.com",
     "phone": "0945000584",
     "role": "user"
+  },
+  {
+    "id": "7",
+    "name": "احمد علي",
+    "email": "ali@abjour.com",
+    "phone": "099208373963",
+    "role": "user"
   }
 ]

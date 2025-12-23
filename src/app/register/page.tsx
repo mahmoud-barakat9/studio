@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { signup } from '@/lib/auth-actions';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ function SubmitButton() {
 }
 
 export default function RegisterPage() {
-    const [errorMessage, formAction] = useFormState(signup, undefined);
+    const [errorMessage, formAction] = useActionState(signup, undefined);
     const registerImage = PlaceHolderImages.find(img => img.id === 'login-background');
 
     return (
