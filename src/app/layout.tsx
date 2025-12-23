@@ -30,22 +30,13 @@ interface RootLayoutProps {
 export default function RootLayout({
   children,
 }: Readonly<RootLayoutProps>) {
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(pathname === '/');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (pathname === '/') return;
-
-    const shouldShowSplash = !sessionStorage.getItem('splashShown');
-    
-    if (shouldShowSplash) {
-      sessionStorage.setItem('splashShown', 'true');
-      const timer = setTimeout(() => setIsLoading(false), 3000); // Splash screen duration
-      return () => clearTimeout(timer);
-    } else {
-      setIsLoading(false);
-    }
-  }, [pathname]);
+    // This effect runs once on initial load to hide the splash screen.
+    const timer = setTimeout(() => setIsLoading(false), 2000); // Adjust duration as needed
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
