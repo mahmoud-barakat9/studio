@@ -1,7 +1,7 @@
 
 'use server';
 
-import { setCookie, deleteCookie } from 'cookies-next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUsers } from './firebase-actions';
 
@@ -24,8 +24,8 @@ export async function login(prevState: any, formData: FormData) {
     }
 
     // Set cookies to simulate a logged-in session
-    setCookie('user_id', user.id, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
-    setCookie('user_role', user.role, { maxAge: 60 * 60 * 24 * 7 });
+    cookies().set('user_id', user.id, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
+    cookies().set('user_role', user.role, { maxAge: 60 * 60 * 24 * 7 });
 
     if (user.role === 'admin') {
         redirect('/admin/dashboard');
@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
 
 
 export async function logout() {
-    deleteCookie('user_id');
-    deleteCookie('user_role');
+    cookies().delete('user_id');
+    cookies().delete('user_role');
     redirect('/login');
 }
