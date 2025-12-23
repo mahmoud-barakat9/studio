@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
+import { SplashScreen } from "@/components/splash-screen";
 
 export default function Home() {
   const router = useRouter();
@@ -19,5 +20,6 @@ export default function Home() {
     }
   }, [router, user, loading]);
 
-  return <div>Loading...</div>;
+  // Show a splash screen while the auth status is being determined.
+  return <SplashScreen isVisible={true} />;
 }

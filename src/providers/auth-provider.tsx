@@ -1,10 +1,11 @@
+
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import type { User } from '@/lib/definitions';
 import { getUserFromCookie } from './cookie-actions';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SplashScreen } from '@/components/splash-screen';
 
 interface AuthContextType {
   user: User | null;
@@ -27,14 +28,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     loadUser();
   }, [pathname]);
-
-  if (loading) {
-      return (
-          <div className="w-full h-screen flex items-center justify-center">
-              <Skeleton className="h-24 w-1/2" />
-          </div>
-      )
-  }
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
