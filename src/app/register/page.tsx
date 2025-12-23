@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useFormState, useFormStatus } from 'react-dom';
-import { login } from '@/lib/auth-actions';
+import { signup } from '@/lib/auth-actions';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ArrowRight, Home } from "lucide-react";
+import { Loader2, Home } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BrandLogo } from "@/components/icons";
@@ -18,14 +18,14 @@ function SubmitButton() {
     return (
         <Button type="submit" className="w-full" disabled={pending}>
             {pending ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
-            تسجيل الدخول
+            إنشاء حساب
         </Button>
     );
 }
 
-export default function LoginPage() {
-    const [errorMessage, formAction] = useFormState(login, undefined);
-    const loginImage = PlaceHolderImages.find(img => img.id === 'login-background');
+export default function RegisterPage() {
+    const [errorMessage, formAction] = useFormState(signup, undefined);
+    const registerImage = PlaceHolderImages.find(img => img.id === 'login-background');
 
     return (
         <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 relative">
@@ -40,12 +40,12 @@ export default function LoginPage() {
             <div className="flex items-center justify-center py-12 px-4">
                 <Card className="mx-auto w-full max-w-sm">
                     <CardHeader className="text-center">
-                        <div className="flex justify-center items-center gap-2 mb-4">
+                         <div className="flex justify-center items-center gap-2 mb-4">
                             <BrandLogo />
-                            <CardTitle className="text-3xl">طلب أباجور</CardTitle>
+                            <CardTitle className="text-3xl">إنشاء حساب جديد</CardTitle>
                         </div>
                         <CardDescription>
-                            أدخل بريدك الإلكتروني أدناه للدخول إلى حسابك
+                            أدخل معلوماتك أدناه لإنشاء حساب في طلب أباجور
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -55,6 +55,10 @@ export default function LoginPage() {
                                     <AlertDescription>{errorMessage}</AlertDescription>
                                 </Alert>
                             )}
+                             <div className="grid gap-2">
+                                <Label htmlFor="name">الاسم الكامل</Label>
+                                <Input id="name" name="name" placeholder="مثال: أحمد علي" required />
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="email">البريد الإلكتروني</Label>
                                 <Input
@@ -66,31 +70,34 @@ export default function LoginPage() {
                                 />
                             </div>
                             <div className="grid gap-2">
+                                <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
+                                <Input id="phone" name="phone" type="tel" placeholder="09xxxxxxxx" />
+                            </div>
+                            <div className="grid gap-2">
                                 <Label htmlFor="password">كلمة المرور</Label>
-                                <Input id="password" type="text" name="password" required defaultValue="123456" />
-                                <p className="text-xs text-muted-foreground text-center pt-1">(ملاحظة: كلمة المرور يتم تجاهلها في هذا العرض التوضيحي)</p>
+                                <Input id="password" type="password" name="password" required />
                             </div>
                             <SubmitButton />
                         </form>
                     </CardContent>
-                     <CardFooter className="flex-col items-center gap-4">
-                        <div className="text-center text-sm">
-                            ليس لديك حساب؟{" "}
-                            <Link href="/register" className="underline">
-                                إنشاء حساب
+                    <CardFooter>
+                         <div className="text-center text-sm w-full">
+                            لديك حساب بالفعل؟{" "}
+                            <Link href="/login" className="underline">
+                                تسجيل الدخول
                             </Link>
                         </div>
                     </CardFooter>
                 </Card>
             </div>
-            <div className="hidden bg-muted lg:block relative">
-                 {loginImage && (
+             <div className="hidden bg-muted lg:block relative">
+                {registerImage && (
                     <Image
-                        src={loginImage.imageUrl}
-                        alt={loginImage.description}
+                        src={registerImage.imageUrl}
+                        alt={registerImage.description}
                         fill
                         className="object-cover"
-                        data-ai-hint={loginImage.imageHint}
+                        data-ai-hint={registerImage.imageHint}
                     />
                  )}
                  <div className="absolute inset-0 bg-black/30" />
