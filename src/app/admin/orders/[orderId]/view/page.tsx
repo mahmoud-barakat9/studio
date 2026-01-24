@@ -123,7 +123,7 @@ export default function OrderInvoicesPage() {
                         <DownloadInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
                     </CardHeader>
                     <CardContent>
-                         <FactoryInvoice order={order} />
+                         <FactoryInvoice order={order} customer={customer} />
                     </CardContent>
                 </Card>
             </TabsContent>

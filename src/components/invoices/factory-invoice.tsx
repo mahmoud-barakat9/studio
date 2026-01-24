@@ -1,15 +1,17 @@
 'use client';
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 import { BrandLogo } from "@/components/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "../ui/separator";
 
-export function FactoryInvoice({ order }: { order: Order }) {
+export function FactoryInvoice({ order, customer }: { order: Order, customer?: User }) {
     // --- Logic for conditional columns ---
     const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
     const showEndCapColumn = order.openings.some(o => o.hasEndCap);
     const showAccessoriesColumn = order.openings.some(o => o.hasAccessories);
     
+    const customerName = customer?.name || order.customerName;
+
     return (
         <div id="factory-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
             <header className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-muted pb-6 mb-8 gap-4">
@@ -22,6 +24,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                 </div>
                 <div className="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0">
                     <h2 className="text-xl font-bold">{order.orderName}</h2>
+                    <p className="text-sm text-muted-foreground">العميل: <span className="font-semibold">{customerName}</span></p>
                     <p className="text-sm text-muted-foreground">رقم الطلب: <span className="font-mono">{order.id}</span></p>
                     <p className="text-sm text-muted-foreground">تاريخ الطباعة: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
@@ -30,7 +33,11 @@ export function FactoryInvoice({ order }: { order: Order }) {
             <main>
                 <section className="mb-8">
                     <h3 className="text-xl font-bold mb-4">المواصفات الرئيسية للتصنيع</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center p-4 border rounded-lg bg-muted/30">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center p-4 border rounded-lg bg-muted/30">
+                        <div className="p-2 bg-background rounded-md">
+                            <p className="font-bold text-muted-foreground text-sm">اسم العميل</p>
+                            <p className="font-bold text-lg text-primary">{customerName}</p>
+                        </div>
                         <div className="p-2 bg-background rounded-md">
                             <p className="font-bold text-muted-foreground text-sm">نوع الأباجور</p>
                             <p className="font-bold text-lg text-primary">{order.mainAbjourType}</p>
@@ -58,7 +65,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
 
                 <section>
                     <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">تفاصيل القطع المطلوبة</h3>
-                    <div className="overflow-x-auto rounded-lg border">
+                    <div className="rounded-lg border">
                         <Table className="w-full text-sm text-center">
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
@@ -98,7 +105,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                 {order.accessories && order.accessories.length > 0 && (
                      <section className="mt-8">
                         <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">الإكسسوارات المطلوبة</h3>
-                        <div className="overflow-x-auto rounded-lg border">
+                        <div className="rounded-lg border">
                             <Table className="w-full text-sm text-center">
                                 <TableHeader className="bg-muted/50">
                                     <TableRow>
