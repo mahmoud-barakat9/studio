@@ -63,7 +63,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
                                     <TableHead className="p-3 w-[50px]">#</TableHead>
-                                    {showAbjourTypeColumn && <TableHead className="p-3 text-right">نوع التركيب</TableHead>}
+                                    {showAbjourTypeColumn && <TableHead className="p-3">نوع التركيب</TableHead>}
                                     <TableHead className="p-3">طول الشفرة (سم)</TableHead>
                                     <TableHead className="p-3">عدد الشفرات</TableHead>
                                     {showEndCapColumn && <TableHead className="p-3">مع نهاية</TableHead>}
@@ -77,7 +77,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                                     return (
                                         <TableRow key={opening.serial} className="even:bg-card">
                                             <TableCell className="p-3 font-mono font-bold">{index + 1}</TableCell>
-                                            {showAbjourTypeColumn && <TableCell className="p-3 text-right font-medium">{opening.abjourType}</TableCell>}
+                                            {showAbjourTypeColumn && <TableCell className="p-3 font-medium">{opening.abjourType}</TableCell>}
                                             <TableCell className="p-3 font-mono text-base font-semibold">{opening.codeLength.toFixed(2)}</TableCell>
                                             <TableCell className="p-3 font-mono text-base font-semibold">{opening.numberOfCodes}</TableCell>
                                             {showEndCapColumn && <TableCell className="p-3">{opening.hasEndCap ? 'نعم' : 'لا'}</TableCell>}
@@ -102,7 +102,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                             <Table className="w-full text-sm text-center">
                                 <TableHeader className="bg-muted/50">
                                     <TableRow>
-                                        <TableHead className="p-3 text-right">اسم الإكسسوار</TableHead>
+                                        <TableHead className="p-3">اسم الإكسسوار</TableHead>
                                         <TableHead className="p-3">الكمية</TableHead>
                                         <TableHead className="p-3">الوحدة</TableHead>
                                         <TableHead className="p-3">النوع</TableHead>
@@ -111,7 +111,7 @@ export function FactoryInvoice({ order }: { order: Order }) {
                                 <TableBody>
                                     {order.accessories.map((acc, index) => (
                                         <TableRow key={index} className="even:bg-card">
-                                            <TableCell className="p-3 text-right font-medium">{acc.name}</TableCell>
+                                            <TableCell className="p-3 font-medium">{acc.name}</TableCell>
                                             <TableCell className="p-3 font-mono">{acc.quantity}</TableCell>
                                             <TableCell className="p-3">{acc.unit}</TableCell>
                                             <TableCell className="p-3">{acc.type === 'required' ? 'مطلوب' : 'اختياري'}</TableCell>
