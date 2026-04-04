@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -27,7 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { PlusCircle, Pencil } from 'lucide-react';
 import type { Opening } from '@/lib/definitions';
 import { Textarea } from '../ui/textarea';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Tooltip,
@@ -143,9 +142,7 @@ export function AddOpeningForm({
     const watchMethod = useWatch({ control: form.control, name: 'method'});
     const watchHasAccessories = useWatch({ control: form.control, name: 'hasAccessories' });
     
-    
     const finalHeight = (form.getValues('height') || 0) + 10;
-    
     const channelLength = (form.getValues('height') || 0) > 0 ? ((form.getValues('height') || 0) + 5) * 2 : 0;
 
      useEffect(() => {
@@ -170,13 +167,13 @@ export function AddOpeningForm({
 
     const resetForm = () => {
         form.reset({
-            method: 'direct',
+            method: form.getValues('method'), // Keep current method for convenience
             width: undefined,
             height: undefined,
             codeLength: undefined,
             numberOfCodes: undefined,
-            hasEndCap: false,
-            hasAccessories: false,
+            hasEndCap: form.getValues('hasEndCap'), // Keep current state
+            hasAccessories: form.getValues('hasAccessories'), // Keep current state
             notes: '',
         });
     }
@@ -223,13 +220,13 @@ export function AddOpeningForm({
         });
     };
 
-    const handleSaveAndContinue = () => {
+    const handleSaveAndContinue = useCallback(() => {
         if (isEditing) return; // This action is only for adding new openings
         form.handleSubmit(data => {
             processSubmit(data);
             resetForm();
         })();
-    }
+    }, [form, isEditing, openingsCount, processSubmit]);
     
     const handleSaveAndClose = () => {
         form.handleSubmit(data => {
@@ -238,6 +235,14 @@ export function AddOpeningForm({
             resetForm();
         })();
     }
+
+    // Handler for Enter key to trigger "Add and Continue"
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !isEditing) {
+            e.preventDefault();
+            handleSaveAndContinue();
+        }
+    };
 
     const triggerContent = isEditing ? (
         <>
@@ -286,7 +291,7 @@ export function AddOpeningForm({
                         <DialogHeader>
                             <DialogTitle>{isEditing ? 'تعديل الفتحة' : `إضافة الفتحة رقم ${openingsCount + 1}`}</DialogTitle>
                             <DialogDescription>
-                                {isEditing ? 'قم بتعديل تفاصيل الفتحة أدناه.' : 'أضف الفتحات واحدة تلو الأخرى. ستظهر في جدول بالأسفل.'}
+                                {isEditing ? 'قم بتعديل تفاصيل الفتحة أدناه.' : 'أضف الفتحات واحدة تلو الأخرى. اضغط Enter للإضافة والمتابعة.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
@@ -333,12 +338,19 @@ export function AddOpeningForm({
                                                     <FormItem>
                                                         <FormLabel>عرض الفتحة</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
-                                                                const value = e.target.valueAsNumber;
-                                                                field.onChange(value);
-                                                                const newCodeLength = value > 0 ? value - 3.5 : 0;
-                                                                form.setValue('codeLength', newCodeLength > 0 ? parseFloat(newCodeLength.toFixed(2)) : undefined);
-                                                            }}/>
+                                                            <Input 
+                                                                type="number" 
+                                                                step="0.1" 
+                                                                {...field} 
+                                                                value={field.value ?? ''} 
+                                                                onKeyDown={handleKeyDown}
+                                                                onChange={e => {
+                                                                    const value = e.target.valueAsNumber;
+                                                                    field.onChange(value);
+                                                                    const newCodeLength = value > 0 ? value - 3.5 : 0;
+                                                                    form.setValue('codeLength', newCodeLength > 0 ? parseFloat(newCodeLength.toFixed(2)) : undefined);
+                                                                }}
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -351,12 +363,19 @@ export function AddOpeningForm({
                                                     <FormItem>
                                                         <FormLabel>ارتفاع الفتحة</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} onChange={e => {
-                                                                const value = e.target.valueAsNumber;
-                                                                field.onChange(value);
-                                                                const newNumberOfCodes = (bladeWidth > 0 && value > 0) ? Math.ceil((value + 10) / bladeWidth) : 0;
-                                                                form.setValue('numberOfCodes', newNumberOfCodes > 0 ? newNumberOfCodes : undefined);
-                                                            }}/>
+                                                            <Input 
+                                                                type="number" 
+                                                                step="0.1" 
+                                                                {...field} 
+                                                                value={field.value ?? ''} 
+                                                                onKeyDown={handleKeyDown}
+                                                                onChange={e => {
+                                                                    const value = e.target.valueAsNumber;
+                                                                    field.onChange(value);
+                                                                    const newNumberOfCodes = (bladeWidth > 0 && value > 0) ? Math.ceil((value + 10) / bladeWidth) : 0;
+                                                                    form.setValue('numberOfCodes', newNumberOfCodes > 0 ? newNumberOfCodes : undefined);
+                                                                }}
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -377,7 +396,13 @@ export function AddOpeningForm({
                                                     <FormItem>
                                                         <FormLabel>طول الشفرة</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" step="0.1" {...field} value={field.value ?? ''} />
+                                                            <Input 
+                                                                type="number" 
+                                                                step="0.1" 
+                                                                {...field} 
+                                                                value={field.value ?? ''} 
+                                                                onKeyDown={handleKeyDown}
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -390,7 +415,12 @@ export function AddOpeningForm({
                                                     <FormItem>
                                                         <FormLabel>عدد الشفرات</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" {...field} value={field.value ?? ''} />
+                                                            <Input 
+                                                                type="number" 
+                                                                {...field} 
+                                                                value={field.value ?? ''} 
+                                                                onKeyDown={handleKeyDown}
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>

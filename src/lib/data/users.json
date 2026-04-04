@@ -61,5 +61,12 @@
     "email": "a2@gmaoil.com",
     "phone": "094500000",
     "role": "user"
+  },
+  {
+    "id": "10",
+    "name": "ابو جميل",
+    "email": "jml@gmail.com",
+    "phone": "0949009918",
+    "role": "user"
   }
 ]
