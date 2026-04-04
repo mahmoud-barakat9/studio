@@ -9,6 +9,9 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
     const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
     const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
 
+    // Check if we should show the abjour type column
+    const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
+
     return (
         <div id="customer-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
             <header className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-muted pb-6 mb-8 gap-4">
@@ -44,11 +47,11 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                         <Table className="w-full text-sm text-center">
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
-                                    <TableHead className="p-3">#</TableHead>
-                                    <TableHead className="p-3 text-right">نوع التركيب</TableHead>
-                                    <TableHead className="p-3">طول الشفرة (سم)</TableHead>
-                                    <TableHead className="p-3">عدد الشفرات</TableHead>
-                                    <TableHead className="p-3">المساحة (م²)</TableHead>
+                                    <TableHead className="p-3 text-center">#</TableHead>
+                                    {showAbjourTypeColumn && <TableHead className="p-3 text-center">نوع التركيب</TableHead>}
+                                    <TableHead className="p-3 text-center">طول الشفرة (سم)</TableHead>
+                                    <TableHead className="p-3 text-center">عدد الشفرات</TableHead>
+                                    <TableHead className="p-3 text-center">المساحة (م²)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -57,7 +60,7 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                                     return (
                                         <TableRow key={opening.serial} className="even:bg-card">
                                             <TableCell className="p-3 font-mono">{index + 1}</TableCell>
-                                            <TableCell className="p-3 text-right font-medium">{opening.abjourType}</TableCell>
+                                            {showAbjourTypeColumn && <TableCell className="p-3 font-medium">{opening.abjourType}</TableCell>}
                                             <TableCell className="p-3 font-mono">{opening.codeLength.toFixed(2)}</TableCell>
                                             <TableCell className="p-3 font-mono">{opening.numberOfCodes}</TableCell>
                                             <TableCell className="p-3 font-mono">{area}</TableCell>
@@ -80,15 +83,15 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                             <Table className="w-full text-sm text-center">
                                 <TableHeader className="bg-muted/50">
                                     <TableRow>
-                                        <TableHead className="p-3 text-right">اسم الإكسسوار</TableHead>
-                                        <TableHead className="p-3">الكمية</TableHead>
-                                        <TableHead className="p-3">الوحدة</TableHead>
+                                        <TableHead className="p-3 text-center">اسم الإكسسوار</TableHead>
+                                        <TableHead className="p-3 text-center">الكمية</TableHead>
+                                        <TableHead className="p-3 text-center">الوحدة</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {order.accessories.map((acc, index) => (
                                         <TableRow key={index} className="even:bg-card">
-                                            <TableCell className="p-3 text-right font-medium">{acc.name}</TableCell>
+                                            <TableCell className="p-3 font-medium">{acc.name}</TableCell>
                                             <TableCell className="p-3 font-mono">{acc.quantity}</TableCell>
                                             <TableCell className="p-3">{acc.unit}</TableCell>
                                         </TableRow>
@@ -114,12 +117,7 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                     <div className="p-6 border rounded-lg bg-muted/30 space-y-3 max-w-sm mx-auto">
                         <div className="flex justify-between items-center">
                             <span>سعر المتر المربع:</span> 
-                            <div className="flex items-baseline gap-2">
-                                {order.overriddenPricePerSquareMeter != null && (
-                                     <span className="font-mono font-semibold text-sm text-muted-foreground line-through">${order.pricePerSquareMeter.toFixed(2)}</span>
-                                )}
-                                <span className="font-mono font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
-                            </div>
+                            <span className="font-mono font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center"><span>تكلفة المنتجات:</span> <span className="font-mono font-semibold">${order.totalCost.toFixed(2)}</span></div>
                         {order.hasDelivery && <div className="flex justify-between items-center"><span>تكلفة التوصيل:</span> <span className="font-mono font-semibold">${(order.deliveryCost || 0).toFixed(2)}</span></div>}
