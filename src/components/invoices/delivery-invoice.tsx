@@ -7,8 +7,8 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
     const customerPhone = customer?.phone || order.customerPhone;
 
     return (
-        <div id="delivery-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] mx-auto overflow-hidden">
-            <header className="flex flex-row justify-between items-center border-b-4 border-blue-100 pb-8 mb-10 gap-4">
+        <div id="delivery-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] mx-auto overflow-hidden shadow-none">
+            <header className="flex flex-row justify-between items-center border-b-4 border-blue-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
                     <div className="text-right">
@@ -23,7 +23,7 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
                 </div>
             </header>
 
-            <main className="space-y-10">
+            <main className="space-y-10 bg-white">
                 <section>
                     <h3 className="text-lg font-bold mb-6 text-blue-600 flex items-center gap-3">
                         <span className="w-3 h-3 bg-blue-600 rounded-full"></span>
@@ -80,7 +80,7 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
                 </section>
             </main>
 
-            <footer className="mt-20 text-center border-t-2 border-slate-50 pt-8">
+            <footer className="mt-20 text-center border-t-2 border-slate-50 pt-8 bg-white">
                 <p className="text-[10px] text-slate-300 font-black uppercase tracking-[0.4em] italic">OFFICIAL LOGISTICS DOCUMENT - NOT AN INVOICE</p>
             </footer>
         </div>

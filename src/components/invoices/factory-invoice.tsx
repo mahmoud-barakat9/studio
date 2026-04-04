@@ -11,8 +11,8 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
     const customerName = customer?.name || order.customerName;
 
     return (
-        <div id="factory-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] mx-auto overflow-hidden">
-            <header className="flex flex-row justify-between items-center border-b-4 border-red-100 pb-8 mb-10 gap-4">
+        <div id="factory-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] mx-auto overflow-hidden shadow-none">
+            <header className="flex flex-row justify-between items-center border-b-4 border-red-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
                     <div className="text-right">
@@ -22,31 +22,31 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                 </div>
                 <div className="text-left">
                     <h2 className="text-xl font-black text-slate-900">{order.orderName}</h2>
-                    <p className="text-sm text-slate-500 font-bold mt-1">العميل: {customerName}</p>
+                    <p className="text-sm text-slate-500 font-bold mt-1">الزبون: {customerName}</p>
                     <p className="text-xs font-mono text-slate-400 mt-1 uppercase">ID: #{order.id}</p>
                 </div>
             </header>
 
-            <main className="space-y-10">
+            <main className="space-y-10 bg-white">
                 <section>
                     <h3 className="text-lg font-bold mb-6 text-red-600 flex items-center gap-3">
                         <span className="w-3 h-3 bg-red-600 rounded-full"></span>
                         المواصفات الأساسية للتجهيز
                     </h3>
                     <div className="grid grid-cols-4 gap-4">
-                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center shadow-sm">
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
                             <p className="text-slate-400 text-[10px] font-black uppercase mb-2">نوع المادة</p>
-                            <p className="font-black text-2xl text-slate-900">{order.mainAbjourType}</p>
+                            <p className="font-black text-xl text-slate-900">{order.mainAbjourType}</p>
                         </div>
-                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center shadow-sm">
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
                             <p className="text-slate-400 text-[10px] font-black uppercase mb-2">اللون المطلوب</p>
-                            <p className="font-black text-2xl text-slate-900">{order.mainColor}</p>
+                            <p className="font-black text-xl text-slate-900">{order.mainColor}</p>
                         </div>
-                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center shadow-sm">
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
                             <p className="text-slate-400 text-[10px] font-black uppercase mb-2">عرض الشفرة</p>
-                            <p className="font-black text-2xl text-slate-900">{order.bladeWidth} سم</p>
+                            <p className="font-black text-xl text-slate-900">{order.bladeWidth} سم</p>
                         </div>
-                         <div className="p-5 bg-red-600 border-2 border-red-700 rounded-2xl text-center shadow-md">
+                         <div className="p-5 bg-red-600 border-2 border-red-700 rounded-2xl text-center">
                             <p className="text-white/70 text-[10px] font-black uppercase mb-2">إجمالي الفتحات</p>
                             <p className="font-black text-3xl text-white leading-none">{order.openings.length}</p>
                         </div>
@@ -65,10 +65,10 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                         <span className="w-3 h-3 bg-slate-900 rounded-full"></span>
                         بيانات القص الفنية (سنتيمتر)
                     </h3>
-                    <div className="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-md">
+                    <div className="rounded-3xl border-2 border-slate-100 overflow-hidden">
                         <Table className="w-full">
                             <TableHeader className="bg-slate-900">
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent border-0">
                                     <TableHead className="p-5 text-center font-bold text-white w-16">#</TableHead>
                                     {showAbjourTypeColumn && <TableHead className="p-5 text-center font-bold text-white">التركيب</TableHead>}
                                     <TableHead className="p-5 text-center font-bold text-white text-base">طول الشفرة</TableHead>
@@ -96,7 +96,7 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="mt-6 p-8 bg-slate-100 rounded-3xl font-black flex justify-between items-center shadow-inner">
+                    <div className="mt-6 p-8 bg-slate-100 rounded-3xl font-black flex justify-between items-center">
                         <span className="text-xl text-slate-700 uppercase tracking-tight">إجمالي مساحة القص المطلوبة:</span>
                         <span className="font-mono text-4xl text-slate-900 leading-none">{order.totalArea.toFixed(2)} م²</span>
                     </div>
@@ -108,10 +108,10 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                             <span className="w-3 h-3 bg-slate-900 rounded-full"></span>
                             قائمة الملحقات والإضافات
                         </h3>
-                        <div className="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                        <div className="rounded-3xl border-2 border-slate-100 overflow-hidden">
                             <Table className="w-full">
                                 <TableHeader className="bg-slate-200">
-                                    <TableRow>
+                                    <TableRow className="hover:bg-transparent border-0">
                                         <TableHead className="p-5 text-center font-black text-slate-700 uppercase">اسم الملحق</TableHead>
                                         <TableHead className="p-5 text-center font-black text-slate-700 uppercase">الكمية</TableHead>
                                         <TableHead className="p-5 text-center font-black text-slate-700 uppercase">الوحدة</TableHead>
@@ -138,7 +138,7 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                 )}
             </main>
 
-            <footer className="mt-20 text-center border-t-4 border-slate-50 pt-10">
+            <footer className="mt-20 text-center border-t-4 border-slate-50 pt-10 bg-white">
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] italic">TECHNICAL PRODUCTION DOCUMENT - TALAB ABAJOUR SMART SYSTEM</p>
             </footer>
         </div>

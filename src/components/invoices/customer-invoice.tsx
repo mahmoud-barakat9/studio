@@ -12,8 +12,8 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
     const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
 
     return (
-        <div id="customer-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] mx-auto overflow-hidden">
-            <header className="flex flex-row justify-between items-center border-b-4 border-slate-100 pb-8 mb-10 gap-4">
+        <div id="customer-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] mx-auto overflow-hidden shadow-none">
+            <header className="flex flex-row justify-between items-center border-b-4 border-slate-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
                     <div className="text-right">
@@ -28,7 +28,7 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                 </div>
             </header>
 
-            <main className="space-y-10">
+            <main className="space-y-10 bg-white">
                 <section>
                     <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">بيانات الطلب والعميل</h3>
                     <div className="grid grid-cols-3 gap-6 text-sm p-8 border-2 border-slate-50 rounded-2xl bg-slate-50/30">
@@ -43,10 +43,10 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
 
                 <section>
                     <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">تفاصيل القياسات</h3>
-                    <div className="rounded-2xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                    <div className="rounded-2xl border-2 border-slate-100 overflow-hidden">
                         <Table className="w-full">
                             <TableHeader className="bg-slate-900">
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent border-0">
                                     <TableHead className="p-4 text-center font-bold text-white">#</TableHead>
                                     {showAbjourTypeColumn && <TableHead className="p-4 text-center font-bold text-white">نوع التركيب</TableHead>}
                                     <TableHead className="p-4 text-center font-bold text-white">طول الشفرة (سم)</TableHead>
@@ -121,10 +121,10 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
                 </div>
             </main>
 
-            <footer className="mt-20 text-center border-t-2 border-slate-100 pt-8 flex justify-between items-center">
+            <footer className="mt-20 text-center border-t-2 border-slate-100 pt-8 flex justify-between items-center bg-white">
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">جميع الحقوق محفوظة &copy; {new Date().getFullYear()} طلب أباجور</p>
                 <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                     <span className="text-[10px] text-slate-400 font-black uppercase">صادر عن النظام الذكي</span>
                 </div>
             </footer>
