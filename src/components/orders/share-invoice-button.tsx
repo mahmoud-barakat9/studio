@@ -32,7 +32,11 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
             const blob = await toBlob(invoiceElement, {
                 cacheBust: true,
                 backgroundColor: 'white',
-                pixelRatio: 2,
+                pixelRatio: 2, // High resolution for WhatsApp
+                style: {
+                    margin: '0',
+                    padding: '0',
+                }
             });
 
             if (!blob) throw new Error('Failed to generate image');

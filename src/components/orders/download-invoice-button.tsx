@@ -19,10 +19,15 @@ export function DownloadInvoiceButton({ invoiceId, orderId, type }: DownloadInvo
         const invoiceElement = document.getElementById(invoiceId);
 
         if (invoiceElement) {
+            // Options to ensure the image is high quality and captures everything
             toPng(invoiceElement, { 
                 cacheBust: true, 
                 backgroundColor: 'white',
-                pixelRatio: 2, // Increase resolution
+                pixelRatio: 2, // High resolution for WhatsApp
+                style: {
+                    margin: '0',
+                    padding: '0',
+                }
             })
             .then((dataUrl) => {
                 const link = document.createElement('a');

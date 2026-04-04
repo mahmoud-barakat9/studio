@@ -1,5 +1,48 @@
 [
   {
+    "id": "ORD874",
+    "orderName": "طلب 4/4/2026, 2:09:10 PM",
+    "userId": "10",
+    "customerName": "ابو جميل",
+    "customerPhone": "0949009918",
+    "mainAbjourType": "شراع",
+    "mainColor": "جوزي غامق",
+    "bladeWidth": 5.5,
+    "pricePerSquareMeter": 18.5,
+    "overriddenPricePerSquareMeter": 19.49,
+    "status": "Approved",
+    "date": "2026-04-04",
+    "totalArea": 5.83825,
+    "totalCost": 113.7874925,
+    "openings": [
+      {
+        "serial": "OP1",
+        "abjourType": "قياسي",
+        "codeLength": 177.5,
+        "numberOfCodes": 26,
+        "hasEndCap": false,
+        "hasAccessories": false,
+        "notes": ""
+      },
+      {
+        "serial": "OP2",
+        "abjourType": "قياسي",
+        "codeLength": 120,
+        "numberOfCodes": 50,
+        "hasEndCap": false,
+        "hasAccessories": false,
+        "notes": ""
+      }
+    ],
+    "isArchived": false,
+    "hasDelivery": false,
+    "deliveryCost": 0,
+    "deliveryAddress": "",
+    "hasInstallation": false,
+    "installationCost": 0,
+    "isEditRequested": false
+  },
+  {
     "id": "ORD869",
     "orderName": "طلب 4/4/2026, 1:37:48 PM",
     "userId": "10",
@@ -10,7 +53,7 @@
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 18.5,
     "overriddenPricePerSquareMeter": 19.5,
-    "status": "ReadyForDelivery",
+    "status": "Delivered",
     "date": "2026-04-04",
     "totalArea": 11.476299999999998,
     "totalCost": 212.31154999999998,
@@ -59,7 +102,8 @@
     "hasInstallation": false,
     "installationCost": 0,
     "isEditRequested": false,
-    "scheduledDeliveryDate": "2026-04-09"
+    "scheduledDeliveryDate": "2026-04-09",
+    "actualDeliveryDate": "2026-04-04"
   },
   {
     "id": "ORD079",
