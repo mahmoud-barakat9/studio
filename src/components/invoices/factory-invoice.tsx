@@ -11,7 +11,11 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
     const customerName = customer?.name || order.customerName;
 
     return (
-        <div id="factory-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] mx-auto overflow-hidden shadow-none">
+        <div 
+            id="factory-invoice" 
+            dir="rtl"
+            className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none"
+        >
             <header className="flex flex-row justify-between items-center border-b-4 border-red-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
@@ -43,8 +47,8 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                             <p className="font-black text-xl text-slate-900">{order.mainColor}</p>
                         </div>
                         <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
-                            <p className="text-slate-400 text-[10px] font-black uppercase mb-2">عرض الشفرة</p>
-                            <p className="font-black text-xl text-slate-900">{order.bladeWidth} سم</p>
+                            <p className="text-slate-400 text-[10px] font-black uppercase mb-2">الزبون</p>
+                            <p className="font-black text-base text-slate-900 break-words">{customerName}</p>
                         </div>
                          <div className="p-5 bg-red-600 border-2 border-red-700 rounded-2xl text-center">
                             <p className="text-white/70 text-[10px] font-black uppercase mb-2">إجمالي الفتحات</p>

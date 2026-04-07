@@ -12,7 +12,11 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
     const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
 
     return (
-        <div id="customer-invoice" className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] mx-auto overflow-hidden shadow-none">
+        <div 
+            id="customer-invoice" 
+            dir="rtl"
+            className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none"
+        >
             <header className="flex flex-row justify-between items-center border-b-4 border-slate-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />

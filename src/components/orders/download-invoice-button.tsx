@@ -19,14 +19,22 @@ export function DownloadInvoiceButton({ invoiceId, orderId, type }: DownloadInvo
         const invoiceElement = document.getElementById(invoiceId);
 
         if (invoiceElement) {
-            // Options to ensure the image is high quality and captures everything
+            // Apply capture-specific styles temporarily
+            const originalStyle = invoiceElement.style.cssText;
+            invoiceElement.style.margin = '0';
+            invoiceElement.style.padding = '48px'; // Ensure 12 (3rem) padding is kept in capture
+            
             toPng(invoiceElement, { 
                 cacheBust: true, 
                 backgroundColor: 'white',
-                pixelRatio: 2, // High resolution for WhatsApp
+                pixelRatio: 2,
+                width: 800,
+                height: invoiceElement.scrollHeight,
                 style: {
+                    transform: 'none',
+                    left: '0',
+                    top: '0',
                     margin: '0',
-                    padding: '0',
                 }
             })
             .then((dataUrl) => {
@@ -34,10 +42,14 @@ export function DownloadInvoiceButton({ invoiceId, orderId, type }: DownloadInvo
                 link.download = `فاتورة-${type}-${orderId}.png`;
                 link.href = dataUrl;
                 link.click();
+                
+                // Restore original style
+                invoiceElement.style.cssText = originalStyle;
                 setIsDownloading(false);
             })
             .catch((err) => {
                 console.error('oops, something went wrong!', err);
+                invoiceElement.style.cssText = originalStyle;
                 setIsDownloading(false);
             });
         } else {

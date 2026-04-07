@@ -28,14 +28,24 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
         }
 
         setIsSharing(true);
+        const originalStyle = invoiceElement.style.cssText;
+
         try {
+            // Apply capture-specific styles temporarily
+            invoiceElement.style.margin = '0';
+            invoiceElement.style.padding = '48px';
+
             const blob = await toBlob(invoiceElement, {
                 cacheBust: true,
                 backgroundColor: 'white',
-                pixelRatio: 2, // High resolution for WhatsApp
+                pixelRatio: 2,
+                width: 800,
+                height: invoiceElement.scrollHeight,
                 style: {
+                    transform: 'none',
+                    left: '0',
+                    top: '0',
                     margin: '0',
-                    padding: '0',
                 }
             });
 
@@ -59,7 +69,6 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
             }
         } catch (err) {
             console.error('Error sharing:', err);
-            // Don't show error if user cancelled the share dialog
             if ((err as Error).name !== 'AbortError') {
                 toast({
                     title: "خطأ في المشاركة",
@@ -68,6 +77,7 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
                 });
             }
         } finally {
+            invoiceElement.style.cssText = originalStyle;
             setIsSharing(false);
         }
     };
