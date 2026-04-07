@@ -10,7 +10,8 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
         <div 
             id="delivery-invoice" 
             dir="rtl"
-            className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none"
+            className="bg-white p-12 text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none border-none"
+            style={{ direction: 'rtl' }}
         >
             <header className="flex flex-row justify-between items-center border-b-4 border-blue-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
@@ -20,7 +21,7 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
                         <p className="text-sm text-slate-500 font-black italic">LOGISTICS & DELIVERY NOTICE</p>
                     </div>
                 </div>
-                <div className="text-left">
+                <div className="text-left" dir="ltr">
                     <p className="text-sm text-slate-500 font-black uppercase tracking-tight">تاريخ الطباعة:</p>
                     <p className="font-bold text-slate-900">{new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     <p className="text-xs font-mono text-slate-400 mt-1">ORDER ID: #{order.id}</p>

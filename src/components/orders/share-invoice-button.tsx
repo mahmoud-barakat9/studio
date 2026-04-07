@@ -28,24 +28,16 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
         }
 
         setIsSharing(true);
-        const originalStyle = invoiceElement.style.cssText;
 
         try {
-            // Apply capture-specific styles temporarily
-            invoiceElement.style.margin = '0';
-            invoiceElement.style.padding = '48px';
-
             const blob = await toBlob(invoiceElement, {
                 cacheBust: true,
                 backgroundColor: 'white',
                 pixelRatio: 2,
-                width: 800,
-                height: invoiceElement.scrollHeight,
                 style: {
-                    transform: 'none',
-                    left: '0',
-                    top: '0',
                     margin: '0',
+                    padding: '0',
+                    transform: 'none',
                 }
             });
 
@@ -53,7 +45,6 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
 
             const file = new File([blob], `فاتورة-${type}-${orderId}.png`, { type: 'image/png' });
 
-            // Check if Web Share API is supported and can share files
             if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
@@ -77,7 +68,6 @@ export function ShareInvoiceButton({ invoiceId, orderId, type }: ShareInvoiceBut
                 });
             }
         } finally {
-            invoiceElement.style.cssText = originalStyle;
             setIsSharing(false);
         }
     };

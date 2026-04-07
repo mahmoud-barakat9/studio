@@ -14,7 +14,8 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
         <div 
             id="factory-invoice" 
             dir="rtl"
-            className="bg-white p-12 rounded-none border-none text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none"
+            className="bg-white p-12 text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none border-none"
+            style={{ direction: 'rtl' }}
         >
             <header className="flex flex-row justify-between items-center border-b-4 border-red-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
@@ -24,7 +25,7 @@ export function FactoryInvoice({ order, customer }: { order: Order, customer?: U
                         <p className="text-sm text-slate-500 font-black italic">PRODUCTION TECHNICAL SPECIFICATIONS</p>
                     </div>
                 </div>
-                <div className="text-left">
+                <div className="text-left" dir="ltr">
                     <h2 className="text-xl font-black text-slate-900">{order.orderName}</h2>
                     <p className="text-sm text-slate-500 font-bold mt-1">الزبون: {customerName}</p>
                     <p className="text-xs font-mono text-slate-400 mt-1 uppercase">ID: #{order.id}</p>
