@@ -10,7 +10,7 @@
     "bladeWidth": 5.5,
     "pricePerSquareMeter": 18.5,
     "overriddenPricePerSquareMeter": 19.49,
-    "status": "Pending",
+    "status": "FactoryOrdered",
     "date": "2026-04-07",
     "totalArea": 3.3,
     "totalCost": 64.317,
