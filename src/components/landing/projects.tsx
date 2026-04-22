@@ -29,7 +29,7 @@ const projects = [
 ];
 
 const ImageCard = ({ image, label }: { image: any; label: string }) => (
-  <div className="relative overflow-hidden rounded-lg shadow-lg group">
+  <div className="relative overflow-hidden rounded-lg shadow-lg group aspect-[4/3]">
     <Image
       src={image.imageUrl}
       alt={image.description}
@@ -41,7 +41,7 @@ const ImageCard = ({ image, label }: { image: any; label: string }) => (
     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
     <Badge
       variant={label === 'قبل' ? 'destructive' : 'default'}
-      className="absolute top-3 right-3 text-lg"
+      className="absolute top-3 right-3 text-sm md:text-lg"
     >
       {label}
     </Badge>
@@ -51,14 +51,14 @@ const ImageCard = ({ image, label }: { image: any; label: string }) => (
 export function Projects() {
   return (
     <section id="projects" className="py-20 bg-background">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold">من أعمالنا ومشاريعنا المنفذة</h2>
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
             الصور تبيع أكثر من الكلام. شاهد بنفسك جودة أعمالنا وتأثيرها قبل وبعد التنفيذ.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project, index) => (
             project.before && project.after && (
               <motion.div
@@ -68,15 +68,15 @@ export function Projects() {
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden h-full flex flex-col">
-                  <CardContent className="p-0 flex-grow">
-                    <div className="grid grid-cols-2">
+                <Card className="overflow-hidden h-full flex flex-col shadow-xl hover:shadow-2xl transition-shadow border-none">
+                  <CardContent className="p-4 flex-grow space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <ImageCard image={project.after} label="بعد" />
                       <ImageCard image={project.before} label="قبل" />
                     </div>
-                     <div className="p-6">
+                     <div className="pt-2">
                         <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                        <p className="text-muted-foreground">{project.description}</p>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
                     </div>
                   </CardContent>
                 </Card>
