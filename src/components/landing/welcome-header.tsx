@@ -6,72 +6,72 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BrandLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const guestLinks = [
-  { href: "/welcome", label: "الرئيسية", id: "home" },
-  { href: "/welcome#features", label: "المميزات", id: "features" },
-  { href: "/welcome#projects", label: "أعمالنا", id: "projects" },
-  { href: "/welcome#testimonials", label: "آراء العملاء", id: "testimonials" },
-  { href: "/welcome#contact", label: "تواصل معنا", id: "contact" },
+  { href: "/welcome", label: "الرئيسية", id: "home", hash: "" },
+  { href: "/welcome#features", label: "المميزات", id: "features", hash: "#features" },
+  { href: "/welcome#projects", label: "أعمالنا", id: "projects", hash: "#projects" },
+  { href: "/welcome#testimonials", label: "آراء العملاء", id: "testimonials", hash: "#testimonials" },
+  { href: "/welcome#contact", label: "تواصل معنا", id: "contact", hash: "#contact" },
 ];
 
 export function WelcomeHeader() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeHash, setHash] = useState("");
+  const [activeHash, setActiveHash] = useState("");
 
   useEffect(() => {
-    // تحديث الحالة عند التحميل الأولي
-    setHash(window.location.hash || "");
+    // تحديث الهاش عند التحميل الأولي
+    setActiveHash(window.location.hash);
 
-    // مستمع لتغيير الهاش في الرابط
     const handleHashChange = () => {
-      setHash(window.location.hash || "");
+      setActiveHash(window.location.hash);
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    
-    // مستمع للتمرير للتحقق مما إذا كنا في أعلى الصفحة (الرئيسية)
+    // مستمع للتمرير لتحديث الحالة عند الوصول لأعلى الصفحة
     const handleScroll = () => {
-        if (window.scrollY < 100) {
-            if (window.location.hash === "") {
-                setHash("");
-            }
+      if (window.scrollY < 100) {
+        // إذا كنا في الأعلى ولم نضغط على هاش محدد، نعتبر أننا في "الرئيسية"
+        if (!window.location.hash) {
+          setActiveHash("");
         }
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (hash: string) => {
+    setActiveHash(hash);
     setIsOpen(false);
   };
-  
-  const homeUrl = "/welcome";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href={homeUrl} className="flex items-center gap-2" onClick={() => setHash("")}>
+        <Link 
+          href="/welcome" 
+          className="flex items-center gap-2" 
+          onClick={() => handleLinkClick("")}
+        >
           <BrandLogo />
           <span className="font-bold text-lg">طلب أباجور</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {guestLinks.map((link) => {
-            // استخراج الهاش من الرابط للمقارنة
-            const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
-            // الرابط نشط إذا كان الهاش الحالي يطابق هاش الرابط تماماً
-            const isActive = activeHash === linkHash;
+            const isActive = activeHash === link.hash;
             
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => handleLinkClick(link.hash)}
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary relative py-1",
                   isActive ? "text-primary" : "text-muted-foreground"
@@ -100,13 +100,12 @@ export function WelcomeHeader() {
         <div className="md:hidden">
           <div className="container flex flex-col items-center gap-4 py-4 bg-background border-b shadow-lg">
             {guestLinks.map((link) => {
-              const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
-              const isActive = activeHash === linkHash;
+              const isActive = activeHash === link.hash;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={handleLinkClick}
+                  onClick={() => handleLinkClick(link.hash)}
                   className={cn(
                     "text-lg font-medium transition-colors hover:text-primary w-full text-center py-3 rounded-md",
                      isActive ? "text-primary bg-primary/10" : "text-foreground"
