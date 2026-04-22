@@ -10,30 +10,40 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const guestLinks = [
-  { href: "/welcome", label: "الرئيسية" },
-  { href: "/welcome#features", label: "المميزات" },
-  { href: "/welcome#projects", label: "أعمالنا" },
-  { href: "/welcome#testimonials", label: "آراء العملاء" },
-  { href: "/welcome#contact", label: "تواصل معنا" },
+  { href: "/welcome", label: "الرئيسية", id: "home" },
+  { href: "/welcome#features", label: "المميزات", id: "features" },
+  { href: "/welcome#projects", label: "أعمالنا", id: "projects" },
+  { href: "/welcome#testimonials", label: "آراء العملاء", id: "testimonials" },
+  { href: "/welcome#contact", label: "تواصل معنا", id: "contact" },
 ];
 
 export function WelcomeHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const [hash, setHash] = useState("");
+  const [activeHash, setHash] = useState("");
 
   useEffect(() => {
     // تحديث الحالة عند تغيير الهاش في الرابط
     const handleHashChange = () => {
-      setHash(window.location.hash);
+      setHash(window.location.hash || "");
     };
 
+    // التحديث عند التحميل الأولي
+    handleHashChange();
+
     window.addEventListener('hashchange', handleHashChange);
-    // ضبط الهاش الأولي عند التحميل
-    setHash(window.location.hash);
+    
+    // إضافة مستمع للتمرير لتحديث الهاش يدوياً إذا لزم الأمر
+    const handleScroll = () => {
+        if (window.scrollY < 100) {
+            setHash("");
+        }
+    };
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -42,8 +52,6 @@ export function WelcomeHeader() {
   };
   
   const homeUrl = "/welcome";
-  // دمج المسار مع الهاش للمقارنة الدقيقة
-  const currentPathWithHash = pathname + hash;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,17 +62,26 @@ export function WelcomeHeader() {
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {guestLinks.map((link) => {
-            const isActive = currentPathWithHash === link.href || (link.href === "/welcome" && currentPathWithHash === "/welcome");
+            // منطق تحديد الرابط النشط:
+            // 1. إذا لم يكن هناك هاش والاسم هو الرئيسية
+            // 2. إذا كان الهاش الحالي يطابق نهاية الرابط
+            const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
+            const isActive = (activeHash === "" && link.href === "/welcome") || 
+                             (activeHash !== "" && activeHash === linkHash);
+            
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
-                  isActive ? "text-primary border-b-2 border-primary" : "text-muted-foreground"
+                  "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                  isActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 {link.label}
+                {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                )}
               </Link>
             );
           })}
@@ -82,16 +99,18 @@ export function WelcomeHeader() {
       </div>
       {isOpen && (
         <div className="md:hidden">
-          <div className="container flex flex-col items-center gap-4 py-4 bg-background border-b">
+          <div className="container flex flex-col items-center gap-4 py-4 bg-background border-b shadow-lg">
             {guestLinks.map((link) => {
-              const isActive = currentPathWithHash === link.href || (link.href === "/welcome" && currentPathWithHash === "/welcome");
+              const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
+              const isActive = (activeHash === "" && link.href === "/welcome") || 
+                               (activeHash !== "" && activeHash === linkHash);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={handleLinkClick}
                   className={cn(
-                    "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2 rounded-md",
+                    "text-lg font-medium transition-colors hover:text-primary w-full text-center py-3 rounded-md",
                      isActive ? "text-primary bg-primary/10" : "text-foreground"
                   )}
                 >
