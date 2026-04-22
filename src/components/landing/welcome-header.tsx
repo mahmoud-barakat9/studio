@@ -23,12 +23,13 @@ export function WelcomeHeader() {
   const [hash, setHash] = useState("");
 
   useEffect(() => {
+    // تحديث الحالة عند تغيير الهاش في الرابط
     const handleHashChange = () => {
       setHash(window.location.hash);
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    // Set initial hash
+    // ضبط الهاش الأولي عند التحميل
     setHash(window.location.hash);
 
     return () => {
@@ -41,7 +42,8 @@ export function WelcomeHeader() {
   };
   
   const homeUrl = "/welcome";
-  const currentPath = pathname + hash;
+  // دمج المسار مع الهاش للمقارنة الدقيقة
+  const currentPathWithHash = pathname + hash;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,18 +53,21 @@ export function WelcomeHeader() {
           <span className="font-bold text-lg">طلب أباجور</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
-          {guestLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                currentPath === link.href ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {guestLinks.map((link) => {
+            const isActive = currentPathWithHash === link.href || (link.href === "/welcome" && currentPathWithHash === "/welcome");
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  isActive ? "text-primary border-b-2 border-primary" : "text-muted-foreground"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
         <div className="md:hidden">
           <Button
@@ -77,20 +82,23 @@ export function WelcomeHeader() {
       </div>
       {isOpen && (
         <div className="md:hidden">
-          <div className="container flex flex-col items-center gap-4 py-4">
-            {guestLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={handleLinkClick}
-                className={cn(
-                  "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2",
-                   currentPath === link.href ? "text-primary" : "text-foreground"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="container flex flex-col items-center gap-4 py-4 bg-background border-b">
+            {guestLinks.map((link) => {
+              const isActive = currentPathWithHash === link.href || (link.href === "/welcome" && currentPathWithHash === "/welcome");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "text-lg font-medium transition-colors hover:text-primary w-full text-center py-2 rounded-md",
+                     isActive ? "text-primary bg-primary/10" : "text-foreground"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
