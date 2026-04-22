@@ -19,24 +19,25 @@ const guestLinks = [
 
 export function WelcomeHeader() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
   const [activeHash, setHash] = useState("");
 
   useEffect(() => {
-    // تحديث الحالة عند تغيير الهاش في الرابط
+    // تحديث الحالة عند التحميل الأولي
+    setHash(window.location.hash || "");
+
+    // مستمع لتغيير الهاش في الرابط
     const handleHashChange = () => {
       setHash(window.location.hash || "");
     };
 
-    // التحديث عند التحميل الأولي
-    handleHashChange();
-
     window.addEventListener('hashchange', handleHashChange);
     
-    // إضافة مستمع للتمرير لتحديث الهاش يدوياً إذا لزم الأمر
+    // مستمع للتمرير للتحقق مما إذا كنا في أعلى الصفحة (الرئيسية)
     const handleScroll = () => {
         if (window.scrollY < 100) {
-            setHash("");
+            if (window.location.hash === "") {
+                setHash("");
+            }
         }
     };
     window.addEventListener('scroll', handleScroll);
@@ -56,18 +57,16 @@ export function WelcomeHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href={homeUrl} className="flex items-center gap-2">
+        <Link href={homeUrl} className="flex items-center gap-2" onClick={() => setHash("")}>
           <BrandLogo />
           <span className="font-bold text-lg">طلب أباجور</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {guestLinks.map((link) => {
-            // منطق تحديد الرابط النشط:
-            // 1. إذا لم يكن هناك هاش والاسم هو الرئيسية
-            // 2. إذا كان الهاش الحالي يطابق نهاية الرابط
+            // استخراج الهاش من الرابط للمقارنة
             const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
-            const isActive = (activeHash === "" && link.href === "/welcome") || 
-                             (activeHash !== "" && activeHash === linkHash);
+            // الرابط نشط إذا كان الهاش الحالي يطابق هاش الرابط تماماً
+            const isActive = activeHash === linkHash;
             
             return (
               <Link
@@ -102,8 +101,7 @@ export function WelcomeHeader() {
           <div className="container flex flex-col items-center gap-4 py-4 bg-background border-b shadow-lg">
             {guestLinks.map((link) => {
               const linkHash = link.href.includes('#') ? '#' + link.href.split('#')[1] : "";
-              const isActive = (activeHash === "" && link.href === "/welcome") || 
-                               (activeHash !== "" && activeHash === linkHash);
+              const isActive = activeHash === linkHash;
               return (
                 <Link
                   key={link.href}
