@@ -7,56 +7,86 @@ export function DeliveryInvoice({ order, customer }: { order: Order, customer?: 
     const customerPhone = customer?.phone || order.customerPhone;
 
     return (
-        <div id="delivery-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
-            <header className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-muted pb-6 mb-8 gap-4">
+        <div 
+            id="delivery-invoice" 
+            dir="rtl"
+            className="bg-white p-12 text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none border-none"
+            style={{ direction: 'rtl' }}
+        >
+            <header className="flex flex-row justify-between items-center border-b-4 border-blue-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
-                    <div>
-                        <h1 className="text-3xl font-bold text-primary">إشعار تسليم</h1>
-                        <p className="text-sm text-muted-foreground">معلومات تسليم الطلب</p>
+                    <div className="text-right">
+                        <h1 className="text-3xl font-bold text-blue-600 uppercase tracking-tighter">إيصال تسليم وشحن</h1>
+                        <p className="text-sm text-slate-500 font-black italic">LOGISTICS & DELIVERY NOTICE</p>
                     </div>
                 </div>
-                <div className="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0">
-                    <p className="text-sm text-muted-foreground">تاريخ الطباعة: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="text-left" dir="ltr">
+                    <p className="text-sm text-slate-500 font-black uppercase tracking-tight">تاريخ الطباعة:</p>
+                    <p className="font-bold text-slate-900">{new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-xs font-mono text-slate-400 mt-1">ORDER ID: #{order.id}</p>
                 </div>
             </header>
 
-            <main>
-                <section className="mb-8">
-                    <h3 className="text-xl font-bold mb-4">معلومات التسليم الأساسية</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-base p-4 border rounded-lg bg-muted/30">
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">رقم الطلب</span> <span className="font-mono">{order.id}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">تاريخ الطلب</span> <span>{order.date}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">اسم العميل</span> <span className="font-semibold">{customerName}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">رقم هاتف العميل</span> <span className="font-mono">{customerPhone}</span></div>
-                        <div className="md:col-span-2 flex flex-col"><span className="font-bold text-muted-foreground text-sm">عنوان التوصيل</span> <p className="font-semibold">{order.deliveryAddress}</p></div>
+            <main className="space-y-10 bg-white">
+                <section>
+                    <h3 className="text-lg font-bold mb-6 text-blue-600 flex items-center gap-3">
+                        <span className="w-3 h-3 bg-blue-600 rounded-full"></span>
+                        بيانات العميل والموقع
+                    </h3>
+                    <div className="grid grid-cols-2 gap-8 p-10 border-2 border-blue-50 rounded-3xl bg-blue-50/20 shadow-sm">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">اسم المستلم</span> 
+                            <span className="font-black text-2xl text-slate-900 leading-none">{customerName}</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">رقم الاتصال</span> 
+                            <span className="font-mono font-black text-2xl text-slate-900 leading-none" dir="ltr">{customerPhone}</span>
+                        </div>
+                        <div className="col-span-2 mt-4 pt-6 border-t-2 border-blue-100/50 flex flex-col gap-3">
+                            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic">موقع التسليم التفصيلي</span> 
+                            <p className="font-bold text-xl text-slate-800 leading-relaxed">{order.deliveryAddress}</p>
+                        </div>
                     </div>
                 </section>
 
                 <section>
-                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">ملخص الشحنة</h3>
-                    <div className="p-6 border rounded-lg bg-muted/30 space-y-3 max-w-md mx-auto text-center">
-                        <div className="flex justify-between items-center">
-                            <span>المنتج:</span> 
-                            <span className="font-semibold">طلب أباجور - {order.mainAbjourType} ({order.mainColor})</span>
+                    <h3 className="text-lg font-bold mb-6 text-slate-900 flex items-center gap-3">
+                        <span className="w-3 h-3 bg-slate-900 rounded-full"></span>
+                        ملخص التحصيل والتسليم
+                    </h3>
+                    <div className="p-10 border-4 border-dashed border-blue-100 rounded-3xl bg-white space-y-8 max-w-[500px] mx-auto text-center shadow-lg relative">
+                        <div className="space-y-2">
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">المنتج المشحون</p>
+                            <p className="font-black text-2xl text-slate-900">أباجور طراز {order.mainAbjourType}</p>
+                            <p className="text-blue-600 font-black text-sm uppercase">حمولة إجمالية: {order.openings.length} قطع</p>
                         </div>
-                         <div className="flex justify-between items-center">
-                            <span>عدد الفتحات:</span> 
-                            <span className="font-mono font-semibold">{order.openings.length}</span>
+                        
+                        <div className="h-px w-full bg-slate-100"></div>
+
+                        <div className="space-y-4">
+                            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">المبلغ الصافي المطلوب تحصيله عند الاستلام</p>
+                            <div className="py-6 px-4 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-200">
+                                <p className="font-mono font-black text-5xl leading-none tracking-tighter">${(order.totalCost + (order.deliveryCost || 0)).toFixed(2)}</p>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center font-bold text-lg text-primary pt-2">
-                            <span>المبلغ المطلوب عند الاستلام:</span> 
-                            <span className="font-mono">${(order.totalCost + (order.deliveryCost || 0)).toFixed(2)}</span>
+                        
+                        <div className="pt-6 space-y-6">
+                            <p className="text-[10px] text-slate-400 font-bold italic leading-relaxed px-4">
+                               يرجى التوقيع أدناه بعد التأكد من سلامة البضاعة وتطابق المواصفات الفنية مع طلبكم.
+                            </p>
+                            <div className="flex justify-center pt-4">
+                                <div className="w-full h-24 border-b-2 border-slate-200 flex items-end justify-center pb-2">
+                                    <span className="text-[10px] text-slate-300 font-black uppercase tracking-[0.5em]">توقيع العميل المستلم</span>
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-xs text-muted-foreground pt-2">
-                           يرجى التأكد من استلام المبلغ الصحيح عند تسليم الطلب.
-                        </p>
                     </div>
                 </section>
             </main>
 
-            <footer className="mt-16 text-center text-xs text-gray-500 border-t pt-6">
-                <p>مستند للتوصيل فقط. صادر من نظام طلب أباجور.</p>
+            <footer className="mt-20 text-center border-t-2 border-slate-50 pt-8 bg-white">
+                <p className="text-[10px] text-slate-300 font-black uppercase tracking-[0.4em] italic">OFFICIAL LOGISTICS DOCUMENT - NOT AN INVOICE</p>
             </footer>
         </div>
     );

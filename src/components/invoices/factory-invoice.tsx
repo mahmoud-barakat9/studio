@@ -1,101 +1,139 @@
 'use client';
-import type { Order } from "@/lib/definitions";
+import type { Order, User } from "@/lib/definitions";
 import { BrandLogo } from "@/components/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Separator } from "../ui/separator";
 
-export function FactoryInvoice({ order }: { order: Order }) {
+export function FactoryInvoice({ order, customer }: { order: Order, customer?: User }) {
+    const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
+    const showEndCapColumn = order.openings.some(o => o.hasEndCap);
+    const showAccessoriesColumn = order.openings.some(o => o.hasAccessories);
+    
+    const customerName = customer?.name || order.customerName;
+
     return (
-        <div id="factory-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
-            <header className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-muted pb-6 mb-8 gap-4">
+        <div 
+            id="factory-invoice" 
+            dir="rtl"
+            className="bg-white p-12 text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none border-none"
+            style={{ direction: 'rtl' }}
+        >
+            <header className="flex flex-row justify-between items-center border-b-4 border-red-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
-                    <div>
-                        <h1 className="text-3xl font-bold text-primary">طلب تصنيع للمعمل</h1>
-                        <p className="text-sm text-muted-foreground">تفاصيل فنية للإنتاج</p>
+                    <div className="text-right">
+                        <h1 className="text-3xl font-bold text-red-600 uppercase tracking-tighter">طلب تصنيع - معمل</h1>
+                        <p className="text-sm text-slate-500 font-black italic">PRODUCTION TECHNICAL SPECIFICATIONS</p>
                     </div>
                 </div>
-                <div className="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0">
-                    <h2 className="text-xl font-bold">ملخص الطلب</h2>
-                    <p className="text-sm text-muted-foreground">تاريخ الطباعة: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="text-left" dir="ltr">
+                    <h2 className="text-xl font-black text-slate-900">{order.orderName}</h2>
+                    <p className="text-sm text-slate-500 font-bold mt-1">الزبون: {customerName}</p>
+                    <p className="text-xs font-mono text-slate-400 mt-1 uppercase">ID: #{order.id}</p>
                 </div>
             </header>
 
-            <main>
-                <section className="mb-8">
-                    <h3 className="text-xl font-bold mb-4">المواصفات الرئيسية</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-base p-4 border rounded-lg bg-muted/30">
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">اسم الطلب</span> <span className="font-semibold">{order.orderName}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">رقم الطلب</span> <span className="font-mono">{order.id}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">تاريخ الطلب</span> <span>{order.date}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">نوع الأباجور</span> <span className="font-semibold">{order.mainAbjourType}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">اللون</span> <span className="font-semibold">{order.mainColor}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">عرض الشفرة</span> <span>{order.bladeWidth} سم</span></div>
-                        {order.scheduledDeliveryDate && (
-                             <div className="flex flex-col lg:col-span-3 font-bold text-primary"><span className="font-bold text-muted-foreground text-sm">تاريخ الجاهزية المطلوب</span> <span>{order.scheduledDeliveryDate}</span></div>
-                        )}
+            <main className="space-y-10 bg-white">
+                <section>
+                    <h3 className="text-lg font-bold mb-6 text-red-600 flex items-center gap-3">
+                        <span className="w-3 h-3 bg-red-600 rounded-full"></span>
+                        المواصفات الأساسية للتجهيز
+                    </h3>
+                    <div className="grid grid-cols-4 gap-4">
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
+                            <p className="text-slate-400 text-[10px] font-black uppercase mb-2">نوع المادة</p>
+                            <p className="font-black text-xl text-slate-900">{order.mainAbjourType}</p>
+                        </div>
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
+                            <p className="text-slate-400 text-[10px] font-black uppercase mb-2">اللون المطلوب</p>
+                            <p className="font-black text-xl text-slate-900">{order.mainColor}</p>
+                        </div>
+                        <div className="p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center">
+                            <p className="text-slate-400 text-[10px] font-black uppercase mb-2">الزبون</p>
+                            <p className="font-black text-base text-slate-900 break-words">{customerName}</p>
+                        </div>
+                         <div className="p-5 bg-red-600 border-2 border-red-700 rounded-2xl text-center">
+                            <p className="text-white/70 text-[10px] font-black uppercase mb-2">إجمالي الفتحات</p>
+                            <p className="font-black text-3xl text-white leading-none">{order.openings.length}</p>
+                        </div>
                     </div>
+                    {order.scheduledDeliveryDate && (
+                        <div className="mt-6 p-6 bg-yellow-50 border-2 border-yellow-100 rounded-3xl text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
+                            <p className="text-yellow-700 text-xs font-black uppercase tracking-widest mb-1">تاريخ الجاهزية المطلوب</p>
+                            <p className="font-black text-3xl text-yellow-900 leading-none">{order.scheduledDeliveryDate}</p>
+                        </div>
+                    )}
                 </section>
 
                 <section>
-                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">تفاصيل القطع المطلوبة</h3>
-                    <div className="overflow-x-auto rounded-lg border">
-                        <Table className="w-full text-sm text-center">
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="p-3">#</TableHead>
-                                    <TableHead className="p-3 text-right">نوع التركيب</TableHead>
-                                    <TableHead className="p-3">طول الشفرة (سم)</TableHead>
-                                    <TableHead className="p-3">عدد الشفرات</TableHead>
-                                    <TableHead className="p-3">مع نهاية</TableHead>
-                                    <TableHead className="p-3">إكسسوارات</TableHead>
-                                    <TableHead className="p-3">المساحة (م²)</TableHead>
+                    <h3 className="text-lg font-bold mb-6 text-slate-900 flex items-center gap-3">
+                        <span className="w-3 h-3 bg-slate-900 rounded-full"></span>
+                        بيانات القص الفنية (سنتيمتر)
+                    </h3>
+                    <div className="rounded-3xl border-2 border-slate-100 overflow-hidden">
+                        <Table className="w-full">
+                            <TableHeader className="bg-slate-900">
+                                <TableRow className="hover:bg-transparent border-0">
+                                    <TableHead className="p-5 text-center font-bold text-white w-16">#</TableHead>
+                                    {showAbjourTypeColumn && <TableHead className="p-5 text-center font-bold text-white">التركيب</TableHead>}
+                                    <TableHead className="p-5 text-center font-bold text-white text-base">طول الشفرة</TableHead>
+                                    <TableHead className="p-5 text-center font-bold text-white text-base">العدد</TableHead>
+                                    {showEndCapColumn && <TableHead className="p-5 text-center font-bold text-white">نهاية</TableHead>}
+                                    {showAccessoriesColumn && <TableHead className="p-5 text-center font-bold text-white">مجاري</TableHead>}
+                                    <TableHead className="p-5 text-center font-bold text-white">المساحة</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {order.openings.map((opening, index) => {
                                     const area = (opening.codeLength * opening.numberOfCodes * order.bladeWidth / 10000).toFixed(2);
                                     return (
-                                        <TableRow key={opening.serial} className="even:bg-card">
-                                            <TableCell className="p-3 font-mono">{index + 1}</TableCell>
-                                            <TableCell className="p-3 text-right font-medium">{opening.abjourType}</TableCell>
-                                            <TableCell className="p-3 font-mono">{opening.codeLength.toFixed(2)}</TableCell>
-                                            <TableCell className="p-3 font-mono">{opening.numberOfCodes}</TableCell>
-                                            <TableCell className="p-3">{opening.hasEndCap ? 'نعم' : 'لا'}</TableCell>
-                                            <TableCell className="p-3">{opening.hasAccessories ? 'نعم' : 'لا'}</TableCell>
-                                            <TableCell className="p-3 font-mono">{area}</TableCell>
+                                        <TableRow key={opening.serial} className="hover:bg-transparent border-b-2 border-slate-50 last:border-0 odd:bg-slate-50/30">
+                                            <TableCell className="p-5 text-center font-black text-slate-300 text-lg">{index + 1}</TableCell>
+                                            {showAbjourTypeColumn && <TableCell className="p-5 text-center font-black text-slate-700">{opening.abjourType}</TableCell>}
+                                            <TableCell className="p-5 text-center font-mono font-black text-3xl text-red-600 bg-red-50/20">{opening.codeLength.toFixed(2)}</TableCell>
+                                            <TableCell className="p-5 text-center font-mono font-black text-3xl text-slate-900">{opening.numberOfCodes}</TableCell>
+                                            {showEndCapColumn && <TableCell className="p-5 text-center font-bold text-slate-600">{opening.hasEndCap ? '✓' : '-'}</TableCell>}
+                                            {showAccessoriesColumn && <TableCell className="p-5 text-center font-bold text-slate-600">{opening.hasAccessories ? '✓' : '-'}</TableCell>}
+                                            <TableCell className="p-5 text-center font-mono font-bold text-slate-400">{area} م²</TableCell>
                                         </TableRow>
                                     );
                                 })}
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="mt-4 p-4 bg-muted/60 rounded-lg font-bold flex justify-between items-center text-lg">
-                        <span>إجمالي المساحة المطلوبة للتصنيع</span>
-                        <span className="font-mono">{order.totalArea.toFixed(2)} م²</span>
+                    <div className="mt-6 p-8 bg-slate-100 rounded-3xl font-black flex justify-between items-center">
+                        <span className="text-xl text-slate-700 uppercase tracking-tight">إجمالي مساحة القص المطلوبة:</span>
+                        <span className="font-mono text-4xl text-slate-900 leading-none">{order.totalArea.toFixed(2)} م²</span>
                     </div>
                 </section>
                 
                 {order.accessories && order.accessories.length > 0 && (
-                     <section className="mt-8">
-                        <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">الإكسسوارات المطلوبة</h3>
-                        <div className="overflow-x-auto rounded-lg border">
-                            <Table className="w-full text-sm text-center">
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="p-3 text-right">اسم الإكسسوار</TableHead>
-                                        <TableHead className="p-3">الكمية</TableHead>
-                                        <TableHead className="p-3">الوحدة</TableHead>
-                                        <TableHead className="p-3">النوع</TableHead>
+                     <section>
+                        <h3 className="text-lg font-bold mb-6 text-slate-900 flex items-center gap-3">
+                            <span className="w-3 h-3 bg-slate-900 rounded-full"></span>
+                            قائمة الملحقات والإضافات
+                        </h3>
+                        <div className="rounded-3xl border-2 border-slate-100 overflow-hidden">
+                            <Table className="w-full">
+                                <TableHeader className="bg-slate-200">
+                                    <TableRow className="hover:bg-transparent border-0">
+                                        <TableHead className="p-5 text-center font-black text-slate-700 uppercase">اسم الملحق</TableHead>
+                                        <TableHead className="p-5 text-center font-black text-slate-700 uppercase">الكمية</TableHead>
+                                        <TableHead className="p-5 text-center font-black text-slate-700 uppercase">الوحدة</TableHead>
+                                        <TableHead className="p-5 text-center font-black text-slate-700 uppercase">الأولوية</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {order.accessories.map((acc, index) => (
-                                        <TableRow key={index} className="even:bg-card">
-                                            <TableCell className="p-3 text-right font-medium">{acc.name}</TableCell>
-                                            <TableCell className="p-3 font-mono">{acc.quantity}</TableCell>
-                                            <TableCell className="p-3">{acc.unit}</TableCell>
-                                            <TableCell className="p-3">{acc.type === 'required' ? 'مطلوب' : 'اختياري'}</TableCell>
+                                        <TableRow key={index} className="hover:bg-transparent border-b-2 border-slate-50 last:border-0">
+                                            <TableCell className="p-5 text-center font-bold text-lg text-slate-800">{acc.name}</TableCell>
+                                            <TableCell className="p-5 text-center font-mono font-black text-2xl text-slate-900">{acc.quantity}</TableCell>
+                                            <TableCell className="p-5 text-center font-bold text-slate-500">{acc.unit}</TableCell>
+                                            <TableCell className="p-5 text-center">
+                                                <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${acc.type === 'required' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                    {acc.type === 'required' ? 'إلزامي' : 'اختياري'}
+                                                </span>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -103,10 +141,10 @@ export function FactoryInvoice({ order }: { order: Order }) {
                         </div>
                     </section>
                 )}
-
             </main>
-             <footer className="mt-16 text-center text-xs text-gray-500 border-t pt-6">
-                <p>مستند فني للمعمل فقط. صادر من نظام طلب أباجور.</p>
+
+            <footer className="mt-20 text-center border-t-4 border-slate-50 pt-10 bg-white">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] italic">TECHNICAL PRODUCTION DOCUMENT - TALAB ABAJOUR SMART SYSTEM</p>
             </footer>
         </div>
     );

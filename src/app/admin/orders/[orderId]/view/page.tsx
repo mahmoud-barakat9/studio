@@ -7,6 +7,7 @@ import { DeliveryInvoice } from "@/components/invoices/delivery-invoice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadInvoiceButton } from "@/components/orders/download-invoice-button";
+import { ShareInvoiceButton } from "@/components/orders/share-invoice-button";
 import type { Order, User } from "@/lib/definitions";
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
@@ -108,7 +109,10 @@ export default function OrderInvoicesPage() {
                  <Card>
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle>فاتورة العميل النهائية</CardTitle>
-                        <DownloadInvoiceButton invoiceId="customer-invoice" orderId={order.id} type="customer" />
+                        <div className="flex items-center gap-2">
+                            <ShareInvoiceButton invoiceId="customer-invoice" orderId={order.id} type="customer" />
+                            <DownloadInvoiceButton invoiceId="customer-invoice" orderId={order.id} type="customer" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <CustomerInvoice order={order} customer={customer} />
@@ -120,10 +124,13 @@ export default function OrderInvoicesPage() {
                 <Card>
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle>فاتورة المعمل الفنية</CardTitle>
-                        <DownloadInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
+                        <div className="flex items-center gap-2">
+                            <ShareInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
+                            <DownloadInvoiceButton invoiceId="factory-invoice" orderId={order.id} type="factory" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                         <FactoryInvoice order={order} />
+                         <FactoryInvoice order={order} customer={customer} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -132,7 +139,10 @@ export default function OrderInvoicesPage() {
                 <Card>
                      <CardHeader className="flex-row items-center justify-between">
                         <CardTitle>فاتورة مسؤول التوصيل</CardTitle>
-                        <DownloadInvoiceButton invoiceId="delivery-invoice" orderId={order.id} type="delivery" />
+                        <div className="flex items-center gap-2">
+                            <ShareInvoiceButton invoiceId="delivery-invoice" orderId={order.id} type="delivery" />
+                            <DownloadInvoiceButton invoiceId="delivery-invoice" orderId={order.id} type="delivery" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                        <DeliveryInvoice order={order} customer={customer} />

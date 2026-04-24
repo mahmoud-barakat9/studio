@@ -47,5 +47,26 @@
     "email": "ali@abjour.com",
     "phone": "099208373963",
     "role": "user"
+  },
+  {
+    "id": "8",
+    "name": "زبون 1",
+    "email": "a@gmail.com",
+    "phone": "094500000",
+    "role": "user"
+  },
+  {
+    "id": "9",
+    "name": "زبون 2",
+    "email": "a2@gmaoil.com",
+    "phone": "094500000",
+    "role": "user"
+  },
+  {
+    "id": "10",
+    "name": "ابو جميل",
+    "email": "jml@gmail.com",
+    "phone": "0949009918",
+    "role": "user"
   }
 ]

@@ -1,11 +1,17 @@
-
 'use client';
 
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const projects = [
   {
@@ -28,8 +34,11 @@ const projects = [
   },
 ];
 
-const ImageCard = ({ image, label }: { image: any; label: string }) => (
-  <div className="relative overflow-hidden rounded-lg shadow-lg group">
+const ImageCard = ({ image, label, onClick }: { image: any; label: string; onClick: () => void }) => (
+  <div 
+    className="relative overflow-hidden rounded-lg shadow-lg group aspect-[4/3] cursor-pointer"
+    onClick={onClick}
+  >
     <Image
       src={image.imageUrl}
       alt={image.description}
@@ -41,7 +50,7 @@ const ImageCard = ({ image, label }: { image: any; label: string }) => (
     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
     <Badge
       variant={label === 'قبل' ? 'destructive' : 'default'}
-      className="absolute top-3 right-3 text-lg"
+      className="absolute top-3 right-3 text-sm md:text-lg"
     >
       {label}
     </Badge>
@@ -49,16 +58,18 @@ const ImageCard = ({ image, label }: { image: any; label: string }) => (
 );
 
 export function Projects() {
+  const [selectedImage, setSelectedImage] = useState<{ url: string; title: string; description: string } | null>(null);
+
   return (
     <section id="projects" className="py-20 bg-background">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold">من أعمالنا ومشاريعنا المنفذة</h2>
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
             الصور تبيع أكثر من الكلام. شاهد بنفسك جودة أعمالنا وتأثيرها قبل وبعد التنفيذ.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project, index) => (
             project.before && project.after && (
               <motion.div
@@ -68,15 +79,23 @@ export function Projects() {
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden h-full flex flex-col">
-                  <CardContent className="p-0 flex-grow">
-                    <div className="grid grid-cols-2">
-                      <ImageCard image={project.after} label="بعد" />
-                      <ImageCard image={project.before} label="قبل" />
+                <Card className="overflow-hidden h-full flex flex-col shadow-xl hover:shadow-2xl transition-shadow border-none">
+                  <CardContent className="p-4 flex-grow space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <ImageCard 
+                        image={project.after} 
+                        label="بعد" 
+                        onClick={() => setSelectedImage({ url: project.after!.imageUrl, title: project.title, description: 'بعد التنفيذ' })}
+                      />
+                      <ImageCard 
+                        image={project.before} 
+                        label="قبل" 
+                        onClick={() => setSelectedImage({ url: project.before!.imageUrl, title: project.title, description: 'قبل التنفيذ' })}
+                      />
                     </div>
-                     <div className="p-6">
+                     <div className="pt-2">
                         <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                        <p className="text-muted-foreground">{project.description}</p>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -85,6 +104,27 @@ export function Projects() {
           ))}
         </div>
       </div>
+
+      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-transparent border-none shadow-none">
+          {selectedImage && (
+            <div className="relative w-full h-full flex flex-col items-center justify-center">
+              <div className="bg-black/80 p-2 rounded-t-lg w-full text-center text-white">
+                <h3 className="font-bold">{selectedImage.title}</h3>
+                <p className="text-xs opacity-80">{selectedImage.description}</p>
+              </div>
+              <div className="relative w-full aspect-[4/3] max-h-[80vh]">
+                <Image
+                  src={selectedImage.url}
+                  alt={selectedImage.title}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

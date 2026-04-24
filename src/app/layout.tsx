@@ -6,7 +6,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { SplashScreen } from '@/components/splash-screen';
-import { usePathname } from 'next/navigation';
 import { useEffect, useState, ReactNode } from 'react';
 import { PageTransitionLoader } from '@/components/page-transition-loader';
 import { OnlineStatusIndicator } from '@/components/online-status-indicator';
@@ -15,8 +14,6 @@ import { AuthProvider } from '@/providers/auth-provider';
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-body' });
 
-// Since we're using 'use client', we can't export metadata directly.
-// We can define it here to be used in the head.
 const metadata: Metadata = {
   title: 'طلب أباجور',
   description: 'أنشئ وتتبع طلبات الأباجور الخاصة بك بكل سهولة.',
@@ -33,8 +30,7 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // This effect runs once on initial load to hide the splash screen.
-    const timer = setTimeout(() => setIsLoading(false), 2000); // Adjust duration as needed
+    const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -50,7 +46,7 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#E3E0F3" />
+        <meta name="msapplication-TileColor" content="#f97316" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF" />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111827" />

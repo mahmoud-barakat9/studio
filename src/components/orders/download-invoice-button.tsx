@@ -19,10 +19,16 @@ export function DownloadInvoiceButton({ invoiceId, orderId, type }: DownloadInvo
         const invoiceElement = document.getElementById(invoiceId);
 
         if (invoiceElement) {
+            // Standard capture logic optimized for RTL and fixed width
             toPng(invoiceElement, { 
                 cacheBust: true, 
                 backgroundColor: 'white',
-                pixelRatio: 2, // Increase resolution
+                pixelRatio: 2,
+                style: {
+                    margin: '0',
+                    padding: '0',
+                    transform: 'none',
+                }
             })
             .then((dataUrl) => {
                 const link = document.createElement('a');

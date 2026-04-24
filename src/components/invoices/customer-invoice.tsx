@@ -9,129 +9,129 @@ export function CustomerInvoice({ order, customer }: { order: Order, customer?: 
     const finalTotalCost = order.totalCost + (order.deliveryCost || 0);
     const pricePerMeter = order.overriddenPricePerSquareMeter ?? order.pricePerSquareMeter;
 
+    const showAbjourTypeColumn = order.openings.some(o => o.abjourType !== 'قياسي');
+
     return (
-        <div id="customer-invoice" className="bg-card p-6 sm:p-10 rounded-lg shadow-sm border border-border/50 text-foreground">
-            <header className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-muted pb-6 mb-8 gap-4">
+        <div 
+            id="customer-invoice" 
+            dir="rtl"
+            className="bg-white p-12 text-slate-950 w-[800px] min-w-[800px] max-w-[800px] overflow-hidden shadow-none border-none"
+            style={{ direction: 'rtl' }}
+        >
+            <header className="flex flex-row justify-between items-center border-b-4 border-slate-100 pb-8 mb-10 gap-4 bg-white">
                 <div className="flex items-center gap-4">
                     <BrandLogo />
-                    <div>
-                        <h1 className="text-3xl font-bold text-primary">فاتورة طلب أباجور</h1>
-                        <p className="text-sm text-muted-foreground">نظام إدارة طلبات الأباجور</p>
+                    <div className="text-right">
+                        <h1 className="text-3xl font-bold text-primary">فاتورة العميل</h1>
+                        <p className="text-sm text-slate-500 font-semibold italic">نظام إدارة طلبات الأباجور</p>
                     </div>
                 </div>
-                <div className="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0">
-                    <h2 className="text-xl font-bold">ملخص الطلب</h2>
-                    <p className="text-sm text-muted-foreground">تاريخ الطباعة: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="text-left" dir="ltr">
+                    <h2 className="text-xl font-bold text-slate-900">ملخص مالي</h2>
+                    <p className="text-sm text-slate-500 font-bold">تاريخ: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-xs font-mono text-slate-400 mt-1 uppercase">Ref: #{order.id}</p>
                 </div>
             </header>
 
-            <main>
-                <section className="mb-8">
-                    <h3 className="text-xl font-bold mb-4">تفاصيل الطلب والعميل</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-base p-4 border rounded-lg bg-muted/30">
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">اسم الطلب</span> <span className="font-semibold">{order.orderName}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">رقم الطلب</span> <span className="font-mono">{order.id}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">تاريخ الطلب</span> <span>{order.date}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">العميل</span> <span className="font-semibold">{customerName}</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">نوع الأباجور</span> <span>{order.mainAbjourType} ({order.mainColor})</span></div>
-                        <div className="flex flex-col"><span className="font-bold text-muted-foreground text-sm">عرض الشفرة</span> <span>{order.bladeWidth} سم</span></div>
+            <main className="space-y-10 bg-white">
+                <section>
+                    <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">بيانات الطلب والعميل</h3>
+                    <div className="grid grid-cols-3 gap-6 text-sm p-8 border-2 border-slate-50 rounded-2xl bg-slate-50/30">
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">اسم الطلب</span> <span className="font-bold text-base text-slate-800">{order.orderName}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">العميل</span> <span className="font-bold text-base text-slate-800">{customerName}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">تاريخ الطلب</span> <span className="font-bold text-base text-slate-800">{order.date}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">نوع الأباجور</span> <span className="font-bold text-base text-slate-800">{order.mainAbjourType}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">اللون</span> <span className="font-bold text-base text-slate-800">{order.mainColor}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-slate-400 text-xs font-bold uppercase">عرض الشفرة</span> <span className="font-bold text-base text-slate-800">{order.bladeWidth} سم</span></div>
                     </div>
                 </section>
 
-                <section className="mb-8">
-                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">تفاصيل القطع</h3>
-                    <div className="overflow-x-auto rounded-lg border">
-                        <Table className="w-full text-sm text-center">
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="p-3">#</TableHead>
-                                    <TableHead className="p-3 text-right">نوع التركيب</TableHead>
-                                    <TableHead className="p-3">طول الشفرة (سم)</TableHead>
-                                    <TableHead className="p-3">عدد الشفرات</TableHead>
-                                    <TableHead className="p-3">المساحة (م²)</TableHead>
+                <section>
+                    <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">تفاصيل القياسات</h3>
+                    <div className="rounded-2xl border-2 border-slate-100 overflow-hidden">
+                        <Table className="w-full">
+                            <TableHeader className="bg-slate-900">
+                                <TableRow className="hover:bg-transparent border-0">
+                                    <TableHead className="p-4 text-center font-bold text-white">#</TableHead>
+                                    {showAbjourTypeColumn && <TableHead className="p-4 text-center font-bold text-white">نوع التركيب</TableHead>}
+                                    <TableHead className="p-4 text-center font-bold text-white">طول الشفرة (سم)</TableHead>
+                                    <TableHead className="p-4 text-center font-bold text-white">عدد الشفرات</TableHead>
+                                    <TableHead className="p-4 text-center font-bold text-white">المساحة (م²)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {order.openings.map((opening, index) => {
                                     const area = (opening.codeLength * opening.numberOfCodes * order.bladeWidth / 10000).toFixed(2);
                                     return (
-                                        <TableRow key={opening.serial} className="even:bg-card">
-                                            <TableCell className="p-3 font-mono">{index + 1}</TableCell>
-                                            <TableCell className="p-3 text-right font-medium">{opening.abjourType}</TableCell>
-                                            <TableCell className="p-3 font-mono">{opening.codeLength.toFixed(2)}</TableCell>
-                                            <TableCell className="p-3 font-mono">{opening.numberOfCodes}</TableCell>
-                                            <TableCell className="p-3 font-mono">{area}</TableCell>
+                                        <TableRow key={opening.serial} className="hover:bg-transparent border-b-2 border-slate-50 last:border-0 odd:bg-slate-50/20">
+                                            <TableCell className="p-4 text-center font-black text-slate-400">{index + 1}</TableCell>
+                                            {showAbjourTypeColumn && <TableCell className="p-4 text-center font-bold text-slate-700">{opening.abjourType}</TableCell>}
+                                            <TableCell className="p-4 text-center font-mono font-black text-lg text-slate-900">{opening.codeLength.toFixed(2)}</TableCell>
+                                            <TableCell className="p-4 text-center font-mono font-black text-lg text-slate-900">{opening.numberOfCodes}</TableCell>
+                                            <TableCell className="p-4 text-center font-mono font-bold text-slate-600">{area}</TableCell>
                                         </TableRow>
                                     );
                                 })}
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="mt-4 p-4 bg-muted/60 rounded-lg font-bold flex justify-between items-center text-lg">
-                        <span>إجمالي المساحة</span>
-                        <span className="font-mono">{order.totalArea.toFixed(2)} م²</span>
+                    <div className="mt-4 p-6 bg-slate-900 text-white rounded-2xl font-black flex justify-between items-center shadow-lg">
+                        <span className="text-lg">إجمالي مساحة الطلب:</span>
+                        <span className="font-mono text-3xl">{order.totalArea.toFixed(2)} م²</span>
                     </div>
                 </section>
 
-                {order.accessories && order.accessories.length > 0 && (
-                    <section className="mb-8">
-                        <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">الإكسسوارات</h3>
-                        <div className="overflow-x-auto rounded-lg border">
-                            <Table className="w-full text-sm text-center">
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="p-3 text-right">اسم الإكسسوار</TableHead>
-                                        <TableHead className="p-3">الكمية</TableHead>
-                                        <TableHead className="p-3">الوحدة</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {order.accessories.map((acc, index) => (
-                                        <TableRow key={index} className="even:bg-card">
-                                            <TableCell className="p-3 text-right font-medium">{acc.name}</TableCell>
-                                            <TableCell className="p-3 font-mono">{acc.quantity}</TableCell>
-                                            <TableCell className="p-3">{acc.unit}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                <div className="grid grid-cols-2 gap-10 items-start">
+                    <section>
+                        <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">ملاحظات وخدمات</h3>
+                        <div className="p-6 border-2 border-slate-100 rounded-2xl bg-white space-y-4">
+                            <div className="flex flex-wrap gap-2">
+                                {order.hasDelivery && <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-wider">توصيل مفعل</span>}
+                                {order.hasInstallation && <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-wider">تركيب مفعل</span>}
+                            </div>
+                            {order.hasDelivery && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">موقع التسليم:</span>
+                                    <p className="font-bold text-sm text-slate-700 leading-relaxed">{order.deliveryAddress}</p>
+                                </div>
+                            )}
                         </div>
                     </section>
-                )}
 
-                {order.hasDelivery && (
-                    <section className="mb-8">
-                        <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">معلومات التوصيل</h3>
-                        <div className="p-4 border rounded-lg bg-muted/30 space-y-2">
-                            <div><span className="font-bold">عنوان التوصيل:</span> {order.deliveryAddress}</div>
-                            <div><span className="font-bold">تكلفة التوصيل:</span> <span className="font-mono">${(order.deliveryCost || 0).toFixed(2)}</span></div>
-                        </div>
-                    </section>
-                )}
-
-                <section>
-                    <h3 className="text-xl font-bold text-center mb-4 border-t pt-8">ملخص مالي</h3>
-                    <div className="p-6 border rounded-lg bg-muted/30 space-y-3 max-w-sm mx-auto">
-                        <div className="flex justify-between items-center">
-                            <span>سعر المتر المربع:</span> 
-                            <div className="flex items-baseline gap-2">
-                                {order.overriddenPricePerSquareMeter != null && (
-                                     <span className="font-mono font-semibold text-sm text-muted-foreground line-through">${order.pricePerSquareMeter.toFixed(2)}</span>
-                                )}
-                                <span className="font-mono font-bold text-primary">${pricePerMeter.toFixed(2)}</span>
+                    <section>
+                        <h3 className="text-lg font-bold mb-4 text-primary border-r-4 border-primary pr-3">التكلفة النهائية</h3>
+                        <div className="p-8 border-2 border-primary/20 rounded-3xl bg-white space-y-5 shadow-md relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-2 h-full bg-primary/10"></div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 font-bold">سعر المتر المربع:</span> 
+                                <span className="font-mono text-slate-900 font-black text-lg">${pricePerMeter.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 font-bold">صافي قيمة المنتجات:</span> 
+                                <span className="font-mono text-slate-900 font-bold">${order.totalCost.toFixed(2)}</span>
+                            </div>
+                            {order.hasDelivery && (
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-500 font-bold">رسوم التوصيل والخدمات:</span> 
+                                    <span className="font-mono text-slate-900 font-bold">${(order.deliveryCost || 0).toFixed(2)}</span>
+                                </div>
+                            )}
+                            <Separator className="bg-slate-100" />
+                            <div className="flex justify-between items-center pt-2">
+                                <span className="font-black text-xl text-primary uppercase">الإجمالي:</span> 
+                                <span className="font-mono font-black text-4xl text-primary leading-none">${finalTotalCost.toFixed(2)}</span>
                             </div>
                         </div>
-                        <div className="flex justify-between items-center"><span>تكلفة المنتجات:</span> <span className="font-mono font-semibold">${order.totalCost.toFixed(2)}</span></div>
-                        {order.hasDelivery && <div className="flex justify-between items-center"><span>تكلفة التوصيل:</span> <span className="font-mono font-semibold">${(order.deliveryCost || 0).toFixed(2)}</span></div>}
-                        <Separator className="my-2" />
-                        <div className="flex justify-between font-bold text-xl text-primary"><span>الإجمالي المطلوب:</span> <span className="font-mono">${finalTotalCost.toFixed(2)}</span></div>
-                    </div>
-                </section>
+                    </section>
+                </div>
             </main>
 
-            <footer className="mt-16 text-center text-xs text-gray-500 border-t pt-6">
-                <p>هذا المستند تم إنشاؤه بواسطة نظام طلب أباجور.</p>
-                <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()}</p>
+            <footer className="mt-20 text-center border-t-2 border-slate-100 pt-8 flex justify-between items-center bg-white">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">جميع الحقوق محفوظة &copy; {new Date().getFullYear()} طلب أباجور</p>
+                <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    <span className="text-[10px] text-slate-400 font-black uppercase">صادر عن النظام الذكي</span>
+                </div>
             </footer>
         </div>
     );
